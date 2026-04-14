@@ -1,0 +1,32 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 3000",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://t:eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcmNoaWRzIiwic3ViIjoiQHBpZXJyZS9zdG9yYWdlIiwicmVwbyI6IjdhMzQzNGExLTg0ODItNGJiMy05NzgxLWM2ZGZkYWFlZDExZiIsInNjb3BlcyI6WyJnaXQ6cmVhZCIsImdpdDp3cml0ZSJdLCJpYXQiOjE3NzYxNzU1MDcsImV4cCI6MTgwNzI3OTUwN30.k8kTZQgNZDy1AYc48p1cIVFjb2QLSnoXLzd5t3E4ftlpb_-WbjNMNa45GCfmgJznOYQbEVoZTBMtunRXy__Diw@orchids.code.storage/7a3434a1-8482-4bb3-9781-c6dfdaaed11f.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "@vitejs/plugin-react": "^6.0.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.8.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^7.14.1",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.8",
+    "zustand": "^5.0.12"
+  }
+}
