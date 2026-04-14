@@ -10,48 +10,39 @@ const generateOrderNumber = () => {
 }
 
 const initialOrder = {
-  // Customer
   customerName: '',
   customerDni: '',
   customerPhone: '',
   customerEmail: '',
   customerAddress: '',
-  // Device
   deviceType: 'phone',
   deviceBrand: '',
   deviceModel: '',
   deviceSerial: '',
   deviceEmail: '',
   accessories: [],
-  // Security
   devicePassword: '',
   lockNotes: '',
-  // Diagnosis
   reportedIssue: '',
   technicianNotes: '',
   waterDamage: false,
   physicalDamage: false,
   previouslyOpened: false,
-  // Checklist
   powersOn: null,
   charges: null,
   screenWorks: null,
   touchWorks: null,
   audioWorks: null,
   buttonsWork: null,
-  // Budget
   estimatedPrice: '',
   finalPrice: '',
   repairCost: '',
   budgetStatus: 'pending',
-  // Work done
   workDone: '',
-  // Status
   status: 'pending',
 }
 
-// Sync a single order to Supabase (upsert)
-async function syncToSupabase(order) {
+async function syncOrderToSupabase(order) {
   if (!isSupabaseConfigured) return
   try {
     await supabase.from('orders').upsert({
@@ -65,8 +56,7 @@ async function syncToSupabase(order) {
   }
 }
 
-// Delete an order from Supabase
-async function deleteFromSupabase(id) {
+async function deleteOrderFromSupabase(id) {
   if (!isSupabaseConfigured) return
   try {
     await supabase.from('orders').delete().eq('id', id)
@@ -75,10 +65,29 @@ async function deleteFromSupabase(id) {
   }
 }
 
+async function syncClientToSupabase(client) {
+  if (!isSupabaseConfigured) return
+  try {
+    await supabase.from('clients').upsert({
+      id: client.id,
+      name: client.name,
+      phone: client.phone,
+      email: client.email,
+      dni: client.dni,
+      address: client.address,
+      data: client,
+      updated_at: new Date().toISOString(),
+    })
+  } catch (e) {
+    console.warn('[Supabase] client sync failed:', e)
+  }
+}
+
 export const useStore = create(
   persist(
     (set, get) => ({
       orders: [],
+      clients: [],
       darkMode: false,
       auth: { isLoggedIn: false },
       _hydrated: false,
@@ -97,8 +106,64 @@ export const useStore = create(
       // Dark mode
       toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
 
-      // Orders
+      // ── Clients ──────────────────────────────────────────────────
+      upsertClient: (data) => {
+        const { clients } = get()
+        // Match by DNI or phone to avoid duplicates
+        const existing = clients.find(
+          (c) =>
+            (data.dni && c.dni && c.dni === data.dni) ||
+            (data.phone && c.phone && c.phone === data.phone)
+        )
+        if (existing) {
+          const updated = { ...existing, ...data, updatedAt: new Date().toISOString() }
+          set((s) => ({ clients: s.clients.map((c) => (c.id === existing.id ? updated : c)) }))
+          syncClientToSupabase(updated)
+          return updated
+        }
+        const client = {
+          ...data,
+          id: `CLT-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        set((s) => ({ clients: [client, ...s.clients] }))
+        syncClientToSupabase(client)
+        return client
+      },
+
+      deleteClient: (id) => {
+        set((s) => ({ clients: s.clients.filter((c) => c.id !== id) }))
+        if (isSupabaseConfigured) {
+          supabase.from('clients').delete().eq('id', id).then(() => {})
+        }
+      },
+
+      searchClients: (q) => {
+        if (!q || q.length < 2) return []
+        const lower = q.toLowerCase()
+        return get().clients.filter(
+          (c) =>
+            c.name?.toLowerCase().includes(lower) ||
+            c.phone?.includes(q) ||
+            c.dni?.includes(q) ||
+            c.email?.toLowerCase().includes(lower)
+        ).slice(0, 6)
+      },
+
+      // ── Orders ───────────────────────────────────────────────────
       createOrder: (data) => {
+        // Auto-register or update client from order data
+        if (data.customerName) {
+          get().upsertClient({
+            name: data.customerName,
+            phone: data.customerPhone || '',
+            email: data.customerEmail || '',
+            dni: data.customerDni || '',
+            address: data.customerAddress || '',
+          })
+        }
+
         const order = {
           ...initialOrder,
           ...data,
@@ -110,21 +175,31 @@ export const useStore = create(
             {
               status: data.status || 'pending',
               timestamp: new Date().toISOString(),
-              note: 'Order created',
+              note: 'Orden creada',
             },
           ],
         }
         set((s) => ({ orders: [order, ...s.orders] }))
-        syncToSupabase(order)
+        syncOrderToSupabase(order)
         return order
       },
 
       updateOrder: (id, data) => {
+        // Keep client data in sync if customer info changed
+        if (data.customerName) {
+          get().upsertClient({
+            name: data.customerName,
+            phone: data.customerPhone || '',
+            email: data.customerEmail || '',
+            dni: data.customerDni || '',
+            address: data.customerAddress || '',
+          })
+        }
+
         set((s) => ({
           orders: s.orders.map((o) => {
             if (o.id !== id) return o
             const updated = { ...o, ...data }
-            // Track status changes
             if (data.status && data.status !== o.status) {
               updated.statusHistory = [
                 ...(o.statusHistory || []),
@@ -138,7 +213,7 @@ export const useStore = create(
                 updated.deliveryDate = new Date().toISOString()
               }
             }
-            syncToSupabase(updated)
+            syncOrderToSupabase(updated)
             return updated
           }),
         }))
@@ -146,16 +221,11 @@ export const useStore = create(
 
       deleteOrder: (id) => {
         set((s) => ({ orders: s.orders.filter((o) => o.id !== id) }))
-        deleteFromSupabase(id)
+        deleteOrderFromSupabase(id)
       },
 
-      getOrder: (id) => {
-        return get().orders.find((o) => o.id === id)
-      },
-
-      getOrderByNumber: (num) => {
-        return get().orders.find((o) => o.orderNumber === num)
-      },
+      getOrder: (id) => get().orders.find((o) => o.id === id),
+      getOrderByNumber: (num) => get().orders.find((o) => o.orderNumber === num),
     }),
     {
       name: 'repairpro-store',
