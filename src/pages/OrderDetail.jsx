@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, Edit3, Printer, ExternalLink, CheckCircle2, XCircle, MinusCircle,
-  Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check
+  Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { StatusBadge, BudgetBadge } from '../components/StatusBadge'
@@ -26,9 +26,10 @@ const InfoRow = ({ label, value }) => (
 export default function OrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getOrder, updateOrder } = useStore()
+  const { getOrder, updateOrder, deleteOrder } = useStore()
   const [editing, setEditing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const order = getOrder(id)
 
@@ -122,6 +123,13 @@ export default function OrderDetail() {
             PDF Invoice
           </button>
           <button
+            onClick={() => setConfirmDelete(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-red-200 dark:border-red-800 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          >
+            <Trash2 size={14} />
+            Delete
+          </button>
+          <button
             onClick={() => setEditing(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
           >
@@ -130,6 +138,32 @@ export default function OrderDetail() {
           </button>
         </div>
       </div>
+
+      {/* Delete confirm modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 max-w-sm w-full shadow-xl">
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Delete Order?</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+              This action cannot be undone. The order and all its data will be permanently deleted.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 py-2 px-4 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { deleteOrder(id); navigate('/orders') }}
+                className="flex-1 py-2 px-4 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Left column */}

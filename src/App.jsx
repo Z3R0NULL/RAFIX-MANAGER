@@ -11,6 +11,7 @@ import TrackOrder from './pages/TrackOrder'
 import SearchPage from './pages/SearchPage'
 import AdminPanel from './pages/AdminPanel'
 import AdminDashboard from './pages/AdminDashboard'
+import Clients from './pages/Clients'
 
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
@@ -105,6 +106,16 @@ export default function App() {
               <PrivateRoute>
                 <Layout>
                   <SearchPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/clients"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <Clients />
                 </Layout>
               </PrivateRoute>
             }

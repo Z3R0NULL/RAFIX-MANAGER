@@ -1,5 +1,5 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import OrderForm from '../components/OrderForm'
@@ -7,6 +7,8 @@ import OrderForm from '../components/OrderForm'
 export default function NewOrder() {
   const createOrder = useStore((s) => s.createOrder)
   const navigate = useNavigate()
+  const location = useLocation()
+  const prefill = location.state?.prefill || {}
 
   const handleSubmit = (data) => {
     const order = createOrder(data)
@@ -27,7 +29,7 @@ export default function NewOrder() {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Fill in the customer and device details</p>
         </div>
       </div>
-      <OrderForm onSubmit={handleSubmit} submitLabel="Create Order" />
+      <OrderForm initialData={prefill} onSubmit={handleSubmit} submitLabel="Create Order" />
     </div>
   )
 }

@@ -3,9 +3,7 @@ import { Link } from 'react-router-dom'
 import {
   PlusCircle,
   Search,
-  Filter,
   ChevronDown,
-  Trash2,
   Eye,
   ClipboardList,
 } from 'lucide-react'
@@ -14,11 +12,10 @@ import { StatusBadge } from '../components/StatusBadge'
 import { formatDateShort, formatCurrency, STATUS_CONFIG, DEVICE_TYPES } from '../utils/constants'
 
 export default function Orders() {
-  const { orders, deleteOrder } = useStore()
+  const { orders } = useStore()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [deviceFilter, setDeviceFilter] = useState('')
-  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const filtered = orders.filter((o) => {
     const q = search.toLowerCase()
@@ -33,11 +30,6 @@ export default function Orders() {
     const matchDevice = !deviceFilter || o.deviceType === deviceFilter
     return matchSearch && matchStatus && matchDevice
   })
-
-  const handleDelete = (id) => {
-    deleteOrder(id)
-    setConfirmDelete(null)
-  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-5">
@@ -156,12 +148,6 @@ export default function Orders() {
                         >
                           <Eye size={15} />
                         </Link>
-                        <button
-                          onClick={() => setConfirmDelete(order.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                        >
-                          <Trash2 size={15} />
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -172,31 +158,6 @@ export default function Orders() {
         )}
       </div>
 
-      {/* Delete confirm modal */}
-      {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 max-w-sm w-full shadow-xl">
-            <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Delete Order?</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-              This action cannot be undone. The order and all its data will be permanently deleted.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-2 px-4 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(confirmDelete)}
-                className="flex-1 py-2 px-4 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

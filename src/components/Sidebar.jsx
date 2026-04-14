@@ -3,7 +3,6 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   ClipboardList,
-  PlusCircle,
   LogOut,
   Wrench,
   Moon,
@@ -11,13 +10,14 @@ import {
   Search,
   ShieldCheck,
   Globe,
+  Users,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/orders', label: 'Orders', icon: ClipboardList },
-  { to: '/orders/new', label: 'New Order', icon: PlusCircle },
+  { to: '/orders', label: 'Orders', icon: ClipboardList, end: true },
+  { to: '/clients', label: 'Clients', icon: Users },
   { to: '/search', label: 'Search', icon: Search },
 ]
 
@@ -88,6 +88,7 @@ export default function Sidebar({ onClose }) {
           </NavLink>
           <NavLink
             to="/admin"
+            end
             onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${

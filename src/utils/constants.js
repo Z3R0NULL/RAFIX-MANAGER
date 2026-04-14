@@ -66,9 +66,19 @@ export const ACCESSORIES_OPTIONS = [
   'Manual / Caja',
 ]
 
+// Parse a date string safely: if it's a plain date (YYYY-MM-DD) treat it as
+// local midnight to avoid UTC offset shifting the day backwards.
+function parseDate(iso) {
+  if (!iso) return null
+  // Plain date without time component → append T00:00 so it's local time
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return new Date(`${iso}T00:00`)
+  return new Date(iso)
+}
+
 export const formatDate = (iso) => {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-AR', {
+  const d = parseDate(iso)
+  if (!d) return '—'
+  return d.toLocaleDateString('es-AR', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -78,8 +88,9 @@ export const formatDate = (iso) => {
 }
 
 export const formatDateShort = (iso) => {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-AR', {
+  const d = parseDate(iso)
+  if (!d) return '—'
+  return d.toLocaleDateString('es-AR', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

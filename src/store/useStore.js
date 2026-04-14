@@ -122,28 +122,24 @@ async function syncClientToTurso(client) {
   }
 }
 
-export async function fetchAllFromTurso({ username, role } = {}) {
+export async function fetchAllFromTurso({ username } = {}) {
   if (!isTursoConfigured) return null
 
   try {
     await initDb()
 
-    // superadmin sees all orders; other users only see their own
-    const isSuperAdmin = role === 'superadmin'
-    const ordersRes = isSuperAdmin
-      ? await turso.execute('SELECT data FROM orders ORDER BY updated_at DESC')
-      : await turso.execute({
-          sql: 'SELECT data FROM orders WHERE created_by = ? ORDER BY updated_at DESC',
-          args: [username],
-        })
+    // All users (including superadmin) only see their own orders/clients in the
+    // regular store. The AdminDashboard (Panel Global) fetches all orders
+    // independently via its own direct Turso query.
+    const ordersRes = await turso.execute({
+      sql: 'SELECT data FROM orders WHERE created_by = ? ORDER BY updated_at DESC',
+      args: [username],
+    })
 
-    // superadmin sees all clients; other users only see their own
-    const clientsRes = isSuperAdmin
-      ? await turso.execute('SELECT data FROM clients ORDER BY updated_at DESC')
-      : await turso.execute({
-          sql: 'SELECT data FROM clients WHERE created_by = ? ORDER BY updated_at DESC',
-          args: [username],
-        })
+    const clientsRes = await turso.execute({
+      sql: 'SELECT data FROM clients WHERE created_by = ? ORDER BY updated_at DESC',
+      args: [username],
+    })
 
     const orders = ordersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const clients = clientsRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
@@ -196,7 +192,7 @@ export const useStore = create(
                 ],
               })
               set({ auth: { isLoggedIn: true, username, role: userRow.role } })
-              const result = await fetchAllFromTurso({ username, role: userRow.role })
+              const result = await fetchAllFromTurso({ username })
               if (result) set({ orders: result.orders, clients: result.clients })
               return true
             }
@@ -227,7 +223,7 @@ export const useStore = create(
             }
           }
           set({ auth: { isLoggedIn: true, username, role: 'superadmin' } })
-          const result = await fetchAllFromTurso({ username, role: 'superadmin' })
+          const result = await fetchAllFromTurso({ username })
           if (result) set({ orders: result.orders, clients: result.clients })
           return true
         }
@@ -239,7 +235,7 @@ export const useStore = create(
 
       loadFromTurso: async () => {
         const { auth } = get()
-        const result = await fetchAllFromTurso({ username: auth?.username, role: auth?.role })
+        const result = await fetchAllFromTurso({ username: auth?.username })
         if (result) set({ orders: result.orders, clients: result.clients })
       },
 
@@ -382,6 +378,18 @@ export const useStore = create(
         set((s) => ({ clients: [client, ...s.clients] }))
         syncClientToTurso(client)
         return client
+      },
+
+      updateClient: (id, data) => {
+        set((s) => {
+          const updated = s.clients.map((c) => {
+            if (c.id !== id) return c
+            const next = { ...c, ...data, id: c.id, createdBy: c.createdBy, createdAt: c.createdAt, updatedAt: new Date().toISOString() }
+            syncClientToTurso(next)
+            return next
+          })
+          return { clients: updated }
+        })
       },
 
       deleteClient: (id) => {
