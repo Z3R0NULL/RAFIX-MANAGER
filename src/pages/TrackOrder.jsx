@@ -8,7 +8,7 @@ import { formatDate, formatDateShort, formatCurrency, STATUS_CONFIG } from '../u
 
 export default function TrackOrder() {
   const { orderNumber: paramOrderNumber } = useParams()
-  const { getOrderByNumber, _hydrated } = useStore()
+  const { getOrderByNumber } = useStore()
   const navigate = useNavigate()
 
   const [query, setQuery] = useState(paramOrderNumber || '')
@@ -23,13 +23,15 @@ export default function TrackOrder() {
     setNotFound(false)
     setOrder(null)
 
-    // 1. Try Supabase first (live, cross-device)
+    const normalized = num.trim().toUpperCase()
+
+    // 1. Try Supabase first (live, cross-device — works for all clients)
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
           .from('orders')
           .select('data, updated_at')
-          .eq('order_number', num.trim().toUpperCase())
+          .eq('order_number', normalized)
           .single()
 
         if (!error && data) {
@@ -43,20 +45,18 @@ export default function TrackOrder() {
       }
     }
 
-    // 2. Fallback: local store (same browser/device as admin)
-    if (_hydrated) {
-      const localOrder = getOrderByNumber(num.trim().toUpperCase())
-      if (localOrder) {
-        setOrder(localOrder)
-        setLastUpdated(new Date().toISOString())
-        setLoading(false)
-        return
-      }
+    // 2. Fallback: local store (same browser/device as admin, works offline)
+    const localOrder = getOrderByNumber(normalized)
+    if (localOrder) {
+      setOrder(localOrder)
+      setLastUpdated(new Date().toISOString())
+      setLoading(false)
+      return
     }
 
     setNotFound(true)
     setLoading(false)
-  }, [_hydrated, getOrderByNumber])
+  }, [getOrderByNumber])
 
   // Auto-search if order number is in URL
   useEffect(() => {

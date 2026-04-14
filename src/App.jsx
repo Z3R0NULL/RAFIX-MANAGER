@@ -18,6 +18,9 @@ function PrivateRoute({ children }) {
 
 function AppWithDarkMode({ children }) {
   const darkMode = useStore((s) => s.darkMode)
+  const orders = useStore((s) => s.orders)
+  const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark')
@@ -25,6 +28,24 @@ function AppWithDarkMode({ children }) {
       document.documentElement.classList.remove('dark')
     }
   }, [darkMode])
+
+  // When admin logs in, push any local-only orders to Supabase
+  useEffect(() => {
+    if (!isLoggedIn || !orders.length) return
+    import('./lib/supabase').then(({ supabase, isSupabaseConfigured }) => {
+      if (!isSupabaseConfigured) return
+      const rows = orders.map((o) => ({
+        id: o.id,
+        order_number: o.orderNumber,
+        data: o,
+        updated_at: new Date().toISOString(),
+      }))
+      supabase.from('orders').upsert(rows).then(({ error }) => {
+        if (error) console.warn('[Supabase] bulk sync failed:', error)
+      })
+    })
+  }, [isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
+
   return children
 }
 
@@ -91,7 +112,7 @@ export default function App() {
           />
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/track" replace />} />
         </Routes>
       </AppWithDarkMode>
     </BrowserRouter>
