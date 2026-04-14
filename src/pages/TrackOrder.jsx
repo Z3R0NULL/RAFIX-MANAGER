@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Wrench, Search, Clock, DollarSign, MessageCircle, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { useStore } from '../store/useStore'
-import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { turso, isTursoConfigured } from '../lib/turso'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatDate, formatDateShort, formatCurrency, STATUS_CONFIG } from '../utils/constants'
 
@@ -25,23 +25,22 @@ export default function TrackOrder() {
 
     const normalized = num.trim().toUpperCase()
 
-    // 1. Try Supabase first (live, cross-device — works for all clients)
-    if (isSupabaseConfigured) {
+    // 1. Try Turso first (live, cross-device — works for all clients)
+    if (isTursoConfigured) {
       try {
-        const { data, error } = await supabase
-          .from('orders')
-          .select('data, updated_at')
-          .eq('order_number', normalized)
-          .single()
-
-        if (!error && data) {
-          setOrder(data.data)
-          setLastUpdated(data.updated_at)
+        const res = await turso.execute({
+          sql: 'SELECT data, updated_at FROM orders WHERE order_number = ? LIMIT 1',
+          args: [normalized],
+        })
+        const row = res.rows[0]
+        if (row) {
+          setOrder(JSON.parse(row.data))
+          setLastUpdated(row.updated_at)
           setLoading(false)
           return
         }
       } catch (e) {
-        console.warn('[TrackOrder] Supabase fetch failed, falling back to local store')
+        console.warn('[TrackOrder] Turso fetch failed, falling back to local store')
       }
     }
 
@@ -222,8 +221,12 @@ export default function TrackOrder() {
                       <DollarSign size={14} className="text-slate-500" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-400">Precio</p>
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{formatCurrency(order.finalPrice || order.estimatedPrice)}</p>
+                      <p className="text-xs text-slate-400">
+                        {order.finalPrice ? 'Precio final' : 'Precio estimado'}
+                      </p>
+                      <p className={`text-sm font-semibold ${order.finalPrice ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                        {formatCurrency(order.finalPrice || order.estimatedPrice)}
+                      </p>
                     </div>
                   </div>
                 )}

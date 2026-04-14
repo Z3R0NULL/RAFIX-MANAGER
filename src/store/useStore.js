@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { turso, isTursoConfigured, initDb } from '../lib/turso'
 
 const SUPERADMIN = 'admin'
 
@@ -21,7 +21,7 @@ const generateOrderNumber = () => {
   return `${prefix}-${timestamp}${random}`
 }
 
-const initialOrder = {
+export const initialOrder = {
   customerName: '',
   customerDni: '',
   customerPhone: '',
@@ -55,62 +55,102 @@ const initialOrder = {
   estimatedDelivery: '',
 }
 
-async function syncOrderToSupabase(order) {
-  if (!isSupabaseConfigured) return
+// ── Turso helpers ────────────────────────────────────────────────────────────
+
+async function syncOrderToTurso(order) {
+  if (!isTursoConfigured) return
   try {
-    await supabase.from('orders').upsert({
-      id: order.id,
-      order_number: order.orderNumber,
-      data: order,
-      updated_at: new Date().toISOString(),
+    await turso.execute({
+      sql: `INSERT INTO orders (id, order_number, created_by, data, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              order_number = excluded.order_number,
+              created_by   = excluded.created_by,
+              data         = excluded.data,
+              updated_at   = excluded.updated_at`,
+      args: [
+        order.id,
+        order.orderNumber,
+        order.createdBy || 'admin',
+        JSON.stringify(order),
+        new Date().toISOString(),
+      ],
     })
   } catch (e) {
-    console.warn('[Supabase] sync failed:', e)
+    console.warn('[Turso] order sync failed:', e)
   }
 }
 
-async function deleteOrderFromSupabase(id) {
-  if (!isSupabaseConfigured) return
+async function deleteOrderFromTurso(id) {
+  if (!isTursoConfigured) return
   try {
-    await supabase.from('orders').delete().eq('id', id)
+    await turso.execute({ sql: 'DELETE FROM orders WHERE id = ?', args: [id] })
   } catch (e) {
-    console.warn('[Supabase] delete failed:', e)
+    console.warn('[Turso] order delete failed:', e)
   }
 }
 
-export async function fetchAllFromSupabase() {
-  if (!isSupabaseConfigured) return null
-
-  const ordersRes = await supabase.from('orders').select('data').order('updated_at', { ascending: false })
-  if (ordersRes.error) console.warn('[Supabase] orders fetch error:', ordersRes.error)
-
-  const clientsRes = await supabase.from('clients').select('data').order('updated_at', { ascending: false })
-  if (clientsRes.error) console.warn('[Supabase] clients fetch error:', clientsRes.error)
-
-  const orders = (ordersRes.data || []).map((r) => r.data).filter(Boolean)
-  const clients = (clientsRes.data || []).map((r) => r.data).filter(Boolean)
-
-  console.log(`[Supabase] loaded ${orders.length} orders, ${clients.length} clients`)
-  return { orders, clients }
-}
-
-async function syncClientToSupabase(client) {
-  if (!isSupabaseConfigured) return
+async function syncClientToTurso(client) {
+  if (!isTursoConfigured) return
   try {
-    await supabase.from('clients').upsert({
-      id: client.id,
-      name: client.name,
-      phone: client.phone,
-      email: client.email,
-      dni: client.dni,
-      address: client.address,
-      data: client,
-      updated_at: new Date().toISOString(),
+    await turso.execute({
+      sql: `INSERT INTO clients (id, name, phone, email, dni, address, data, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              name       = excluded.name,
+              phone      = excluded.phone,
+              email      = excluded.email,
+              dni        = excluded.dni,
+              address    = excluded.address,
+              data       = excluded.data,
+              updated_at = excluded.updated_at`,
+      args: [
+        client.id,
+        client.name || '',
+        client.phone || '',
+        client.email || '',
+        client.dni || '',
+        client.address || '',
+        JSON.stringify(client),
+        new Date().toISOString(),
+      ],
     })
   } catch (e) {
-    console.warn('[Supabase] client sync failed:', e)
+    console.warn('[Turso] client sync failed:', e)
   }
 }
+
+export async function fetchAllFromTurso({ username, role } = {}) {
+  if (!isTursoConfigured) return null
+
+  try {
+    await initDb()
+
+    // superadmin sees all orders; other users only see their own
+    const isSuperAdmin = role === 'superadmin'
+    const ordersRes = isSuperAdmin
+      ? await turso.execute('SELECT data FROM orders ORDER BY updated_at DESC')
+      : await turso.execute({
+          sql: 'SELECT data FROM orders WHERE created_by = ? ORDER BY updated_at DESC',
+          args: [username],
+        })
+
+    const clientsRes = await turso.execute(
+      'SELECT data FROM clients ORDER BY updated_at DESC'
+    )
+
+    const orders = ordersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+    const clients = clientsRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+
+    console.log(`[Turso] loaded ${orders.length} orders, ${clients.length} clients (user: ${username})`)
+    return { orders, clients }
+  } catch (e) {
+    console.warn('[Turso] fetchAll failed:', e)
+    return null
+  }
+}
+
+// ── Store ────────────────────────────────────────────────────────────────────
 
 export const useStore = create(
   persist(
@@ -124,50 +164,64 @@ export const useStore = create(
       _hydrated: false,
       setHydrated: () => set({ _hydrated: true }),
 
-      // ── Auth ─────────────────────────────────────────────────────
+      // ── Auth ───────────────────────────────────────────────────────
       login: async (username, password) => {
-        // 1. Check custom app_users in Supabase first
-        if (isSupabaseConfigured) {
-          const { data: userRow } = await supabase
-            .from('app_users')
-            .select('*')
-            .eq('username', username)
-            .eq('is_active', true)
-            .single()
+        if (isTursoConfigured) {
+          try {
+            await initDb()
+            const res = await turso.execute({
+              sql: `SELECT * FROM app_users WHERE username = ? AND is_active = 1 LIMIT 1`,
+              args: [username],
+            })
+            const userRow = res.rows[0]
 
-          if (userRow && userRow.password === password) {
-            const ip = await getClientIp()
-            const logEntry = {
-              id: `LOG-${Date.now()}`,
-              username,
-              role: userRow.role,
-              ip_address: ip,
-              user_agent: navigator.userAgent,
-              logged_in_at: new Date().toISOString(),
+            if (userRow && userRow.password === password) {
+              const ip = await getClientIp()
+              await turso.execute({
+                sql: `INSERT INTO login_logs (id, username, role, ip_address, user_agent, logged_in_at)
+                      VALUES (?, ?, ?, ?, ?, ?)`,
+                args: [
+                  `LOG-${Date.now()}`,
+                  username,
+                  userRow.role,
+                  ip,
+                  navigator.userAgent,
+                  new Date().toISOString(),
+                ],
+              })
+              set({ auth: { isLoggedIn: true, username, role: userRow.role } })
+              const result = await fetchAllFromTurso()
+              if (result) set({ orders: result.orders, clients: result.clients })
+              return true
             }
-            await supabase.from('login_logs').insert(logEntry)
-            set({ auth: { isLoggedIn: true, username, role: userRow.role } })
-            const result = await fetchAllFromSupabase()
-            if (result) set({ orders: result.orders, clients: result.clients })
-            return true
+          } catch (e) {
+            console.warn('[Turso] login check failed:', e)
           }
         }
 
-        // 2. Fallback: hardcoded superadmin
+        // Fallback: hardcoded superadmin
         if (username === SUPERADMIN && password === 'admin123') {
           const ip = await getClientIp()
-          if (isSupabaseConfigured) {
-            await supabase.from('login_logs').insert({
-              id: `LOG-${Date.now()}`,
-              username,
-              role: 'superadmin',
-              ip_address: ip,
-              user_agent: navigator.userAgent,
-              logged_in_at: new Date().toISOString(),
-            })
+          if (isTursoConfigured) {
+            try {
+              await turso.execute({
+                sql: `INSERT INTO login_logs (id, username, role, ip_address, user_agent, logged_in_at)
+                      VALUES (?, ?, ?, ?, ?, ?)`,
+                args: [
+                  `LOG-${Date.now()}`,
+                  username,
+                  'superadmin',
+                  ip,
+                  navigator.userAgent,
+                  new Date().toISOString(),
+                ],
+              })
+            } catch (e) {
+              console.warn('[Turso] login log insert failed:', e)
+            }
           }
           set({ auth: { isLoggedIn: true, username, role: 'superadmin' } })
-          const result = await fetchAllFromSupabase()
+          const result = await fetchAllFromTurso()
           if (result) set({ orders: result.orders, clients: result.clients })
           return true
         }
@@ -177,77 +231,126 @@ export const useStore = create(
 
       logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [] }),
 
-      // Load all data from Supabase (used on app start when already logged in)
-      loadFromSupabase: async () => {
-        const result = await fetchAllFromSupabase()
+      loadFromTurso: async () => {
+        const result = await fetchAllFromTurso()
         if (result) set({ orders: result.orders, clients: result.clients })
       },
 
-      // ── App Users (superadmin only) ───────────────────────────────
+      // ── App Users (superadmin only) ────────────────────────────────
       fetchAppUsers: async () => {
-        if (!isSupabaseConfigured) return
-        const { data, error } = await supabase
-          .from('app_users')
-          .select('id, username, role, is_active, created_at, updated_at')
-          .order('created_at', { ascending: false })
-        if (!error && data) set({ appUsers: data })
+        if (!isTursoConfigured) return
+        try {
+          const res = await turso.execute(
+            'SELECT id, username, role, is_active, created_at, updated_at FROM app_users ORDER BY created_at DESC'
+          )
+          const users = res.rows.map((r) => ({
+            id: r.id,
+            username: r.username,
+            role: r.role,
+            is_active: Boolean(r.is_active),
+            created_at: r.created_at,
+            updated_at: r.updated_at,
+          }))
+          set({ appUsers: users })
+        } catch (e) {
+          console.warn('[Turso] fetchAppUsers failed:', e)
+        }
       },
 
       createAppUser: async ({ username, password, role }) => {
-        if (!isSupabaseConfigured) return { error: 'Supabase not configured' }
+        if (!isTursoConfigured) return { error: 'Turso not configured' }
         const newUser = {
           id: `USR-${Date.now()}`,
           username,
           password,
           role: role || 'admin',
-          is_active: true,
+          is_active: 1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }
-        const { error } = await supabase.from('app_users').insert(newUser)
-        if (!error) {
-          set((s) => ({ appUsers: [{ ...newUser, password: undefined }, ...s.appUsers] }))
+        try {
+          await turso.execute({
+            sql: `INSERT INTO app_users (id, username, password, role, is_active, created_at, updated_at)
+                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            args: [
+              newUser.id,
+              newUser.username,
+              newUser.password,
+              newUser.role,
+              newUser.is_active,
+              newUser.created_at,
+              newUser.updated_at,
+            ],
+          })
+          set((s) => ({
+            appUsers: [{ ...newUser, password: undefined, is_active: true }, ...s.appUsers],
+          }))
+          return { error: null }
+        } catch (e) {
+          return { error: e.message || 'Insert failed' }
         }
-        return { error }
       },
 
       updateAppUser: async (id, updates) => {
-        if (!isSupabaseConfigured) return { error: 'Supabase not configured' }
-        const payload = { ...updates, updated_at: new Date().toISOString() }
-        const { error } = await supabase.from('app_users').update(payload).eq('id', id)
-        if (!error) {
+        if (!isTursoConfigured) return { error: 'Turso not configured' }
+        const updated_at = new Date().toISOString()
+        try {
+          const fields = Object.keys(updates)
+          const setClauses = fields.map((f) => `${f} = ?`).join(', ')
+          const values = fields.map((f) => updates[f])
+          await turso.execute({
+            sql: `UPDATE app_users SET ${setClauses}, updated_at = ? WHERE id = ?`,
+            args: [...values, updated_at, id],
+          })
           set((s) => ({
-            appUsers: s.appUsers.map((u) => (u.id === id ? { ...u, ...payload } : u)),
+            appUsers: s.appUsers.map((u) =>
+              u.id === id ? { ...u, ...updates, updated_at } : u
+            ),
           }))
+          return { error: null }
+        } catch (e) {
+          return { error: e.message || 'Update failed' }
         }
-        return { error }
       },
 
       deleteAppUser: async (id) => {
-        if (!isSupabaseConfigured) return { error: 'Supabase not configured' }
-        const { error } = await supabase.from('app_users').delete().eq('id', id)
-        if (!error) set((s) => ({ appUsers: s.appUsers.filter((u) => u.id !== id) }))
-        return { error }
+        if (!isTursoConfigured) return { error: 'Turso not configured' }
+        try {
+          await turso.execute({ sql: 'DELETE FROM app_users WHERE id = ?', args: [id] })
+          set((s) => ({ appUsers: s.appUsers.filter((u) => u.id !== id) }))
+          return { error: null }
+        } catch (e) {
+          return { error: e.message || 'Delete failed' }
+        }
       },
 
-      // ── Login Logs ────────────────────────────────────────────────
+      // ── Login Logs ─────────────────────────────────────────────────
       fetchLoginLogs: async () => {
-        if (!isSupabaseConfigured) return
-        const { data, error } = await supabase
-          .from('login_logs')
-          .select('*')
-          .order('logged_in_at', { ascending: false })
-          .limit(200)
-        if (!error && data) set({ loginLogs: data })
+        if (!isTursoConfigured) return
+        try {
+          const res = await turso.execute(
+            'SELECT * FROM login_logs ORDER BY logged_in_at DESC LIMIT 200'
+          )
+          const logs = res.rows.map((r) => ({
+            id: r.id,
+            username: r.username,
+            role: r.role,
+            ip_address: r.ip_address,
+            user_agent: r.user_agent,
+            logged_in_at: r.logged_in_at,
+          }))
+          set({ loginLogs: logs })
+        } catch (e) {
+          console.warn('[Turso] fetchLoginLogs failed:', e)
+        }
       },
 
       // Dark mode
       toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
 
-      // ── Clients ──────────────────────────────────────────────────
+      // ── Clients ────────────────────────────────────────────────────
       upsertClient: (data) => {
         const { clients } = get()
-        // Match by DNI or phone to avoid duplicates
         const existing = clients.find(
           (c) =>
             (data.dni && c.dni && c.dni === data.dni) ||
@@ -256,7 +359,7 @@ export const useStore = create(
         if (existing) {
           const updated = { ...existing, ...data, updatedAt: new Date().toISOString() }
           set((s) => ({ clients: s.clients.map((c) => (c.id === existing.id ? updated : c)) }))
-          syncClientToSupabase(updated)
+          syncClientToTurso(updated)
           return updated
         }
         const client = {
@@ -266,32 +369,33 @@ export const useStore = create(
           updatedAt: new Date().toISOString(),
         }
         set((s) => ({ clients: [client, ...s.clients] }))
-        syncClientToSupabase(client)
+        syncClientToTurso(client)
         return client
       },
 
       deleteClient: (id) => {
         set((s) => ({ clients: s.clients.filter((c) => c.id !== id) }))
-        if (isSupabaseConfigured) {
-          supabase.from('clients').delete().eq('id', id).then(() => {})
+        if (isTursoConfigured) {
+          turso.execute({ sql: 'DELETE FROM clients WHERE id = ?', args: [id] }).catch(() => {})
         }
       },
 
       searchClients: (q) => {
         if (!q || q.length < 2) return []
         const lower = q.toLowerCase()
-        return get().clients.filter(
-          (c) =>
-            c.name?.toLowerCase().includes(lower) ||
-            c.phone?.includes(q) ||
-            c.dni?.includes(q) ||
-            c.email?.toLowerCase().includes(lower)
-        ).slice(0, 6)
+        return get()
+          .clients.filter(
+            (c) =>
+              c.name?.toLowerCase().includes(lower) ||
+              c.phone?.includes(q) ||
+              c.dni?.includes(q) ||
+              c.email?.toLowerCase().includes(lower)
+          )
+          .slice(0, 6)
       },
 
-      // ── Orders ───────────────────────────────────────────────────
+      // ── Orders ─────────────────────────────────────────────────────
       createOrder: (data) => {
-        // Auto-register or update client from order data
         if (data.customerName) {
           get().upsertClient({
             name: data.customerName,
@@ -318,12 +422,11 @@ export const useStore = create(
           ],
         }
         set((s) => ({ orders: [order, ...s.orders] }))
-        syncOrderToSupabase(order)
+        syncOrderToTurso(order)
         return order
       },
 
       updateOrder: (id, data) => {
-        // Keep client data in sync if customer info changed
         if (data.customerName) {
           get().upsertClient({
             name: data.customerName,
@@ -351,7 +454,7 @@ export const useStore = create(
                 updated.deliveryDate = new Date().toISOString()
               }
             }
-            syncOrderToSupabase(updated)
+            syncOrderToTurso(updated)
             return updated
           }),
         }))
@@ -359,7 +462,7 @@ export const useStore = create(
 
       deleteOrder: (id) => {
         set((s) => ({ orders: s.orders.filter((o) => o.id !== id) }))
-        deleteOrderFromSupabase(id)
+        deleteOrderFromTurso(id)
       },
 
       getOrder: (id) => get().orders.find((o) => o.id === id),
@@ -367,7 +470,6 @@ export const useStore = create(
     }),
     {
       name: 'repairpro-store',
-      // Only persist auth and darkMode — everything else comes from Supabase
       partialize: (state) => ({
         auth: state.auth,
         darkMode: state.darkMode,
@@ -378,5 +480,3 @@ export const useStore = create(
     }
   )
 )
-
-export { initialOrder }

@@ -1,0 +1,430 @@
+
+> app@1.0.0 dev
+> vite --host 0.0.0.0 --port 3000
+
+Port 3000 is in use, trying another one...
+8:52:49 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+
+  VITE v8.0.8  ready in 228 ms
+
+  ➜  Local:   http://localhost:3001/
+  ➜  Network: http://172.20.0.23:3001/
+8:57:54 PM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/NewOrder.jsx, /src/pages/Orders.jsx, /src/pages/SearchPage.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/AdminPanel.jsx, /src/components/Sidebar.jsx, /src/components/OrderForm.jsx, /src/index.css
+8:57:55 PM [vite] (client) ✨ new dependencies optimized: @libsql/client/web
+8:57:55 PM [vite] (client) ✨ optimized dependencies changed. reloading
+8:57:58 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+8:57:58 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+8:57:58 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback node_modules/react/cjs/react.development.js:1204:33
+ > useStore node_modules/zustand/esm/react.mjs:8:10
+ > useBoundStore node_modules/zustand/esm/react.mjs:16:38
+ > AppWithDarkMode src/App.jsx?t=1776200274515:60:19
+ > Object.react_stack_bottom_frame node_modules/.vite/deps/react-dom_client.js?v=4a9eb344:12868:12
+ > renderWithHooks node_modules/.vite/deps/react-dom_client.js?v=4a9eb344:4213:19
+ > updateFunctionComponent node_modules/.vite/deps/react-dom_client.js?v=4a9eb344:5569:16
+ > beginWork node_modules/.vite/deps/react-dom_client.js?v=4a9eb344:6140:20
+ > runWithFiberInDEV node_modules/.vite/deps/react-dom_client.js?v=4a9eb344:851:66
+ > performUnitOfWork node_modules/.vite/deps/react-dom_client.js?v=4a9eb344:8429:92
+
+8:57:58 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+8:58:06 PM [vite] (client) hmr update /src/pages/TrackOrder.jsx, /src/index.css
+8:58:15 PM [vite] (client) hmr update /src/pages/TrackOrder.jsx, /src/index.css
+8:58:35 PM [vite] .env changed, restarting server...
+8:58:35 PM [vite] server restarted.
+8:59:15 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+8:59:15 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+8:59:15 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback ../../../node_modules/.vite/deps/react.js?v=be184711:701:30
+ > useStore ../../../node_modules/.vite/deps/zustand.js?v=a836f6ef:36:78
+ > useBoundStore ../../../node_modules/.vite/deps/zustand.js?v=a836f6ef:42:38
+ > AppWithDarkMode src/App.jsx:28:19
+    26 |  
+    27 |  function AppWithDarkMode({ children }) {
+    28 |    const darkMode = useStore((s) => s.darkMode)
+       |                     ^
+    29 |    const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+    30 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+
+8:59:15 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+8:59:29 PM [vite] .env changed, restarting server...
+8:59:29 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+8:59:30 PM [vite] server restarted.
+
+> app@1.0.0 dev
+> vite --host 0.0.0.0 --port 3000
+
+
+  VITE v8.0.8  ready in 216 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: http://172.20.0.23:3000/
+8:59:49 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+8:59:49 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+8:59:49 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback ../../../node_modules/.vite/deps/react.js?v=4b520a8a:701:30
+ > useStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:36:78
+ > useBoundStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:42:38
+ > AppWithDarkMode src/App.jsx:28:19
+    26 |  
+    27 |  function AppWithDarkMode({ children }) {
+    28 |    const darkMode = useStore((s) => s.darkMode)
+       |                     ^
+    29 |    const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+    30 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+
+8:59:49 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:00:15 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:00:15 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:00:15 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback ../../../node_modules/.vite/deps/react.js?v=4b520a8a:701:30
+ > useStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:36:78
+ > useBoundStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:42:38
+ > AppWithDarkMode src/App.jsx:28:19
+    26 |  
+    27 |  function AppWithDarkMode({ children }) {
+    28 |    const darkMode = useStore((s) => s.darkMode)
+       |                     ^
+    29 |    const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+    30 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+
+9:00:15 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:00:48 PM [vite] (client) [Unhandled error] TypeError: loadFromSupabase is not a function
+ > src/App.jsx:49:20
+    47 |  
+    48 |    useEffect(() => {
+    49 |      if (isLoggedIn) loadFromSupabase()
+       |                      ^
+    50 |    }, [isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
+    51 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25989:19
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > commitHookEffectListMount node_modules/react-dom/cjs/react-dom-client.development.js:13249:28
+ > commitHookPassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:13336:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15484:12
+ > recursivelyTraversePassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:15439:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15718:10
+ > recursivelyTraversePassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:15439:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15718:10
+
+9:00:48 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:02:20 PM [vite] (client) [Unhandled error] TypeError: loadFromSupabase is not a function
+ > src/App.jsx:45:20
+    43 |    // The second effect fires when isLoggedIn transitions false→true (covers fresh login).
+    44 |    useEffect(() => {
+    45 |      if (isLoggedIn) loadFromSupabase()
+       |                      ^
+    46 |    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    47 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25989:19
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > commitHookEffectListMount node_modules/react-dom/cjs/react-dom-client.development.js:13249:28
+ > commitHookPassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:13336:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15484:12
+ > recursivelyTraversePassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:15439:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15718:10
+ > recursivelyTraversePassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:15439:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15718:10
+
+9:02:20 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:02:20 PM [vite] (client) [Unhandled error] TypeError: loadFromSupabase is not a function
+ > src/App.jsx:45:20
+    43 |    // The second effect fires when isLoggedIn transitions false→true (covers fresh login).
+    44 |    useEffect(() => {
+    45 |      if (isLoggedIn) loadFromSupabase()
+       |                      ^
+    46 |    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    47 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25989:19
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > commitHookEffectListMount node_modules/react-dom/cjs/react-dom-client.development.js:13249:28
+ > commitHookPassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:13336:10
+ > reconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15832:10
+ > recursivelyTraverseReconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15784:8
+ > reconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15885:10
+ > recursivelyTraverseReconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15784:8
+ > reconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15885:10
+
+9:02:20 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:03:07 PM [vite] (client) [Unhandled error] TypeError: loadFromSupabase is not a function
+ > src/App.jsx:45:20
+    43 |    // The second effect fires when isLoggedIn transitions false→true (covers fresh login).
+    44 |    useEffect(() => {
+    45 |      if (isLoggedIn) loadFromSupabase()
+       |                      ^
+    46 |    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    47 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25989:19
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > commitHookEffectListMount node_modules/react-dom/cjs/react-dom-client.development.js:13249:28
+ > commitHookPassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:13336:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15484:12
+ > recursivelyTraversePassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:15439:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15718:10
+ > recursivelyTraversePassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:15439:10
+ > commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom-client.development.js:15718:10
+
+9:03:07 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:03:07 PM [vite] (client) [Unhandled error] TypeError: loadFromSupabase is not a function
+ > src/App.jsx:45:20
+    43 |    // The second effect fires when isLoggedIn transitions false→true (covers fresh login).
+    44 |    useEffect(() => {
+    45 |      if (isLoggedIn) loadFromSupabase()
+       |                      ^
+    46 |    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    47 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25989:19
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > commitHookEffectListMount node_modules/react-dom/cjs/react-dom-client.development.js:13249:28
+ > commitHookPassiveMountEffects node_modules/react-dom/cjs/react-dom-client.development.js:13336:10
+ > reconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15832:10
+ > recursivelyTraverseReconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15784:8
+ > reconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15885:10
+ > recursivelyTraverseReconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15784:8
+ > reconnectPassiveEffects node_modules/react-dom/cjs/react-dom-client.development.js:15885:10
+
+9:03:07 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:03:22 PM [vite] (client) hmr update /src/pages/TrackOrder.jsx, /src/index.css
+9:03:23 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:03:23 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:03:24 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback ../../../node_modules/.vite/deps/react.js?v=4b520a8a:701:30
+ > useStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:36:78
+ > useBoundStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:42:38
+ > AppWithDarkMode src/App.jsx:28:19
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+
+9:03:24 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:03:28 PM [vite] (client) hmr update /src/pages/OrderDetail.jsx, /src/index.css
+9:03:30 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:03:30 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:03:30 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback ../../../node_modules/.vite/deps/react.js?v=4b520a8a:701:30
+ > useStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:36:78
+ > useBoundStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:42:38
+ > AppWithDarkMode src/App.jsx:28:19
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+
+9:03:30 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:03:51 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+9:03:52 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:03:52 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:03:53 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback ../../../node_modules/.vite/deps/react.js?v=4b520a8a:701:30
+ > useStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:36:78
+ > useBoundStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:42:38
+ > AppWithDarkMode src/App.jsx:28:19
+    26 |  
+    27 |  function AppWithDarkMode({ children }) {
+    28 |    const darkMode = useStore((s) => s.darkMode)
+       |                     ^
+    29 |    const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+    30 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+
+9:03:53 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:04:28 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:04:28 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:04:28 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback ../../../node_modules/.vite/deps/react.js?v=4b520a8a:701:30
+ > useStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:36:78
+ > useBoundStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:42:38
+ > AppWithDarkMode src/App.jsx:28:19
+    26 |  
+    27 |  function AppWithDarkMode({ children }) {
+    28 |    const darkMode = useStore((s) => s.darkMode)
+       |                     ^
+    29 |    const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+    30 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+
+9:04:28 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:04:42 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:04:42 PM [vite] (client) [console.error] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+9:04:42 PM [vite] (client) [Unhandled error] TypeError: Cannot read properties of null (reading 'useCallback')
+ > exports.useCallback ../../../node_modules/.vite/deps/react.js?v=4b520a8a:701:30
+ > useStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:36:78
+ > useBoundStore ../../../node_modules/.vite/deps/zustand.js?v=264a82e7:42:38
+ > AppWithDarkMode src/App.jsx:28:19
+    26 |  
+    27 |  function AppWithDarkMode({ children }) {
+    28 |    const darkMode = useStore((s) => s.darkMode)
+       |                     ^
+    29 |    const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+    30 |  
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+
+9:04:42 PM [vite] (client) [console.warn] An error occurred in the <AppWithDarkMode> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+9:20:22 PM [vite] (client) hmr update /src/index.css, /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/NewOrder.jsx, /src/pages/Orders.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/AdminPanel.jsx, /src/components/Sidebar.jsx, /src/components/OrderForm.jsx
+9:20:49 PM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/NewOrder.jsx, /src/pages/Orders.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/AdminPanel.jsx, /src/components/Sidebar.jsx, /src/components/OrderForm.jsx, /src/index.css
+9:20:58 PM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/NewOrder.jsx, /src/pages/Orders.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/AdminPanel.jsx, /src/components/Sidebar.jsx, /src/components/OrderForm.jsx, /src/index.css

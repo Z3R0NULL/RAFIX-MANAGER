@@ -36,17 +36,16 @@ function AppWithDarkMode({ children }) {
     }
   }, [darkMode])
 
-  const loadFromSupabase = useStore((s) => s.loadFromSupabase)
+  const loadFromTurso = useStore((s) => s.loadFromTurso)
 
-  // On mount and whenever login state changes to true, fetch from Supabase.
-  // useEffect with [] fires on mount (covers page refresh with session already active).
-  // The second effect fires when isLoggedIn transitions false→true (covers fresh login).
+  // On mount: covers page refresh with session already persisted in localStorage.
+  // On isLoggedIn change: covers fresh login from the login page.
   useEffect(() => {
-    if (isLoggedIn) loadFromSupabase()
+    if (isLoggedIn) loadFromTurso()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (isLoggedIn) loadFromSupabase()
+    if (isLoggedIn) loadFromTurso()
   }, [isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return children

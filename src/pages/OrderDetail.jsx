@@ -269,8 +269,9 @@ export default function OrderDetail() {
               <Clock size={14} className="text-indigo-500" />
               <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Dates</h2>
             </div>
-            <InfoRow label="Entry Date" value={formatDate(order.entryDate)} />
-            <InfoRow label="Delivery Date" value={formatDate(order.deliveryDate)} />
+            <InfoRow label="Fecha de ingreso" value={formatDate(order.entryDate)} />
+            <InfoRow label="Entrega estimada" value={order.estimatedDelivery ? formatDateShort(order.estimatedDelivery) : '—'} />
+            <InfoRow label="Fecha de entrega real" value={formatDate(order.deliveryDate)} />
           </div>
 
           {/* Work Done */}
