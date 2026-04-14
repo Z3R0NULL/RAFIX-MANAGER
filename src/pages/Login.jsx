@@ -10,10 +10,10 @@ export default function Login() {
   const login = useStore((s) => s.login)
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    const ok = login(form.username, form.password)
+    const ok = await login(form.username, form.password)
     if (ok) {
       navigate('/')
     } else {

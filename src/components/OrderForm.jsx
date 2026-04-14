@@ -204,7 +204,12 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     workDone: '',
     status: 'pending',
     statusNote: '',
+    estimatedDelivery: '',
     ...initialData,
+    // Normalize ISO date to date input value (yyyy-mm-dd)
+    estimatedDelivery: initialData?.estimatedDelivery
+      ? initialData.estimatedDelivery.slice(0, 10)
+      : '',
   }))
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
@@ -482,6 +487,17 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
           <Field label="Nota del cambio">
             <input className={inputClass} value={form.statusNote} onChange={(e) => set('statusNote', e.target.value)} placeholder="Nota opcional..." />
           </Field>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+              Fecha estimada de entrega
+            </label>
+            <input
+              className={inputClass}
+              type="date"
+              value={form.estimatedDelivery}
+              onChange={(e) => set('estimatedDelivery', e.target.value)}
+            />
+          </div>
         </div>
       </div>
 

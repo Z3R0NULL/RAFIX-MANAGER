@@ -9,6 +9,7 @@ import NewOrder from './pages/NewOrder'
 import OrderDetail from './pages/OrderDetail'
 import TrackOrder from './pages/TrackOrder'
 import SearchPage from './pages/SearchPage'
+import AdminPanel from './pages/AdminPanel'
 
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
@@ -16,9 +17,15 @@ function PrivateRoute({ children }) {
   return children
 }
 
+function SuperAdminRoute({ children }) {
+  const auth = useStore((s) => s.auth)
+  if (!auth.isLoggedIn) return <Navigate to="/login" replace />
+  if (auth.role !== 'superadmin') return <Navigate to="/" replace />
+  return children
+}
+
 function AppWithDarkMode({ children }) {
   const darkMode = useStore((s) => s.darkMode)
-  const orders = useStore((s) => s.orders)
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
 
   useEffect(() => {
@@ -29,21 +36,17 @@ function AppWithDarkMode({ children }) {
     }
   }, [darkMode])
 
-  // When admin logs in, push any local-only orders to Supabase
+  const loadFromSupabase = useStore((s) => s.loadFromSupabase)
+
+  // On mount and whenever login state changes to true, fetch from Supabase.
+  // useEffect with [] fires on mount (covers page refresh with session already active).
+  // The second effect fires when isLoggedIn transitions false→true (covers fresh login).
   useEffect(() => {
-    if (!isLoggedIn || !orders.length) return
-    import('./lib/supabase').then(({ supabase, isSupabaseConfigured }) => {
-      if (!isSupabaseConfigured) return
-      const rows = orders.map((o) => ({
-        id: o.id,
-        order_number: o.orderNumber,
-        data: o,
-        updated_at: new Date().toISOString(),
-      }))
-      supabase.from('orders').upsert(rows).then(({ error }) => {
-        if (error) console.warn('[Supabase] bulk sync failed:', error)
-      })
-    })
+    if (isLoggedIn) loadFromSupabase()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (isLoggedIn) loadFromSupabase()
   }, [isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return children
@@ -108,6 +111,17 @@ export default function App() {
                   <SearchPage />
                 </Layout>
               </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <SuperAdminRoute>
+                <Layout>
+                  <AdminPanel />
+                </Layout>
+              </SuperAdminRoute>
             }
           />
 
