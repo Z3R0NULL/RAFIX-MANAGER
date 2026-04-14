@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 const generateOrderNumber = () => {
   const prefix = 'ORD'
@@ -49,6 +50,31 @@ const initialOrder = {
   status: 'pending',
 }
 
+// Sync a single order to Supabase (upsert)
+async function syncToSupabase(order) {
+  if (!isSupabaseConfigured) return
+  try {
+    await supabase.from('orders').upsert({
+      id: order.id,
+      order_number: order.orderNumber,
+      data: order,
+      updated_at: new Date().toISOString(),
+    })
+  } catch (e) {
+    console.warn('[Supabase] sync failed:', e)
+  }
+}
+
+// Delete an order from Supabase
+async function deleteFromSupabase(id) {
+  if (!isSupabaseConfigured) return
+  try {
+    await supabase.from('orders').delete().eq('id', id)
+  } catch (e) {
+    console.warn('[Supabase] delete failed:', e)
+  }
+}
+
 export const useStore = create(
   persist(
     (set, get) => ({
@@ -89,6 +115,7 @@ export const useStore = create(
           ],
         }
         set((s) => ({ orders: [order, ...s.orders] }))
+        syncToSupabase(order)
         return order
       },
 
@@ -111,6 +138,7 @@ export const useStore = create(
                 updated.deliveryDate = new Date().toISOString()
               }
             }
+            syncToSupabase(updated)
             return updated
           }),
         }))
@@ -118,6 +146,7 @@ export const useStore = create(
 
       deleteOrder: (id) => {
         set((s) => ({ orders: s.orders.filter((o) => o.id !== id) }))
+        deleteFromSupabase(id)
       },
 
       getOrder: (id) => {

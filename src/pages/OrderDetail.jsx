@@ -46,9 +46,12 @@ export default function OrderDetail() {
     setEditing(false)
   }
 
+  const buildTrackingUrl = () => {
+    return `${window.location.origin}/track/${order.orderNumber}`
+  }
+
   const copyTrackingLink = () => {
-    const url = `${window.location.origin}/track/${order.orderNumber}`
-    navigator.clipboard.writeText(url)
+    navigator.clipboard.writeText(buildTrackingUrl())
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -104,14 +107,13 @@ export default function OrderDetail() {
             {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
             {copied ? 'Copied!' : 'Share Link'}
           </button>
-          <Link
-            to={`/track/${order.orderNumber}`}
-            target="_blank"
+          <button
+            onClick={() => window.open(buildTrackingUrl(), '_blank')}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <ExternalLink size={14} />
             Track Page
-          </Link>
+          </button>
           <button
             onClick={() => generateInvoicePDF(order)}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
