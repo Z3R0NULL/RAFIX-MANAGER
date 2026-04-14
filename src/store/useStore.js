@@ -94,14 +94,15 @@ async function syncClientToTurso(client) {
   if (!isTursoConfigured) return
   try {
     await turso.execute({
-      sql: `INSERT INTO clients (id, name, phone, email, dni, address, data, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      sql: `INSERT INTO clients (id, name, phone, email, dni, address, created_by, data, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
               name       = excluded.name,
               phone      = excluded.phone,
               email      = excluded.email,
               dni        = excluded.dni,
               address    = excluded.address,
+              created_by = excluded.created_by,
               data       = excluded.data,
               updated_at = excluded.updated_at`,
       args: [
@@ -111,6 +112,7 @@ async function syncClientToTurso(client) {
         client.email || '',
         client.dni || '',
         client.address || '',
+        client.createdBy || 'admin',
         JSON.stringify(client),
         new Date().toISOString(),
       ],
@@ -135,9 +137,13 @@ export async function fetchAllFromTurso({ username, role } = {}) {
           args: [username],
         })
 
-    const clientsRes = await turso.execute(
-      'SELECT data FROM clients ORDER BY updated_at DESC'
-    )
+    // superadmin sees all clients; other users only see their own
+    const clientsRes = isSuperAdmin
+      ? await turso.execute('SELECT data FROM clients ORDER BY updated_at DESC')
+      : await turso.execute({
+          sql: 'SELECT data FROM clients WHERE created_by = ? ORDER BY updated_at DESC',
+          args: [username],
+        })
 
     const orders = ordersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const clients = clientsRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
@@ -190,7 +196,7 @@ export const useStore = create(
                 ],
               })
               set({ auth: { isLoggedIn: true, username, role: userRow.role } })
-              const result = await fetchAllFromTurso()
+              const result = await fetchAllFromTurso({ username, role: userRow.role })
               if (result) set({ orders: result.orders, clients: result.clients })
               return true
             }
@@ -221,7 +227,7 @@ export const useStore = create(
             }
           }
           set({ auth: { isLoggedIn: true, username, role: 'superadmin' } })
-          const result = await fetchAllFromTurso()
+          const result = await fetchAllFromTurso({ username, role: 'superadmin' })
           if (result) set({ orders: result.orders, clients: result.clients })
           return true
         }
@@ -232,7 +238,8 @@ export const useStore = create(
       logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [] }),
 
       loadFromTurso: async () => {
-        const result = await fetchAllFromTurso()
+        const { auth } = get()
+        const result = await fetchAllFromTurso({ username: auth?.username, role: auth?.role })
         if (result) set({ orders: result.orders, clients: result.clients })
       },
 
@@ -350,14 +357,17 @@ export const useStore = create(
 
       // ── Clients ────────────────────────────────────────────────────
       upsertClient: (data) => {
-        const { clients } = get()
+        const { clients, auth } = get()
+        const currentUser = auth?.username || 'admin'
+        // Only match against THIS user's clients to avoid cross-user conflicts
         const existing = clients.find(
           (c) =>
-            (data.dni && c.dni && c.dni === data.dni) ||
-            (data.phone && c.phone && c.phone === data.phone)
+            c.createdBy === currentUser &&
+            ((data.dni && c.dni && c.dni === data.dni) ||
+              (data.phone && c.phone && c.phone === data.phone))
         )
         if (existing) {
-          const updated = { ...existing, ...data, updatedAt: new Date().toISOString() }
+          const updated = { ...existing, ...data, createdBy: currentUser, updatedAt: new Date().toISOString() }
           set((s) => ({ clients: s.clients.map((c) => (c.id === existing.id ? updated : c)) }))
           syncClientToTurso(updated)
           return updated
@@ -365,6 +375,7 @@ export const useStore = create(
         const client = {
           ...data,
           id: `CLT-${Date.now()}`,
+          createdBy: currentUser,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
@@ -406,11 +417,13 @@ export const useStore = create(
           })
         }
 
+        const { auth } = get()
         const order = {
           ...initialOrder,
           ...data,
           id: Date.now().toString(),
           orderNumber: generateOrderNumber(),
+          createdBy: data.createdBy || auth?.username || 'admin',
           entryDate: new Date().toISOString(),
           deliveryDate: null,
           statusHistory: [

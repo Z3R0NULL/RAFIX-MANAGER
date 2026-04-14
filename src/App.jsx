@@ -10,6 +10,7 @@ import OrderDetail from './pages/OrderDetail'
 import TrackOrder from './pages/TrackOrder'
 import SearchPage from './pages/SearchPage'
 import AdminPanel from './pages/AdminPanel'
+import AdminDashboard from './pages/AdminDashboard'
 
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
@@ -27,6 +28,8 @@ function SuperAdminRoute({ children }) {
 function AppWithDarkMode({ children }) {
   const darkMode = useStore((s) => s.darkMode)
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+  const _hydrated = useStore((s) => s._hydrated)
+  const loadFromTurso = useStore((s) => s.loadFromTurso)
 
   useEffect(() => {
     if (darkMode) {
@@ -36,17 +39,11 @@ function AppWithDarkMode({ children }) {
     }
   }, [darkMode])
 
-  const loadFromTurso = useStore((s) => s.loadFromTurso)
-
-  // On mount: covers page refresh with session already persisted in localStorage.
-  // On isLoggedIn change: covers fresh login from the login page.
+  // Wait for Zustand to rehydrate from localStorage before loading,
+  // so auth.username/role are available when fetchAllFromTurso is called.
   useEffect(() => {
-    if (isLoggedIn) loadFromTurso()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (isLoggedIn) loadFromTurso()
-  }, [isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (_hydrated && isLoggedIn) loadFromTurso()
+  }, [_hydrated, isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return children
 }
@@ -119,6 +116,16 @@ export default function App() {
               <SuperAdminRoute>
                 <Layout>
                   <AdminPanel />
+                </Layout>
+              </SuperAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <SuperAdminRoute>
+                <Layout>
+                  <AdminDashboard />
                 </Layout>
               </SuperAdminRoute>
             }

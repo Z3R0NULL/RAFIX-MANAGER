@@ -31,6 +31,7 @@ export async function initDb() {
       email TEXT,
       dni TEXT,
       address TEXT,
+      created_by TEXT NOT NULL DEFAULT 'admin',
       data TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`,
@@ -53,10 +54,12 @@ export async function initDb() {
     )`,
   ], 'write')
 
-  // Migrate existing tables: add created_by if it doesn't exist yet
-  try {
-    await turso.execute(`ALTER TABLE orders ADD COLUMN created_by TEXT NOT NULL DEFAULT 'admin'`)
-  } catch {
-    // Column already exists — safe to ignore
+  // Migrate existing tables — safe to run every time (errors = column already exists)
+  const migrations = [
+    `ALTER TABLE orders ADD COLUMN created_by TEXT NOT NULL DEFAULT 'admin'`,
+    `ALTER TABLE clients ADD COLUMN created_by TEXT NOT NULL DEFAULT 'admin'`,
+  ]
+  for (const sql of migrations) {
+    try { await turso.execute(sql) } catch { /* already exists */ }
   }
 }

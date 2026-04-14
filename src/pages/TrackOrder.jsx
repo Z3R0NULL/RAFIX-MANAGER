@@ -1,10 +1,39 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Wrench, Search, Clock, DollarSign, MessageCircle, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import {
+  Wrench, Search, Clock, DollarSign, MessageCircle, Loader2,
+  AlertCircle, RefreshCw, Smartphone, Package, CheckCircle2,
+  XCircle, Info, User, Calendar, Tag, ShieldCheck,
+} from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured } from '../lib/turso'
 import { StatusBadge } from '../components/StatusBadge'
-import { formatDate, formatDateShort, formatCurrency, STATUS_CONFIG } from '../utils/constants'
+import {
+  formatDate, formatDateShort, formatCurrency, STATUS_CONFIG,
+  BUDGET_STATUS_CONFIG, DEVICE_TYPES,
+} from '../utils/constants'
+
+function InfoRow({ label, value, mono }) {
+  if (!value && value !== 0) return null
+  return (
+    <div className="flex justify-between items-start gap-4 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
+      <span className="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">{label}</span>
+      <span className={`text-xs text-right font-medium text-slate-700 dark:text-slate-300 ${mono ? 'font-mono' : ''}`}>{value}</span>
+    </div>
+  )
+}
+
+function CheckItem({ label, value }) {
+  if (value === null || value === undefined) return null
+  return (
+    <div className="flex items-center gap-2">
+      {value
+        ? <CheckCircle2 size={13} className="text-green-500 flex-shrink-0" />
+        : <XCircle size={13} className="text-red-400 flex-shrink-0" />}
+      <span className="text-xs text-slate-600 dark:text-slate-400">{label}</span>
+    </div>
+  )
+}
 
 export default function TrackOrder() {
   const { orderNumber: paramOrderNumber } = useParams()
@@ -25,7 +54,6 @@ export default function TrackOrder() {
 
     const normalized = num.trim().toUpperCase()
 
-    // 1. Try Turso first (live, cross-device — works for all clients)
     if (isTursoConfigured) {
       try {
         const res = await turso.execute({
@@ -44,7 +72,6 @@ export default function TrackOrder() {
       }
     }
 
-    // 2. Fallback: local store (same browser/device as admin, works offline)
     const localOrder = getOrderByNumber(normalized)
     if (localOrder) {
       setOrder(localOrder)
@@ -57,11 +84,8 @@ export default function TrackOrder() {
     setLoading(false)
   }, [getOrderByNumber])
 
-  // Auto-search if order number is in URL
   useEffect(() => {
-    if (paramOrderNumber) {
-      fetchOrder(paramOrderNumber)
-    }
+    if (paramOrderNumber) fetchOrder(paramOrderNumber)
   }, [paramOrderNumber, fetchOrder])
 
   const handleSearch = (e) => {
@@ -81,6 +105,8 @@ export default function TrackOrder() {
     )
     window.open(`https://wa.me/?text=${msg}`, '_blank')
   }
+
+  const deviceTypeLabel = DEVICE_TYPES.find((d) => d.value === order?.deviceType)?.label || order?.deviceType
 
   const isSearchMode = !paramOrderNumber
 
@@ -113,7 +139,7 @@ export default function TrackOrder() {
 
       <div className="max-w-3xl mx-auto px-4 py-10">
 
-        {/* Search form (always visible when no param or as secondary) */}
+        {/* Search form */}
         {isSearchMode && (
           <>
             <div className="text-center mb-8">
@@ -167,6 +193,7 @@ export default function TrackOrder() {
         {/* Order found */}
         {order && !loading && (
           <div className="space-y-4">
+
             {/* Welcome banner */}
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800/50 px-5 py-4 flex items-start justify-between gap-4">
               <div>
@@ -184,22 +211,24 @@ export default function TrackOrder() {
               )}
             </div>
 
-            {/* Order card */}
+            {/* Header card — order number + status */}
             <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-5">
                 <div>
-                  <p className="font-mono text-sm font-bold text-slate-900 dark:text-white">{order.orderNumber}</p>
+                  <p className="font-mono text-base font-bold text-slate-900 dark:text-white">{order.orderNumber}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {order.deviceBrand} {order.deviceModel}
+                    {deviceTypeLabel} — {order.deviceBrand} {order.deviceModel}
+                    {order.deviceSerial ? ` · S/N ${order.deviceSerial}` : ''}
                   </p>
                 </div>
                 <StatusBadge status={order.status} />
               </div>
 
-              <div className="grid sm:grid-cols-3 gap-4 mb-4">
+              {/* Key dates + price */}
+              <div className="grid sm:grid-cols-3 gap-4 mb-5">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
-                    <Clock size={14} className="text-slate-500" />
+                    <Calendar size={14} className="text-slate-500" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-400">Fecha de ingreso</p>
@@ -212,7 +241,9 @@ export default function TrackOrder() {
                   </div>
                   <div>
                     <p className="text-xs text-slate-400">Entrega estimada</p>
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{formatDateShort(order.deliveryDate) || 'A confirmar'}</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      {order.estimatedDelivery ? formatDateShort(order.estimatedDelivery) : 'A confirmar'}
+                    </p>
                   </div>
                 </div>
                 {(order.finalPrice || order.estimatedPrice) && (
@@ -232,6 +263,7 @@ export default function TrackOrder() {
                 )}
               </div>
 
+              {/* Issue & technician notes */}
               {order.reportedIssue && (
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3.5 mb-3">
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Problema reportado</p>
@@ -240,22 +272,110 @@ export default function TrackOrder() {
               )}
 
               {order.technicianNotes && (
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-3.5">
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-3.5 mb-3">
                   <p className="text-xs font-medium text-indigo-700 dark:text-indigo-400 mb-1">Notas del técnico</p>
                   <p className="text-sm text-slate-700 dark:text-slate-300">{order.technicianNotes}</p>
                 </div>
               )}
 
+              {order.workDone && (
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3.5 mb-3">
+                  <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Trabajo realizado</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">{order.workDone}</p>
+                </div>
+              )}
+
+              {/* Budget status badge */}
+              {order.budgetStatus && order.budgetStatus !== 'pending' && (
+                <div className="flex items-center gap-2 mb-3">
+                  <ShieldCheck size={13} className="text-slate-400" />
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Presupuesto:</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${BUDGET_STATUS_CONFIG[order.budgetStatus]?.color}`}>
+                    {BUDGET_STATUS_CONFIG[order.budgetStatus]?.label}
+                  </span>
+                </div>
+              )}
+
+              {/* WhatsApp button */}
               {order.customerPhone && (
                 <button
                   onClick={openWhatsApp}
-                  className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-colors w-full justify-center"
+                  className="mt-2 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-colors w-full justify-center"
                 >
                   <MessageCircle size={15} />
-                  Contactar por WhatsApp
+                  Consultar por WhatsApp
                 </button>
               )}
             </div>
+
+            {/* Device details */}
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Smartphone size={15} className="text-slate-400" />
+                <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Detalles del Equipo</h2>
+              </div>
+              <div>
+                <InfoRow label="Tipo" value={deviceTypeLabel} />
+                <InfoRow label="Marca" value={order.deviceBrand} />
+                <InfoRow label="Modelo" value={order.deviceModel} />
+                <InfoRow label="N° de serie" value={order.deviceSerial} mono />
+                {order.accessories?.length > 0 && (
+                  <InfoRow label="Accesorios incluidos" value={order.accessories.join(', ')} />
+                )}
+              </div>
+
+              {/* Device condition checks */}
+              {(order.powersOn !== null || order.charges !== null || order.screenWorks !== null ||
+                order.touchWorks !== null || order.audioWorks !== null || order.buttonsWork !== null ||
+                order.waterDamage || order.physicalDamage || order.previouslyOpened) && (
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">Estado al ingreso</p>
+                  <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                    <CheckItem label="Enciende" value={order.powersOn} />
+                    <CheckItem label="Carga" value={order.charges} />
+                    <CheckItem label="Pantalla funciona" value={order.screenWorks} />
+                    <CheckItem label="Touch funciona" value={order.touchWorks} />
+                    <CheckItem label="Audio funciona" value={order.audioWorks} />
+                    <CheckItem label="Botones funcionan" value={order.buttonsWork} />
+                    {order.waterDamage && (
+                      <div className="flex items-center gap-2 col-span-2">
+                        <Info size={13} className="text-amber-500 flex-shrink-0" />
+                        <span className="text-xs text-amber-600 dark:text-amber-400">Daño por líquido</span>
+                      </div>
+                    )}
+                    {order.physicalDamage && (
+                      <div className="flex items-center gap-2 col-span-2">
+                        <Info size={13} className="text-amber-500 flex-shrink-0" />
+                        <span className="text-xs text-amber-600 dark:text-amber-400">Daño físico visible</span>
+                      </div>
+                    )}
+                    {order.previouslyOpened && (
+                      <div className="flex items-center gap-2 col-span-2">
+                        <Info size={13} className="text-slate-400 flex-shrink-0" />
+                        <span className="text-xs text-slate-500 dark:text-slate-400">Equipo abierto previamente</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Pricing breakdown — repairCost is internal, never shown to client */}
+            {(order.estimatedPrice || order.finalPrice) && (
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Tag size={15} className="text-slate-400" />
+                  <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Presupuesto</h2>
+                </div>
+                <InfoRow label="Precio estimado" value={order.estimatedPrice ? formatCurrency(order.estimatedPrice) : null} />
+                {order.finalPrice && (
+                  <div className="flex justify-between items-center pt-2 mt-1 border-t border-slate-100 dark:border-slate-800">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Precio final</span>
+                    <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(order.finalPrice)}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Status timeline */}
             <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
@@ -313,7 +433,7 @@ export default function TrackOrder() {
               </div>
             </div>
 
-            {/* Search another order link */}
+            {/* Search another order */}
             <div className="text-center">
               <button
                 onClick={() => navigate('/track')}

@@ -10,6 +10,7 @@ import {
   Sun,
   Search,
   ShieldCheck,
+  Globe,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
@@ -72,6 +73,20 @@ export default function Sidebar({ onClose }) {
             Administración
           </p>
           <NavLink
+            to="/admin/dashboard"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
+              }`
+            }
+          >
+            <Globe size={16} />
+            Panel Global
+          </NavLink>
+          <NavLink
             to="/admin"
             onClick={onClose}
             className={({ isActive }) =>
@@ -83,7 +98,7 @@ export default function Sidebar({ onClose }) {
             }
           >
             <ShieldCheck size={16} />
-            Panel de Admin
+            Usuarios
           </NavLink>
         </div>
       )}
