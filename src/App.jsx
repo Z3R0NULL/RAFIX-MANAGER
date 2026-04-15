@@ -9,6 +9,9 @@ import NewOrder from './pages/NewOrder'
 import OrderDetail from './pages/OrderDetail'
 import TrackOrder from './pages/TrackOrder'
 import SearchPage from './pages/SearchPage'
+import DevicesPage from './pages/DevicesPage'
+import DeviceModelDetail from './pages/DeviceModelDetail'
+import FinancePage from './pages/FinancePage'
 import AdminPanel from './pages/AdminPanel'
 import AdminDashboard from './pages/AdminDashboard'
 import Clients from './pages/Clients'
@@ -111,11 +114,41 @@ export default function App() {
             }
           />
           <Route
+            path="/devices"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <DevicesPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/devices/:slug"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <DeviceModelDetail />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/clients"
             element={
               <PrivateRoute>
                 <Layout>
                   <Clients />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/finance"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <FinancePage />
                 </Layout>
               </PrivateRoute>
             }

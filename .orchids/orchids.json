@@ -2,7 +2,7 @@
   "startupCommands": [
     "npm install; npm run dev"
   ],
-  "projectId": "b0c7abb2-6121-4e8b-9bc3-97d9e8ce2765",
+  "projectId": "e511f78d-d8bd-474a-9349-02ebd1bfc774",
   "templateId": "any",
   "detectedFramework": "vite"
 }

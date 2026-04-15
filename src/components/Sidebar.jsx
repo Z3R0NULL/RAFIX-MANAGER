@@ -7,10 +7,11 @@ import {
   Wrench,
   Moon,
   Sun,
-  Search,
+  Smartphone,
   ShieldCheck,
   Globe,
   Users,
+  BarChart2,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
@@ -18,7 +19,8 @@ const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/orders', label: 'Orders', icon: ClipboardList, end: true },
   { to: '/clients', label: 'Clients', icon: Users },
-  { to: '/search', label: 'Search', icon: Search },
+  { to: '/devices', label: 'Devices', icon: Smartphone },
+  { to: '/finance', label: 'Finanzas', icon: BarChart2 },
 ]
 
 export default function Sidebar({ onClose }) {

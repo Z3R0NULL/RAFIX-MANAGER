@@ -70,6 +70,7 @@ const TriState = ({ label, value, onChange }) => (
 function AutocompleteInput({ value, onChange, suggestions, placeholder, className, required }) {
   const [open, setOpen] = useState(false)
   const [filtered, setFiltered] = useState([])
+  const [focused, setFocused] = useState(false)
   const wrapRef = useRef(null)
 
   useEffect(() => {
@@ -77,8 +78,8 @@ function AutocompleteInput({ value, onChange, suggestions, placeholder, classNam
     const q = value.toLowerCase()
     const matches = suggestions.filter((s) => s.toLowerCase().includes(q)).slice(0, 8)
     setFiltered(matches)
-    setOpen(matches.length > 0)
-  }, [value, suggestions])
+    setOpen(focused && matches.length > 0)
+  }, [value, suggestions, focused])
 
   useEffect(() => {
     const handler = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false) }
@@ -95,7 +96,8 @@ function AutocompleteInput({ value, onChange, suggestions, placeholder, classNam
         placeholder={placeholder}
         required={required}
         autoComplete="off"
-        onFocus={() => filtered.length > 0 && setOpen(true)}
+        onFocus={() => { setFocused(true); filtered.length > 0 && setOpen(true) }}
+        onBlur={() => setFocused(false)}
       />
       {open && (
         <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-52 overflow-y-auto">

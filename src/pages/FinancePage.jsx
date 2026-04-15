@@ -1,0 +1,508 @@
+import React, { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  TrendingUp, TrendingDown, DollarSign, Percent,
+  Calendar, ChevronRight, ArrowUpRight, ArrowDownRight,
+  Clock, Info,
+} from 'lucide-react'
+import { useStore } from '../store/useStore'
+import { formatCurrency, formatDateShort, STATUS_CONFIG } from '../utils/constants'
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+const n = (v) => { const p = parseFloat(v); return isNaN(p) ? 0 : p }
+
+// Una orden cuenta financieramente SOLO si fue entregada al cliente (status = 'delivered').
+// Ese estado equivale a "completada Y entregada" en este sistema.
+const isDelivered = (o) => o.status === 'delivered'
+
+// Órdenes completadas pero pendientes de entrega (ingreso potencial, no realizado)
+const isCompleted = (o) => o.status === 'completed'
+
+function getYear(iso)  { return iso ? new Date(iso).getFullYear() : null }
+function getMonth(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+function getDay(iso) { return iso ? iso.slice(0, 10) : null }
+
+// Para agrupar por fecha usamos deliveryDate en órdenes delivered
+function getPeriodDate(o, period) {
+  const ref = o.deliveryDate || o.entryDate
+  if (period === 'daily')   return getDay(ref)
+  if (period === 'monthly') return getMonth(ref)
+  return getYear(ref)
+}
+
+function formatPeriodLabel(key, period) {
+  const MONTHS_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+  const MONTHS_LONG  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  if (period === 'monthly') {
+    const [yr, mo] = String(key).split('-')
+    return { short: MONTHS_SHORT[parseInt(mo, 10) - 1] || mo, long: `${MONTHS_LONG[parseInt(mo, 10) - 1]} ${yr}` }
+  }
+  if (period === 'daily') {
+    const dt = new Date(`${key}T00:00`)
+    return {
+      short: `${dt.getDate()}/${dt.getMonth() + 1}`,
+      long: dt.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+    }
+  }
+  return { short: String(key), long: String(key) }
+}
+
+const PERIOD_LABELS = { daily: 'Diario', monthly: 'Mensual', annual: 'Anual' }
+
+// ── bar chart (pure CSS) ──────────────────────────────────────────────────────
+function BarChart({ data }) {
+  if (!data.length) return null
+  const safeMax = Math.max(...data.map((d) => Math.max(d.income, d.expense)), 1)
+
+  return (
+    <div className="flex items-end gap-1 h-36 w-full">
+      {data.map((d, i) => {
+        const incPct = Math.round((d.income  / safeMax) * 100)
+        const expPct = Math.round((d.expense / safeMax) * 100)
+        return (
+          <div key={i} className="flex-1 flex flex-col items-center gap-0.5 group relative min-w-0">
+            {/* Tooltip */}
+            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
+              <div className="bg-slate-800 dark:bg-slate-700 text-white text-[10px] rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-xl">
+                <p className="font-semibold mb-0.5">{d.label}</p>
+                <p className="text-emerald-300">↑ {formatCurrency(d.income)}</p>
+                <p className="text-rose-300">↓ {formatCurrency(d.expense)}</p>
+                <p className="text-slate-300 border-t border-slate-600 mt-0.5 pt-0.5">= {formatCurrency(d.income - d.expense)}</p>
+              </div>
+              <div className="w-2 h-2 bg-slate-800 dark:bg-slate-700 rotate-45 -mt-1" />
+            </div>
+            {/* Bars */}
+            <div className="flex items-end gap-0.5 w-full h-32">
+              <div
+                className="flex-1 rounded-t-sm bg-emerald-400 dark:bg-emerald-500 transition-all duration-300"
+                style={{ height: `${incPct}%`, minHeight: incPct > 0 ? 2 : 0 }}
+              />
+              <div
+                className="flex-1 rounded-t-sm bg-rose-400 dark:bg-rose-500 transition-all duration-300"
+                style={{ height: `${expPct}%`, minHeight: expPct > 0 ? 2 : 0 }}
+              />
+            </div>
+            <span className="text-[9px] text-slate-400 truncate w-full text-center leading-none">{d.shortLabel}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── main page ─────────────────────────────────────────────────────────────────
+
+export default function FinancePage() {
+  const orders = useStore((s) => s.orders)
+  const [period, setPeriod] = useState('monthly')
+
+  // ── Partición de órdenes ──────────────────────────────────────────────────
+  // Contabilizadas: solo las ENTREGADAS (status = 'delivered')
+  // Pendientes:     completadas pero aún no entregadas
+  const { billed, pending: pendingOrders } = useMemo(() => {
+    const billed  = []
+    const pending = []
+    for (const o of orders) {
+      if (isDelivered(o)) {
+        billed.push({
+          ...o,
+          _income:  n(o.finalPrice) || n(o.estimatedPrice),
+          _expense: n(o.repairCost),
+        })
+      } else if (isCompleted(o)) {
+        pending.push({
+          ...o,
+          _income:  n(o.finalPrice) || n(o.estimatedPrice),
+          _expense: n(o.repairCost),
+        })
+      }
+    }
+    return { billed, pending }
+  }, [orders])
+
+  // ── Global summary (solo billed) ──────────────────────────────────────────
+  const global = useMemo(() => {
+    const income  = billed.reduce((s, o) => s + o._income,  0)
+    const expense = billed.reduce((s, o) => s + o._expense, 0)
+    const profit  = income - expense
+    const margin  = income > 0 ? (profit / income) * 100 : 0
+    const pendingIncome = pendingOrders.reduce((s, o) => s + o._income, 0)
+    return { income, expense, profit, margin, pendingIncome }
+  }, [billed, pendingOrders])
+
+  // ── Period grouping (agrupado por deliveryDate) ───────────────────────────
+  const periodData = useMemo(() => {
+    const map = {}
+    for (const o of billed) {
+      const key = getPeriodDate(o, period)
+      if (!key) continue
+      if (!map[key]) map[key] = { key, income: 0, expense: 0, orders: [] }
+      map[key].income  += o._income
+      map[key].expense += o._expense
+      map[key].orders.push(o)
+    }
+    return Object.values(map).sort((a, b) => (String(a.key) > String(b.key) ? 1 : -1))
+  }, [billed, period])
+
+  // ── Chart data (last N periods) ───────────────────────────────────────────
+  const chartData = useMemo(() => {
+    const sliced = period === 'daily'
+      ? periodData.slice(-30)
+      : period === 'monthly'
+        ? periodData.slice(-12)
+        : periodData
+
+    return sliced.map((d) => {
+      const { short, long } = formatPeriodLabel(d.key, period)
+      return { ...d, shortLabel: short, label: long }
+    })
+  }, [periodData, period])
+
+  // ── Current vs previous period ────────────────────────────────────────────
+  const currentPeriod = chartData[chartData.length - 1]
+  const prevPeriod    = chartData[chartData.length - 2]
+
+  function pctDelta(curr, prev, field) {
+    if (!curr || !prev || prev[field] === 0) return null
+    return ((curr[field] - prev[field]) / prev[field]) * 100
+  }
+
+  // ── Top orders by income ──────────────────────────────────────────────────
+  const topOrders = useMemo(() => {
+    return [...billed]
+      .filter((o) => o._income > 0)
+      .sort((a, b) => b._income - a._income)
+      .slice(0, 8)
+  }, [billed])
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Finanzas</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            Solo órdenes <span className="font-medium text-purple-600 dark:text-purple-400">entregadas</span> al cliente
+          </p>
+        </div>
+        {/* Period selector */}
+        <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden text-sm bg-white dark:bg-slate-900 shadow-sm">
+          {['daily', 'monthly', 'annual'].map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-4 py-2 font-medium transition-colors ${
+                period === p
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+              }`}
+            >
+              {PERIOD_LABELS[p]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Criterio visible ── */}
+      <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 text-xs text-indigo-700 dark:text-indigo-300">
+        <Info size={14} className="flex-shrink-0 mt-0.5" />
+        <span>
+          Los ingresos y gastos se calculan <strong>únicamente</strong> sobre órdenes con estado{' '}
+          <strong>Entregado</strong>. Órdenes canceladas, sin reparación o en proceso no se contabilizan.
+          {global.pendingIncome > 0 && (
+            <> Hay <strong>{formatCurrency(global.pendingIncome)}</strong> en órdenes completadas aún no entregadas.</>
+          )}
+        </span>
+      </div>
+
+      {/* ── KPI cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KpiCard
+          label="Ingresos realizados"
+          value={formatCurrency(global.income)}
+          icon={TrendingUp}
+          iconColor="text-emerald-500"
+          bg="bg-emerald-50 dark:bg-emerald-900/20"
+          delta={pctDelta(currentPeriod, prevPeriod, 'income')}
+          subtitle={`${billed.length} órdenes entregadas`}
+        />
+        <KpiCard
+          label="Costos de reparación"
+          value={formatCurrency(global.expense)}
+          icon={TrendingDown}
+          iconColor="text-rose-500"
+          bg="bg-rose-50 dark:bg-rose-900/20"
+          delta={pctDelta(currentPeriod, prevPeriod, 'expense')}
+          deltaInverted
+          subtitle="Solo órdenes entregadas"
+        />
+        <KpiCard
+          label="Ganancia neta"
+          value={formatCurrency(global.profit)}
+          icon={DollarSign}
+          iconColor={global.profit >= 0 ? 'text-indigo-500' : 'text-red-500'}
+          bg={global.profit >= 0 ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-red-50 dark:bg-red-900/20'}
+          subtitle="Ingresos − Costos"
+        />
+        <KpiCard
+          label="Margen de ganancia"
+          value={`${global.margin.toFixed(1)}%`}
+          icon={Percent}
+          iconColor="text-violet-500"
+          bg="bg-violet-50 dark:bg-violet-900/20"
+          subtitle="Sobre ingresos realizados"
+        />
+      </div>
+
+      {/* ── Ingreso pendiente (completadas no entregadas) ── */}
+      {pendingOrders.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-amber-200 dark:border-amber-800/50 overflow-hidden">
+          <div className="px-5 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/40 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock size={14} className="text-amber-500" />
+              <h2 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">
+                Ingreso pendiente — completadas sin entregar
+              </h2>
+            </div>
+            <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
+              {formatCurrency(global.pendingIncome)}
+            </span>
+          </div>
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {pendingOrders.slice(0, 5).map((o) => (
+              <Link
+                key={o.id}
+                to={`/orders/${o.id}`}
+                className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
+              >
+                <div className="min-w-0 flex-1">
+                  <span className="text-xs font-mono text-slate-400">{o.orderNumber}</span>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                    {o.customerName || '—'} · {o.deviceBrand} {o.deviceModel}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{formatCurrency(o._income)}</p>
+                  <ChevronRight size={14} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                </div>
+              </Link>
+            ))}
+            {pendingOrders.length > 5 && (
+              <div className="px-5 py-2.5 text-xs text-slate-400 text-center">
+                +{pendingOrders.length - 5} más
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Chart + period summary ── */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-slate-900 dark:text-white text-sm">
+              Ingresos vs Gastos — {PERIOD_LABELS[period]}
+            </h2>
+            <div className="flex items-center gap-3 text-xs text-slate-500">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-400 inline-block" />Ingresos</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-rose-400 inline-block" />Gastos</span>
+            </div>
+          </div>
+          {chartData.length === 0 ? (
+            <div className="h-36 flex items-center justify-center text-slate-400 text-sm">
+              Sin órdenes entregadas aún
+            </div>
+          ) : (
+            <BarChart data={chartData} />
+          )}
+        </div>
+
+        {/* Current period summary */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5 space-y-4">
+          <h2 className="font-semibold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+            <Calendar size={14} className="text-indigo-500" />
+            Período actual
+          </h2>
+          {currentPeriod ? (
+            <div className="space-y-3">
+              <PeriodRow label="Ingresos"     value={currentPeriod.income}  color="text-emerald-600 dark:text-emerald-400" />
+              <PeriodRow label="Costos"       value={currentPeriod.expense} color="text-rose-600 dark:text-rose-400" />
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-3">
+                <PeriodRow
+                  label="Ganancia"
+                  value={currentPeriod.income - currentPeriod.expense}
+                  color={(currentPeriod.income - currentPeriod.expense) >= 0
+                    ? 'text-indigo-600 dark:text-indigo-400'
+                    : 'text-red-600 dark:text-red-400'}
+                  bold
+                />
+              </div>
+              <p className="text-xs text-slate-400">
+                {currentPeriod.orders.length} entrega{currentPeriod.orders.length !== 1 ? 's' : ''} en este período
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400">Sin entregas en este período.</p>
+          )}
+        </div>
+      </div>
+
+      {/* ── Period breakdown table ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="font-semibold text-slate-900 dark:text-white text-sm">
+            Desglose por período — {PERIOD_LABELS[period]}
+          </h2>
+        </div>
+        {periodData.length === 0 ? (
+          <div className="p-8 text-center text-slate-400 text-sm">Sin órdenes entregadas registradas.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
+                  <th className="px-5 py-3 text-left font-medium">Período</th>
+                  <th className="px-5 py-3 text-right font-medium">Entregas</th>
+                  <th className="px-5 py-3 text-right font-medium text-emerald-600">Ingresos</th>
+                  <th className="px-5 py-3 text-right font-medium text-rose-500">Costos</th>
+                  <th className="px-5 py-3 text-right font-medium">Ganancia</th>
+                  <th className="px-5 py-3 text-right font-medium">Margen</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {[...periodData].reverse().map((d) => {
+                  const profit = d.income - d.expense
+                  const margin = d.income > 0 ? (profit / d.income) * 100 : 0
+                  const { long } = formatPeriodLabel(d.key, period)
+                  return (
+                    <tr key={d.key} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-5 py-3 font-medium text-slate-700 dark:text-slate-300">{long}</td>
+                      <td className="px-5 py-3 text-right text-slate-500">{d.orders.length}</td>
+                      <td className="px-5 py-3 text-right font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(d.income)}</td>
+                      <td className="px-5 py-3 text-right font-semibold text-rose-500 dark:text-rose-400">{formatCurrency(d.expense)}</td>
+                      <td className={`px-5 py-3 text-right font-bold ${profit >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-500'}`}>
+                        {formatCurrency(profit)}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <MarginBadge margin={margin} />
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                  <td className="px-5 py-3 font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wide">Total</td>
+                  <td className="px-5 py-3 text-right font-semibold text-slate-700 dark:text-slate-300">{billed.length}</td>
+                  <td className="px-5 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(global.income)}</td>
+                  <td className="px-5 py-3 text-right font-bold text-rose-500 dark:text-rose-400">{formatCurrency(global.expense)}</td>
+                  <td className={`px-5 py-3 text-right font-bold ${global.profit >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-500'}`}>
+                    {formatCurrency(global.profit)}
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <MarginBadge margin={global.margin} bold />
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ── Top orders by income ── */}
+      {topOrders.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
+            <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Top órdenes por ingreso</h2>
+          </div>
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {topOrders.map((o) => (
+              <Link
+                key={o.id}
+                to={`/orders/${o.id}`}
+                className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-xs font-mono text-slate-400">{o.orderNumber}</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1" />
+                      Entregado
+                    </span>
+                  </div>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                    {o.customerName || '—'} · {o.deviceBrand} {o.deviceModel}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 ml-4 flex-shrink-0">
+                  <div className="text-right hidden sm:block">
+                    {o._expense > 0 && (
+                      <p className="text-xs text-rose-500">− {formatCurrency(o._expense)}</p>
+                    )}
+                    <p className="text-xs text-slate-400">{formatDateShort(o.deliveryDate || o.entryDate)}</p>
+                  </div>
+                  <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 min-w-[5rem] text-right">
+                    {formatCurrency(o._income)}
+                  </p>
+                  <ChevronRight size={14} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function KpiCard({ label, value, icon: Icon, iconColor, bg, delta, deltaInverted, subtitle }) {
+  const positive = deltaInverted ? (delta !== null && delta <= 0) : (delta !== null && delta >= 0)
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
+          <Icon size={16} className={iconColor} />
+        </div>
+        {delta !== null && (
+          <div className={`flex items-center gap-0.5 text-xs font-semibold ${positive ? 'text-emerald-500' : 'text-red-500'}`}>
+            {positive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+            {Math.abs(delta).toFixed(1)}%
+          </div>
+        )}
+      </div>
+      <p className="text-xl font-bold text-slate-900 dark:text-white mt-3 leading-none">{value}</p>
+      <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mt-1">{label}</p>
+      {subtitle && <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{subtitle}</p>}
+    </div>
+  )
+}
+
+function PeriodRow({ label, value, color, bold }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+      <span className={`text-sm ${color} ${bold ? 'font-bold' : 'font-semibold'}`}>{formatCurrency(value)}</span>
+    </div>
+  )
+}
+
+function MarginBadge({ margin, bold }) {
+  const cls = margin >= 50
+    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+    : margin >= 20
+      ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+      : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+  return (
+    <span className={`text-xs ${bold ? 'font-bold' : 'font-semibold'} px-2 py-0.5 rounded-full ${cls}`}>
+      {margin.toFixed(1)}%
+    </span>
+  )
+}

@@ -355,15 +355,26 @@ export const useStore = create(
       upsertClient: (data) => {
         const { clients, auth } = get()
         const currentUser = auth?.username || 'admin'
-        // Only match against THIS user's clients to avoid cross-user conflicts
+        const normDni   = (data.dni   || '').trim()
+        const normPhone = (data.phone || '').trim()
+        const normEmail = (data.email || '').trim().toLowerCase()
+        // Match by any unique identifier (dni, phone, or email) within this user's clients
         const existing = clients.find(
           (c) =>
             c.createdBy === currentUser &&
-            ((data.dni && c.dni && c.dni === data.dni) ||
-              (data.phone && c.phone && c.phone === data.phone))
+            (
+              (normDni   && (c.dni   || '').trim()                  === normDni)   ||
+              (normPhone && (c.phone || '').trim()                  === normPhone) ||
+              (normEmail && (c.email || '').trim().toLowerCase()    === normEmail)
+            )
         )
         if (existing) {
-          const updated = { ...existing, ...data, createdBy: currentUser, updatedAt: new Date().toISOString() }
+          // Merge: only overwrite a field if the new value is non-empty
+          const merged = { ...existing }
+          for (const key of ['name', 'phone', 'email', 'dni', 'address']) {
+            if (data[key] && (data[key] || '').trim()) merged[key] = data[key]
+          }
+          const updated = { ...merged, createdBy: currentUser, updatedAt: new Date().toISOString() }
           set((s) => ({ clients: s.clients.map((c) => (c.id === existing.id ? updated : c)) }))
           syncClientToTurso(updated)
           return updated
