@@ -3,7 +3,7 @@ import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
   ChevronDown, ChevronUp, Search, UserCheck, UserPlus
 } from 'lucide-react'
-import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, DEVICE_SUGGESTIONS, BRAND_LIST } from '../utils/constants'
+import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, DEVICE_SUGGESTIONS, BRAND_LIST, canTransitionTo } from '../utils/constants'
 import { useStore } from '../store/useStore'
 
 // ── Sección colapsable ──────────────────────────────────────────────────────
@@ -42,28 +42,90 @@ const inputClass =
 const selectClass =
   'w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition cursor-pointer'
 
+// Paleta de colores clara para estados
+const CLS = {
+  ok:       'bg-green-100  text-green-700  dark:bg-green-900/40  dark:text-green-300',
+  warn:     'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+  bad:      'bg-red-100    text-red-700    dark:bg-red-900/40    dark:text-red-300',
+  neutral:  'bg-slate-200  text-slate-600  dark:bg-slate-700     dark:text-slate-300',
+  inactive: 'bg-slate-100  text-slate-400  dark:bg-slate-800     dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700',
+}
+
+// OK / Falla / No probado  (funcional)
 const TriState = ({ label, value, onChange }) => (
-  <div className="flex items-center justify-between py-1.5">
+  <div className="flex items-center justify-between py-2">
     <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
     <div className="flex gap-1">
-      {[true, false, null].map((v) => (
-        <button
-          key={String(v)}
-          type="button"
-          onClick={() => onChange(v)}
-          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-            value === v
-              ? v === true ? 'bg-green-500 text-white'
-                : v === false ? 'bg-red-500 text-white'
-                : 'bg-slate-500 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
-        >
-          {v === true ? 'Sí' : v === false ? 'No' : 'N/A'}
+      {[
+        { v: true,  cls: CLS.ok,      txt: 'OK'       },
+        { v: false, cls: CLS.bad,     txt: 'Falla'    },
+        { v: null,  cls: CLS.neutral, txt: 'No prob.' },
+      ].map(({ v, cls, txt }) => (
+        <button key={String(v)} type="button" onClick={() => onChange(v)}
+          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${value === v ? cls : CLS.inactive}`}>
+          {txt}
         </button>
       ))}
     </div>
   </div>
+)
+
+// Sí / No / N/A  (informativo — software, bloqueos)
+const BoolState = ({ label, value, onChange }) => (
+  <div className="flex items-center justify-between py-2">
+    <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+    <div className="flex gap-1">
+      {[
+        { v: true,  cls: CLS.warn,    txt: 'Sí'  },
+        { v: false, cls: CLS.ok,      txt: 'No'  },
+        { v: null,  cls: CLS.neutral, txt: 'N/A' },
+      ].map(({ v, cls, txt }) => (
+        <button key={String(v)} type="button" onClick={() => onChange(v)}
+          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${value === v ? cls : CLS.inactive}`}>
+          {txt}
+        </button>
+      ))}
+    </div>
+  </div>
+)
+
+// Componente para estados físicos con opciones personalizadas
+const PhysState = ({ label, value, onChange, options }) => (
+  <div className="flex items-center justify-between py-2">
+    <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+    <div className="flex gap-1">
+      {options.map((opt) => (
+        <button key={opt.value} type="button"
+          onClick={() => onChange(value === opt.value ? null : opt.value)}
+          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${value === opt.value ? opt.cls : CLS.inactive}`}>
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  </div>
+)
+
+const PHYS_OK_DMG_BRK = [
+  { value: 'ok',        label: 'OK',      cls: CLS.ok   },
+  { value: 'scratched', label: 'Rayado',  cls: CLS.warn },
+  { value: 'broken',    label: 'Roto',    cls: CLS.bad  },
+]
+const PHYS_OK_DENTED_BENT = [
+  { value: 'ok',     label: 'OK',      cls: CLS.ok   },
+  { value: 'dented', label: 'Golpes',  cls: CLS.warn },
+  { value: 'bent',   label: 'Doblado', cls: CLS.bad  },
+]
+const PHYS_SIM = [
+  { value: 'present', label: 'Presente', cls: CLS.ok   },
+  { value: 'damaged', label: 'Dañada',   cls: CLS.warn },
+  { value: 'missing', label: 'Faltante', cls: CLS.bad  },
+]
+
+// Separador de grupo dentro del checklist
+const CheckGroup = ({ title }) => (
+  <p className="pt-5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 select-none border-t border-slate-100 dark:border-slate-800 mt-1">
+    {title}
+  </p>
 )
 
 // ── Autocomplete genérico ──────────────────────────────────────────────────
@@ -193,12 +255,40 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     waterDamage: false,
     physicalDamage: false,
     previouslyOpened: false,
+    // Checklist funcional
     powersOn: null,
     charges: null,
     screenWorks: null,
     touchWorks: null,
     audioWorks: null,
     buttonsWork: null,
+    // Estado físico
+    screenCondition: null,
+    backCoverCondition: null,
+    frameCondition: null,
+    simTray: null,
+    // Cámaras
+    rearCameraWorks: null,
+    frontCameraWorks: null,
+    flashWorks: null,
+    // Conectividad y sensores
+    wifiWorks: null,
+    bluetoothWorks: null,
+    gpsWorks: null,
+    micWorks: null,
+    earSpeakerWorks: null,
+    vibrationWorks: null,
+    biometricWorks: null,
+    chargingPortWorks: null,
+    // Humedad / Líquidos
+    humidityIndicator: null,
+    liquidSigns: null,
+    corrosionVisible: null,
+    // Software
+    hasPinPattern: null,
+    hasGoogleIcloud: null,
+    frpActive: null,
+    bootsSystem: null,
     estimatedPrice: '',
     finalPrice: '',
     repairCost: '',
@@ -216,6 +306,45 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
   const toggle = (key) => set(key, !form[key])
+
+  // ── Relleno masivo del checklist ──────────────────────────────────────────
+  const TRISTATE_KEYS = [
+    'powersOn','chargingPortWorks','charges','screenWorks','touchWorks',
+    'buttonsWork','vibrationWorks','rearCameraWorks','frontCameraWorks',
+    'flashWorks','audioWorks','earSpeakerWorks','micWorks','wifiWorks',
+    'bluetoothWorks','gpsWorks','biometricWorks','bootsSystem',
+  ]
+  const BOOL_DAMAGE_KEYS = ['humidityIndicator','liquidSigns','corrosionVisible']
+  const BOOL_INFO_KEYS   = ['hasPinPattern','hasGoogleIcloud','frpActive']
+
+  const fillChecklist = (mode) => {
+    setForm((f) => {
+      const patch = {}
+      if (mode === 'ok') {
+        TRISTATE_KEYS.forEach((k)    => { patch[k] = true  })
+        BOOL_DAMAGE_KEYS.forEach((k) => { patch[k] = false }) // false = sin daño
+        BOOL_INFO_KEYS.forEach((k)   => { patch[k] = null  })
+        patch.screenCondition = 'ok'; patch.backCoverCondition = 'ok'
+        patch.frameCondition  = 'ok'; patch.simTray = 'present'
+      } else if (mode === 'fail') {
+        TRISTATE_KEYS.forEach((k)    => { patch[k] = false })
+        BOOL_DAMAGE_KEYS.forEach((k) => { patch[k] = true  })
+        BOOL_INFO_KEYS.forEach((k)   => { patch[k] = null  })
+        patch.screenCondition = 'broken'; patch.backCoverCondition = 'broken'
+        patch.frameCondition  = 'bent';   patch.simTray = 'missing'
+      } else {
+        ;[...TRISTATE_KEYS, ...BOOL_DAMAGE_KEYS, ...BOOL_INFO_KEYS].forEach((k) => { patch[k] = null })
+        patch.screenCondition = null; patch.backCoverCondition = null
+        patch.frameCondition  = null; patch.simTray = null
+      }
+      return { ...f, ...patch }
+    })
+  }
+
+  // Validación de transición de estado
+  const statusTransitionError = initialData
+    ? canTransitionTo(initialData, form.status)
+    : { ok: true }
   const toggleAccessory = (acc) => {
     set('accessories', form.accessories.includes(acc)
       ? form.accessories.filter((a) => a !== acc)
@@ -430,13 +559,89 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
       {/* ── Checklist técnico ── */}
       <Section title="Checklist Técnico" icon={CheckSquare} defaultOpen={false}>
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          <TriState label="Enciende" value={form.powersOn} onChange={(v) => set('powersOn', v)} />
-          <TriState label="Carga" value={form.charges} onChange={(v) => set('charges', v)} />
-          <TriState label="Pantalla funciona" value={form.screenWorks} onChange={(v) => set('screenWorks', v)} />
-          <TriState label="Touch funciona" value={form.touchWorks} onChange={(v) => set('touchWorks', v)} />
-          <TriState label="Audio funciona" value={form.audioWorks} onChange={(v) => set('audioWorks', v)} />
-          <TriState label="Botones funcionan" value={form.buttonsWork} onChange={(v) => set('buttonsWork', v)} />
+        {/* Relleno masivo */}
+        <div className="flex items-center gap-1 mb-5 p-1 rounded-lg bg-slate-100 dark:bg-slate-800">
+          {[
+            { mode: 'ok',   label: 'Todo OK',    dot: 'bg-green-400' },
+            { mode: 'fail', label: 'Todo falla',  dot: 'bg-red-400'   },
+            { mode: 'na',   label: 'No probado',  dot: 'bg-slate-400' },
+          ].map(({ mode, label, dot }) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => fillChecklist(mode)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 hover:shadow-sm transition-all duration-150"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dot}`} />
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="space-y-0">
+
+          {/* Estado físico */}
+          <CheckGroup title="Estado físico" />
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <PhysState label="Pantalla" value={form.screenCondition} onChange={(v) => set('screenCondition', v)} options={PHYS_OK_DMG_BRK} />
+            <PhysState label="Tapa trasera" value={form.backCoverCondition} onChange={(v) => set('backCoverCondition', v)} options={PHYS_OK_DMG_BRK} />
+            <PhysState label="Marco / bordes" value={form.frameCondition} onChange={(v) => set('frameCondition', v)} options={PHYS_OK_DENTED_BENT} />
+            <PhysState label="Bandeja SIM" value={form.simTray} onChange={(v) => set('simTray', v)} options={PHYS_SIM} />
+          </div>
+
+          {/* Funciones básicas */}
+          <CheckGroup title="Funciones básicas" />
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <TriState label="Enciende" value={form.powersOn} onChange={(v) => set('powersOn', v)} />
+            <TriState label="Puerto de carga" value={form.chargingPortWorks} onChange={(v) => set('chargingPortWorks', v)} />
+            <TriState label="Carga correctamente" value={form.charges} onChange={(v) => set('charges', v)} />
+            <TriState label="Pantalla" value={form.screenWorks} onChange={(v) => set('screenWorks', v)} />
+            <TriState label="Touch / táctil" value={form.touchWorks} onChange={(v) => set('touchWorks', v)} />
+            <TriState label="Botones (vol. / encendido)" value={form.buttonsWork} onChange={(v) => set('buttonsWork', v)} />
+            <TriState label="Vibración" value={form.vibrationWorks} onChange={(v) => set('vibrationWorks', v)} />
+          </div>
+
+          {/* Cámaras */}
+          <CheckGroup title="Cámaras" />
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <TriState label="Cámara trasera" value={form.rearCameraWorks} onChange={(v) => set('rearCameraWorks', v)} />
+            <TriState label="Cámara frontal" value={form.frontCameraWorks} onChange={(v) => set('frontCameraWorks', v)} />
+            <TriState label="Flash / Linterna" value={form.flashWorks} onChange={(v) => set('flashWorks', v)} />
+          </div>
+
+          {/* Audio */}
+          <CheckGroup title="Audio" />
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <TriState label="Bocina / altavoz" value={form.audioWorks} onChange={(v) => set('audioWorks', v)} />
+            <TriState label="Auricular (llamadas)" value={form.earSpeakerWorks} onChange={(v) => set('earSpeakerWorks', v)} />
+            <TriState label="Micrófono" value={form.micWorks} onChange={(v) => set('micWorks', v)} />
+          </div>
+
+          {/* Conectividad y sensores */}
+          <CheckGroup title="Conectividad y sensores" />
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <TriState label="Wi-Fi" value={form.wifiWorks} onChange={(v) => set('wifiWorks', v)} />
+            <TriState label="Bluetooth" value={form.bluetoothWorks} onChange={(v) => set('bluetoothWorks', v)} />
+            <TriState label="GPS" value={form.gpsWorks} onChange={(v) => set('gpsWorks', v)} />
+            <TriState label="Face ID / Huella digital" value={form.biometricWorks} onChange={(v) => set('biometricWorks', v)} />
+          </div>
+
+          {/* Humedad / Líquidos */}
+          <CheckGroup title="Humedad / Líquidos" />
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <BoolState label="Indicador de humedad activado" value={form.humidityIndicator} onChange={(v) => set('humidityIndicator', v)} />
+            <BoolState label="Señales visibles de líquido" value={form.liquidSigns} onChange={(v) => set('liquidSigns', v)} />
+            <BoolState label="Oxidación visible en placa" value={form.corrosionVisible} onChange={(v) => set('corrosionVisible', v)} />
+          </div>
+
+          {/* Software */}
+          <CheckGroup title="Software" />
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <TriState label="Inicia el sistema" value={form.bootsSystem} onChange={(v) => set('bootsSystem', v)} />
+            <BoolState label="Tiene PIN / patrón / contraseña" value={form.hasPinPattern} onChange={(v) => set('hasPinPattern', v)} />
+            <BoolState label="Tiene cuenta Google / iCloud" value={form.hasGoogleIcloud} onChange={(v) => set('hasGoogleIcloud', v)} />
+            <BoolState label="FRP / Bloqueo de activación activo" value={form.frpActive} onChange={(v) => set('frpActive', v)} />
+          </div>
+
         </div>
       </Section>
 
@@ -489,6 +694,12 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
           <Field label="Nota del cambio">
             <input className={inputClass} value={form.statusNote} onChange={(e) => set('statusNote', e.target.value)} placeholder="Nota opcional..." />
           </Field>
+          {!statusTransitionError.ok && (
+            <div className="col-span-2 flex items-start gap-2.5 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-400">
+              <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="currentColor"/><path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+              {statusTransitionError.reason}
+            </div>
+          )}
           <div className="col-span-2 sm:col-span-1">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
               Fecha estimada de entrega
@@ -516,8 +727,8 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
         )}
         <button
           type="submit"
-          disabled={isLoading}
-          className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
+          disabled={isLoading || !statusTransitionError.ok}
+          className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Guardando...' : submitLabel}
         </button>

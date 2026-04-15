@@ -3,10 +3,185 @@ import { Link } from 'react-router-dom'
 import {
   TrendingUp, TrendingDown, DollarSign, Percent,
   Calendar, ChevronRight, ArrowUpRight, ArrowDownRight,
-  Clock, Info,
+  Clock, Info, PieChart as PieIcon,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { formatCurrency, formatDateShort, STATUS_CONFIG } from '../utils/constants'
+
+// ── Categorías de reparación ──────────────────────────────────────────────────
+const REPAIR_CATEGORIES = [
+  { key: 'pantalla',    label: 'Pantalla',       color: '#6366f1', keywords: ['pantalla', 'display', 'lcd', 'screen', 'touch', 'tactil', 'táctil', 'vidrio', 'glass'] },
+  { key: 'bateria',     label: 'Batería',         color: '#10b981', keywords: ['bateria', 'batería', 'battery', 'carga rapida', 'no carga', 'no enciende'] },
+  { key: 'pin_carga',   label: 'Pin de carga',    color: '#f59e0b', keywords: ['pin', 'puerto', 'carga', 'charging', 'usb', 'tipo c', 'type c', 'conector'] },
+  { key: 'boton',       label: 'Botón',           color: '#ef4444', keywords: ['boton', 'botón', 'button', 'power', 'volumen', 'home', 'encendido'] },
+  { key: 'corto',       label: 'Corto / Líquido', color: '#8b5cf6', keywords: ['corto', 'liquido', 'líquido', 'agua', 'humedad', 'mojado', 'oxidacion', 'oxido'] },
+  { key: 'reballing',   label: 'Reballing',       color: '#ec4899', keywords: ['reballing', 'reball', 'micro', 'chip', 'soldadura', 'placa', 'board'] },
+  { key: 'camara',      label: 'Cámara',          color: '#14b8a6', keywords: ['camara', 'cámara', 'camera', 'lente', 'foto', 'flash'] },
+  { key: 'audio',       label: 'Audio / Bocina',  color: '#f97316', keywords: ['audio', 'bocina', 'speaker', 'microfono', 'micrófono', 'auricular', 'sonido'] },
+  { key: 'software',    label: 'Software',        color: '#06b6d4', keywords: ['software', 'sistema', 'formateo', 'formato', 'flasheo', 'virus', 'actualiz', 'unlock', 'desbloqueo'] },
+  { key: 'otros',       label: 'Otros',           color: '#94a3b8', keywords: [] },
+]
+
+function classifyRepair(order) {
+  const text = `${order.reportedIssue || ''} ${order.workDone || ''} ${order.technicianNotes || ''}`.toLowerCase()
+  for (const cat of REPAIR_CATEGORIES) {
+    if (cat.key === 'otros') continue
+    if (cat.keywords.some((kw) => text.includes(kw))) return cat.key
+  }
+  return 'otros'
+}
+
+// ── Donut Chart (pure SVG, con hover) ────────────────────────────────────────
+function DonutChart({ segments, centerLabel, hovered, onHover }) {
+  const R       = 78
+  const RHov    = 84
+  const stroke  = 22
+  const strokeH = 28
+  const circumference = 2 * Math.PI * R
+  const circumferenceH = 2 * Math.PI * RHov
+  let offset = 0
+
+  // Precalcula offsets antes de renderizar
+  const segs = segments.map((seg) => {
+    const start = offset
+    offset += seg.pct
+    return { ...seg, start }
+  })
+
+  const hovSeg = hovered != null ? segs.find((s) => s.key === hovered) : null
+
+  return (
+    <svg viewBox="0 0 200 200" className="w-full max-w-[220px] mx-auto" style={{ overflow: 'visible' }}>
+      {/* fondo del anillo */}
+      <circle cx="100" cy="100" r={R} fill="none" stroke="#e2e8f0" strokeWidth={stroke} opacity="0.5" />
+
+      {/* segmentos normales (opacos si hay hover en otro) */}
+      {segs.map((seg) => {
+        const isHov = hovered === seg.key
+        const r   = isHov ? RHov : R
+        const sw  = isHov ? strokeH : stroke
+        const circ = 2 * Math.PI * r
+        const dash = (seg.pct / 100) * circ
+        const gap  = circ - dash
+        const dashOffset = -(seg.start / 100) * circ + circ * 0.25
+        return (
+          <circle
+            key={seg.key}
+            cx="100" cy="100" r={r}
+            fill="none"
+            stroke={seg.color}
+            strokeWidth={sw}
+            strokeDasharray={`${dash} ${gap}`}
+            strokeDashoffset={dashOffset}
+            strokeLinecap="butt"
+            opacity={hovered != null && !isHov ? 0.25 : 1}
+            style={{ transition: 'all 0.22s cubic-bezier(.4,0,.2,1)', cursor: 'pointer' }}
+            onMouseEnter={() => onHover(seg.key)}
+            onMouseLeave={() => onHover(null)}
+          />
+        )
+      })}
+
+      {/* texto central */}
+      {hovSeg ? (
+        <>
+          <text x="100" y="90" textAnchor="middle" fontSize="9" fontWeight="700" fill={hovSeg.color}>
+            {hovSeg.label}
+          </text>
+          <text x="100" y="104" textAnchor="middle" fontSize="11" fontWeight="700" fill={hovSeg.color}>
+            {hovSeg.pct.toFixed(1)}%
+          </text>
+          <text x="100" y="117" textAnchor="middle" fontSize="8" fill="#94a3b8">
+            {hovSeg.income > 0 ? `$${hovSeg.income.toLocaleString('es')}` : 'sin ingresos'}
+          </text>
+        </>
+      ) : (
+        <>
+          <text x="100" y="97" textAnchor="middle" fontSize="11" fontWeight="600" fill="#475569">
+            {centerLabel}
+          </text>
+          <text x="100" y="112" textAnchor="middle" fontSize="9" fill="#94a3b8">
+            Ganancias
+          </text>
+        </>
+      )}
+    </svg>
+  )
+}
+
+// ── Sección dona con hover compartido ────────────────────────────────────────
+function DonutSection({ categoryData, formatCurrency, globalProfit }) {
+  const [hovered, setHovered] = useState(null)
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+        <PieIcon size={14} className="text-indigo-500" />
+        <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Ganancias netas por categoría</h2>
+      </div>
+      <div className="p-5">
+        <div className="flex flex-col lg:flex-row items-center gap-8">
+          {/* Donut SVG */}
+          <div className="w-full lg:w-64 flex-shrink-0">
+            <DonutChart
+              segments={categoryData}
+              centerLabel={formatCurrency(globalProfit)}
+              hovered={hovered}
+              onHover={setHovered}
+            />
+          </div>
+          {/* Leyenda */}
+          <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {categoryData.map((cat) => {
+              const isHov = hovered === cat.key
+              return (
+                <div
+                  key={cat.key}
+                  className="flex items-center gap-3 p-3 rounded-lg transition-all duration-200 cursor-default"
+                  style={{
+                    backgroundColor: isHov ? `${cat.color}18` : undefined,
+                    boxShadow: isHov ? `inset 0 0 0 1.5px ${cat.color}55` : 'inset 0 0 0 1.5px transparent',
+                  }}
+                  onMouseEnter={() => setHovered(cat.key)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <span
+                    className="flex-shrink-0 rounded-full transition-all duration-200"
+                    style={{
+                      backgroundColor: cat.color,
+                      width:  isHov ? '14px' : '10px',
+                      height: isHov ? '14px' : '10px',
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-xs font-semibold truncate transition-colors duration-200"
+                      style={{ color: isHov ? cat.color : undefined }}
+                    >
+                      {cat.label}
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      {cat.key === 'otros'
+                        ? `${cat.totalOrders} orden${cat.totalOrders !== 1 ? 'es' : ''} sin categoría`
+                        : `${cat.count} orden${cat.count !== 1 ? 'es' : ''}`}
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                      {cat.income > 0 ? formatCurrency(cat.income) : '—'}
+                    </p>
+                    <p className="text-[10px] font-medium" style={{ color: cat.color }}>
+                      {cat.income > 0 ? `${cat.pct.toFixed(1)}%` : 'sin datos'}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -14,6 +189,7 @@ const n = (v) => { const p = parseFloat(v); return isNaN(p) ? 0 : p }
 
 // Una orden cuenta financieramente SOLO si fue entregada al cliente (status = 'delivered').
 // Ese estado equivale a "completada Y entregada" en este sistema.
+// Las órdenes 'abandoned' quedan excluidas al no cumplir ninguna de estas condiciones.
 const isDelivered = (o) => o.status === 'delivered'
 
 // Órdenes completadas pero pendientes de entrega (ingreso potencial, no realizado)
@@ -178,6 +354,26 @@ export default function FinancePage() {
       .filter((o) => o._income > 0)
       .sort((a, b) => b._income - a._income)
       .slice(0, 8)
+  }, [billed])
+
+  // ── Ganancias por categoría de reparación ─────────────────────────────────
+  const categoryData = useMemo(() => {
+    const map = {}
+    for (const cat of REPAIR_CATEGORIES) map[cat.key] = { ...cat, income: 0, count: 0, totalOrders: 0 }
+    for (const o of billed) {
+      const key = classifyRepair(o)
+      map[key].totalOrders += 1
+      const profit = o._income - o._expense
+      if (profit > 0) {
+        map[key].income += profit
+        map[key].count  += 1
+      }
+    }
+    const totalProfit = Object.values(map).reduce((s, c) => s + c.income, 0)
+    return Object.values(map)
+      .filter((c) => c.income > 0 || (c.key === 'otros' && c.totalOrders > 0))
+      .sort((a, b) => b.income - a.income)
+      .map((c) => ({ ...c, pct: totalProfit > 0 ? (c.income / totalProfit) * 100 : 0 }))
   }, [billed])
 
   return (
@@ -414,6 +610,11 @@ export default function FinancePage() {
           </div>
         )}
       </div>
+
+      {/* ── Ganancias por categoría (donut) ── */}
+      {categoryData.length > 0 && (
+        <DonutSection categoryData={categoryData} formatCurrency={formatCurrency} globalProfit={global.profit} />
+      )}
 
       {/* ── Top orders by income ── */}
       {topOrders.length > 0 && (

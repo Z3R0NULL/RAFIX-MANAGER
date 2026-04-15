@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, Edit3, Printer, ExternalLink, CheckCircle2, XCircle, MinusCircle,
-  Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2
+  Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2,
+  RefreshCw,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { StatusBadge, BudgetBadge } from '../components/StatusBadge'
 import OrderForm from '../components/OrderForm'
 import { formatDate, formatDateShort, formatCurrency, DEVICE_TYPES, STATUS_CONFIG } from '../utils/constants'
+import { turso, isTursoConfigured } from '../lib/turso'
 import { generateInvoicePDF } from '../utils/pdfGenerator'
 
 const TriIcon = ({ val }) => {
@@ -26,18 +28,47 @@ const InfoRow = ({ label, value }) => (
 export default function OrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getOrder, updateOrder, deleteOrder } = useStore()
+  const { getOrder, updateOrder, deleteOrder, auth } = useStore()
   const [editing, setEditing] = useState(false)
   const [copied, setCopied] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [remoteOrder, setRemoteOrder] = useState(null)
+  const [loadingRemote, setLoadingRemote] = useState(false)
 
-  const order = getOrder(id)
+  const isSuperAdmin = auth?.role === 'superadmin'
+  const localOrder = getOrder(id)
+
+  // Si el superadmin no encuentra la orden localmente, buscarla en Turso
+  useEffect(() => {
+    if (localOrder || !isSuperAdmin || !isTursoConfigured) return
+    setLoadingRemote(true)
+    turso.execute({ sql: 'SELECT data FROM orders WHERE id = ? LIMIT 1', args: [id] })
+      .then((res) => {
+        const row = res.rows[0]
+        if (row) setRemoteOrder(JSON.parse(row.data))
+      })
+      .catch(() => {})
+      .finally(() => setLoadingRemote(false))
+  }, [id, localOrder, isSuperAdmin])
+
+  const order = localOrder || remoteOrder
+  // El superadmin puede ver órdenes ajenas pero no editarlas (son de otro usuario)
+  const isOwner = !remoteOrder || localOrder != null
+
+  if (loadingRemote) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center min-h-64 text-slate-400 gap-3">
+        <RefreshCw size={20} className="animate-spin" />
+        <p className="text-sm">Cargando orden...</p>
+      </div>
+    )
+  }
 
   if (!order) {
     return (
       <div className="p-6 flex flex-col items-center justify-center min-h-64 text-slate-400">
-        <p className="text-lg font-medium">Order not found</p>
-        <Link to="/orders" className="mt-3 text-sm text-indigo-600 hover:underline">Back to orders</Link>
+        <p className="text-lg font-medium">Orden no encontrada</p>
+        <Link to="/orders" className="mt-3 text-sm text-indigo-600 hover:underline">Volver a órdenes</Link>
       </div>
     )
   }
@@ -101,41 +132,51 @@ export default function OrderDetail() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Badge de solo lectura cuando superadmin ve orden ajena */}
+          {!isOwner && (
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+              Solo lectura · {order.createdBy}
+            </span>
+          )}
           <button
             onClick={copyTrackingLink}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-            {copied ? 'Copied!' : 'Share Link'}
+            {copied ? 'Copiado!' : 'Compartir'}
           </button>
           <button
             onClick={() => window.open(buildTrackingUrl(), '_blank')}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <ExternalLink size={14} />
-            Track Page
+            Seguimiento
           </button>
           <button
             onClick={() => generateInvoicePDF(order)}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <Printer size={14} />
-            PDF Invoice
+            PDF
           </button>
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-red-200 dark:border-red-800 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-          >
-            <Trash2 size={14} />
-            Delete
-          </button>
-          <button
-            onClick={() => setEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
-          >
-            <Edit3 size={14} />
-            Edit
-          </button>
+          {isOwner && (
+            <>
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-red-200 dark:border-red-800 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <Trash2 size={14} />
+                Eliminar
+              </button>
+              <button
+                onClick={() => setEditing(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
+              >
+                <Edit3 size={14} />
+                Editar
+              </button>
+            </>
+          )}
         </div>
       </div>
 

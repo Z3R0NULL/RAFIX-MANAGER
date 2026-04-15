@@ -34,6 +34,29 @@ export const STATUS_CONFIG = {
     color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
     dot: 'bg-purple-500',
   },
+  abandoned: {
+    label: 'Abandonado',
+    color: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400',
+    dot: 'bg-zinc-400',
+  },
+}
+
+// Reglas de transición: newStatus → [estados previos requeridos (al menos uno)]
+const TRANSITION_RULES = {
+  in_repair:   { prereqs: ['diagnosing'], reason: 'Debe pasar por Diagnóstico antes de marcar En reparación.' },
+  irreparable: { prereqs: ['diagnosing'], reason: 'Debe pasar por Diagnóstico antes de marcar Sin reparación.' },
+  completed:   { prereqs: ['in_repair'],  reason: 'Debe pasar por En reparación antes de marcar Completado.' },
+  delivered:   { prereqs: ['completed', 'irreparable'], reason: 'Debe pasar por Completado o Sin reparación antes de marcar Entregado.' },
+}
+
+// Valida si una orden puede pasar al nuevo estado
+export function canTransitionTo(order, newStatus) {
+  const rule = TRANSITION_RULES[newStatus]
+  if (!rule) return { ok: true }
+  const history = order.statusHistory || []
+  const hadPrereq = history.some((h) => rule.prereqs.includes(h.status))
+  if (!hadPrereq) return { ok: false, reason: rule.reason }
+  return { ok: true }
 }
 
 export const BUDGET_STATUS_CONFIG = {

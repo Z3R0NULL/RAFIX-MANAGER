@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { turso, isTursoConfigured, initDb } from '../lib/turso'
+import { canTransitionTo } from '../utils/constants'
 
 const SUPERADMIN = 'admin'
 
@@ -469,6 +470,17 @@ export const useStore = create(
           })
         }
 
+        // Validate status transition before applying
+        if (data.status) {
+          const currentOrder = get().orders.find((o) => o.id === id)
+          if (currentOrder) {
+            const check = canTransitionTo(currentOrder, data.status)
+            if (!check.ok) {
+              return { error: check.reason }
+            }
+          }
+        }
+
         set((s) => ({
           orders: s.orders.map((o) => {
             if (o.id !== id) return o
@@ -490,6 +502,7 @@ export const useStore = create(
             return updated
           }),
         }))
+        return { error: null }
       },
 
       deleteOrder: (id) => {
