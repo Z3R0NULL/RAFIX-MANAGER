@@ -42,18 +42,13 @@ function SuperAdminRoute({ children }) {
 }
 
 function AppWithDarkMode({ children }) {
-  const darkMode = useStore((s) => s.darkMode)
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
   const _hydrated = useStore((s) => s._hydrated)
   const loadFromTurso = useStore((s) => s.loadFromTurso)
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [darkMode])
+    document.documentElement.classList.add('dark')
+  }, [])
 
   // Wait for Zustand to rehydrate from localStorage before loading,
   // so auth.username/role are available when fetchAllFromTurso is called.

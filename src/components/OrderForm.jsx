@@ -31,10 +31,11 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
-  ChevronDown, ChevronUp, Search, UserCheck, UserPlus
+  ChevronDown, ChevronUp, Search, UserCheck, UserPlus, Camera
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 import { useStore } from '../store/useStore'
+import ImageUploader from './ImageUploader'
 
 // ── Sección colapsable ──────────────────────────────────────────────────────
 const Section = ({ title, icon: Icon, children, defaultOpen = true }) => {
@@ -328,6 +329,8 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     status: 'pending',
     statusNote: '',
     estimatedDelivery: '',
+    photosEntry: [],
+    photosExit: [],
     ...initialData,
     // Normalize ISO date to date input value (yyyy-mm-dd)
     estimatedDelivery: initialData?.estimatedDelivery
@@ -681,6 +684,22 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
         </div>
       </Section>
 
+      {/* ── Fotos ── */}
+      <Section title="Fotos del Equipo" icon={Camera} defaultOpen={false}>
+        <div className="grid sm:grid-cols-2 gap-6">
+          <ImageUploader
+            label="Fotos de ingreso (cómo llegó)"
+            images={form.photosEntry}
+            onChange={(imgs) => set('photosEntry', imgs)}
+          />
+          <ImageUploader
+            label="Fotos de salida (cómo se fue)"
+            images={form.photosExit}
+            onChange={(imgs) => set('photosExit', imgs)}
+          />
+        </div>
+      </Section>
+
       {/* ── Presupuesto ── */}
       <Section title="Presupuesto y Precios (ARS)" icon={DollarSign} defaultOpen={false}>
         <div className="grid grid-cols-2 gap-4">
@@ -702,13 +721,31 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
               <input className={`${inputClass} pl-7`} type="number" step="1" min="0" value={form.repairCost} onChange={(e) => set('repairCost', e.target.value)} placeholder="0" />
             </div>
           </Field>
-          <Field label="Estado del presupuesto">
-            <select className={selectClass} value={form.budgetStatus} onChange={(e) => set('budgetStatus', e.target.value)}>
-              <option value="pending">Pendiente</option>
-              <option value="approved">Aprobado</option>
-              <option value="rejected">Rechazado</option>
-            </select>
-          </Field>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+              Aprobación del cliente
+            </label>
+            <div className="flex rounded-lg border border-slate-700 overflow-hidden text-xs">
+              {[
+                { value: 'pending',  label: 'Pendiente', activeClass: 'bg-slate-600 text-white' },
+                { value: 'approved', label: '✓ Aprobado', activeClass: 'bg-green-600 text-white' },
+                { value: 'rejected', label: '✕ Rechazado', activeClass: 'bg-red-600 text-white' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => set('budgetStatus', opt.value)}
+                  className={`flex-1 py-2.5 font-medium transition-colors ${
+                    form.budgetStatus === opt.value
+                      ? opt.activeClass
+                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="col-span-2">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Trabajo realizado / Servicios prestados</label>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.workDone} onChange={(e) => set('workDone', e.target.value)} placeholder="Describir qué se hizo, piezas reemplazadas, etc." />

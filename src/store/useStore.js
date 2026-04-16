@@ -296,7 +296,7 @@ export const useStore = create(
       deviceCatalog: [],
       appUsers: [],
       loginLogs: [],
-      darkMode: false,
+      darkMode: true,
       auth: { isLoggedIn: false },
       _hydrated: false,
       setHydrated: () => set({ _hydrated: true }),
@@ -575,9 +575,6 @@ export const useStore = create(
           console.warn('[Turso] fetchLoginLogs failed:', e)
         }
       },
-
-      // Dark mode
-      toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
 
       // ── Clients ────────────────────────────────────────────────────
       upsertClient: (data) => {

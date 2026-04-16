@@ -17,7 +17,7 @@
 
 @layer base {
   :root {
-    color-scheme: light dark;
+    color-scheme: dark;
   }
 }
 
@@ -29,66 +29,63 @@
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 2px;
-}
-.dark .scrollbar-thin::-webkit-scrollbar-thumb {
   background: #334155;
+  border-radius: 2px;
 }
 
 /* ── Design Tokens ────────────────────────────────────────────────────────── */
 /* Card estándar */
 .card {
-  @apply bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60;
+  @apply bg-slate-900 rounded-xl border border-slate-700/60;
 }
 
 /* Cabecera de card/sección */
 .card-header {
-  @apply flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700/60;
+  @apply flex items-center justify-between px-5 py-4 border-b border-slate-700/60;
 }
 
 /* Cabecera de tabla — estándar para TODAS las tablas */
 .th-std {
-  @apply px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide;
+  @apply px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wide;
 }
 .th-std-right {
-  @apply px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide;
+  @apply px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wide;
 }
 .th-std-center {
-  @apply px-4 py-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide;
+  @apply px-4 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wide;
 }
 
 /* Fila de tabla con cabecera */
 .thead-row {
-  @apply bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/60;
+  @apply bg-slate-800/50 border-b border-slate-700/60;
 }
 
 /* Botón de cierre de modal — UN ÚNICO estilo */
 .btn-modal-close {
-  @apply p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors;
+  @apply p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors;
 }
 
 /* Botón primario */
 .btn-primary {
-  @apply flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors;
+  @apply flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-medium rounded-lg transition-all;
 }
 
 /* Botón secundario / outline */
 .btn-secondary {
-  @apply flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-sm font-medium rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors;
+  @apply flex items-center gap-2 px-4 py-2 border border-slate-700 text-slate-400 text-sm font-medium rounded-lg hover:bg-slate-800 hover:text-slate-100 active:scale-95 transition-all;
 }
 
 /* Input estándar */
 .input-std {
-  @apply w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors;
+  @apply w-full px-3.5 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors;
 }
 
 /* Badge de advertencia — color ámbar (el único para warnings) */
 .badge-warning {
-  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300;
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-900/30 text-amber-300;
 }
 
 /* Color de advertencia: solo amber, nunca yellow ni orange para warnings */
-.text-warning { @apply text-amber-600 dark:text-amber-400; }
-.bg-warning    { @apply bg-amber-50 dark:bg-amber-900/20; }
-.border-warning { @apply border-amber-200 dark:border-amber-800/50; }
+.text-warning { @apply text-amber-400; }
+.bg-warning    { @apply bg-amber-900/20; }
+.border-warning { @apply border-amber-800/50; }
