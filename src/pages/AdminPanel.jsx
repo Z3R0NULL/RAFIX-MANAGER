@@ -181,21 +181,22 @@ export default function AdminPanel() {
 
   const handleCreate = async (data) => {
     const { error } = await createAppUser(data)
-    if (error) return error.message || 'Error al crear usuario.'
+    // error es un string devuelto por el store, no un objeto Error
+    if (error) return error || 'Error al crear usuario.'
     setModal(null)
     flash('Usuario creado correctamente.')
   }
 
   const handleEdit = async (data) => {
     const { error } = await updateAppUser(modal.user.id, data)
-    if (error) return error.message || 'Error al actualizar.'
+    if (error) return error || 'Error al actualizar.'
     setModal(null)
     flash('Usuario actualizado.')
   }
 
   const handleDelete = async () => {
     const { error } = await deleteAppUser(modal.user.id)
-    if (error) { flash(error.message || 'Error al eliminar.', 'err'); return }
+    if (error) { flash(error || 'Error al eliminar.', 'err'); return }
     setModal(null)
     flash('Usuario eliminado.')
   }

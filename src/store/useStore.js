@@ -242,7 +242,7 @@ export async function fetchAllFromTurso({ username } = {}) {
     const inventory = inventoryRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const suppliers = suppliersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
 
-    console.log(`[Turso] loaded ${orders.length} orders, ${clients.length} clients, ${inventory.length} inventory, ${suppliers.length} suppliers (user: ${username})`)
+    // Datos cargados correctamente desde Turso
     return { orders, clients, inventory, suppliers }
   } catch (e) {
     console.warn('[Turso] fetchAll failed:', e)

@@ -116,10 +116,7 @@ export function generateInvoicePDF(order) {
     ['Address', order.customerAddress],
   ]
   customerRows.forEach(([label, value], i) => {
-    const x = i % 2 === 0 ? margin : col2
-    if (i % 2 === 0 && i > 0) y += 0
-    else if (i % 2 === 0) {} else {}
-    // Lay out in 2 columns
+    // Distribuye en 2 columnas: par = columna izquierda, impar = columna derecha
     if (i === 4) {
       row(label, value, margin, y)
       y += 9

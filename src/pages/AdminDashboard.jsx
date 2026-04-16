@@ -28,8 +28,7 @@ async function fetchAllOrders() {
     await initDb()
     const res = await turso.execute('SELECT data FROM orders ORDER BY updated_at DESC')
     return res.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
-  } catch (e) {
-    console.warn('[AdminDashboard] fetch failed:', e)
+  } catch {
     return []
   }
 }

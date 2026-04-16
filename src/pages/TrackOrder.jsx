@@ -78,8 +78,8 @@ export default function TrackOrder() {
           setLoading(false)
           return
         }
-      } catch (e) {
-        console.warn('[TrackOrder] Turso fetch failed, falling back to local store')
+      } catch {
+        // Turso no disponible, se usa el store local como fallback
       }
     }
 

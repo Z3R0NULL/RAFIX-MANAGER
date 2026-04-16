@@ -65,7 +65,8 @@ export default function OrderDetail() {
 
   const order = localOrder || remoteOrder
   // El superadmin puede ver órdenes ajenas pero no editarlas (son de otro usuario)
-  const isOwner = !remoteOrder || localOrder != null
+  // isOwner: la orden fue encontrada localmente (no es de otro usuario via Turso)
+  const isOwner = !remoteOrder || localOrder !== null
 
   if (loadingRemote) {
     return (
