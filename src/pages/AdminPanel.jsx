@@ -271,26 +271,7 @@ export default function AdminPanel() {
             </button>
           </div>
 
-          {/* Superadmin row (always shown) */}
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            <div className="flex items-center justify-between px-5 py-3.5">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center flex-shrink-0">
-                  <ShieldCheck size={14} className="text-purple-600 dark:text-purple-400" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">admin</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">Cuenta del sistema — no editable</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <RoleBadge role="superadmin" />
-                <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                  <CheckCircle size={12} /> Activo
-                </span>
-              </div>
-            </div>
-
             {appUsers.map((user) => (
               <div key={user.id} className="flex items-center justify-between px-5 py-3.5">
                 <div className="flex items-center gap-3 min-w-0">

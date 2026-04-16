@@ -33,7 +33,7 @@ import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
   ChevronDown, ChevronUp, Search, UserCheck, UserPlus
 } from 'lucide-react'
-import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, DEVICE_SUGGESTIONS, BRAND_LIST, canTransitionTo } from '../utils/constants'
+import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 import { useStore } from '../store/useStore'
 
 // ── Sección colapsable ──────────────────────────────────────────────────────
@@ -264,6 +264,7 @@ function ClientSearch({ onSelect }) {
 // ── Formulario principal ───────────────────────────────────────────────────
 export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel = 'Guardar Orden', isLoading }) {
   const clients = useStore((s) => s.clients)
+  const deviceCatalog = useStore((s) => s.deviceCatalog)
   const [clientMode, setClientMode] = useState('manual')
 
   const [form, setForm] = useState(() => ({
@@ -393,7 +394,12 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     setClientMode('manual')
   }
 
-  const modelSuggestions = DEVICE_SUGGESTIONS[form.deviceBrand] || []
+  // Brand and model suggestions come exclusively from the DB catalog
+  const brandSuggestions = [...new Set(deviceCatalog.map((i) => i.brand))].sort()
+  const modelSuggestions = deviceCatalog
+    .filter((i) => i.brand === form.deviceBrand)
+    .map((i) => i.model)
+
   const hasClients = clients.length > 0
 
   const handleSubmit = (e) => {
@@ -488,7 +494,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             <AutocompleteInput
               value={form.deviceBrand}
               onChange={(v) => { set('deviceBrand', v); if (form.deviceModel) set('deviceModel', '') }}
-              suggestions={BRAND_LIST}
+              suggestions={brandSuggestions}
               placeholder="Samsung, Apple, Motorola..."
               className={inputClass}
             />

@@ -14,6 +14,7 @@
  *  - login_logs: registro de accesos (IP, user-agent, fecha).
  *  - inventory: ítems del inventario de piezas/repuestos.
  *  - suppliers: proveedores del taller.
+ *  - device_catalog: catálogo de dispositivos (categoría, marca, modelo).
  *
  * Si las variables VITE_TURSO_DATABASE_URL / VITE_TURSO_AUTH_TOKEN no están
  * definidas, la app funciona únicamente con localStorage (sin sincronización).
@@ -82,6 +83,15 @@ export async function initDb() {
       id TEXT PRIMARY KEY,
       created_by TEXT NOT NULL DEFAULT 'admin',
       data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS device_catalog (
+      id TEXT PRIMARY KEY,
+      category TEXT NOT NULL,
+      brand TEXT NOT NULL,
+      model TEXT NOT NULL,
+      created_by TEXT NOT NULL,
+      created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`,
   ], 'write')

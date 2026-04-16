@@ -2,7 +2,7 @@
  * pages/Login.jsx — Página de inicio de sesión.
  *
  * Ruta pública: /login
- * Autentica contra Turso DB; fallback al superadmin hardcodeado (admin/admin123).
+ * Autentica contra Turso DB.
  * Si el login es exitoso redirige al Dashboard; si falla muestra error inline.
  * Incluye botón toggle para mostrar/ocultar la contraseña.
  */
@@ -25,7 +25,7 @@ export default function Login() {
     if (ok) {
       navigate('/')
     } else {
-      setError('Invalid credentials. Try admin / admin123')
+      setError('Usuario o contraseña incorrectos.')
     }
   }
 
@@ -54,7 +54,7 @@ export default function Login() {
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition"
-                placeholder="admin"
+                placeholder="Usuario"
                 required
               />
             </div>
@@ -97,9 +97,6 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-slate-400 dark:text-slate-600 mt-6">
-            Default credentials: admin / admin123
-          </p>
         </div>
       </div>
     </div>

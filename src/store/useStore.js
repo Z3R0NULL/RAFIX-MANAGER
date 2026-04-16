@@ -36,7 +36,6 @@ import { persist } from 'zustand/middleware'
 import { turso, isTursoConfigured, initDb } from '../lib/turso'
 import { canTransitionTo } from '../utils/constants'
 
-const SUPERADMIN = 'admin'
 
 async function getClientIp() {
   try {
@@ -167,6 +166,33 @@ async function deleteInventoryItemFromTurso(id) {
   }
 }
 
+async function syncCatalogItemToTurso(item) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({
+      sql: `INSERT INTO device_catalog (id, category, brand, model, created_by, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              category   = excluded.category,
+              brand      = excluded.brand,
+              model      = excluded.model,
+              updated_at = excluded.updated_at`,
+      args: [item.id, item.category, item.brand, item.model, item.createdBy, item.createdAt, item.updatedAt],
+    })
+  } catch (e) {
+    console.warn('[Turso] catalog sync failed:', e)
+  }
+}
+
+async function deleteCatalogItemFromTurso(id) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({ sql: 'DELETE FROM device_catalog WHERE id = ?', args: [id] })
+  } catch (e) {
+    console.warn('[Turso] catalog delete failed:', e)
+  }
+}
+
 async function deleteOrderFromTurso(id) {
   if (!isTursoConfigured) return
   try {
@@ -237,13 +263,21 @@ export async function fetchAllFromTurso({ username } = {}) {
       args: [username],
     })
 
+    const catalogRes = await turso.execute(
+      'SELECT id, category, brand, model, created_by, created_at, updated_at FROM device_catalog ORDER BY category, brand, model'
+    )
+
     const orders    = ordersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const clients   = clientsRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const inventory = inventoryRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const suppliers = suppliersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+    const deviceCatalog = catalogRes.rows.map((r) => ({
+      id: r.id, category: r.category, brand: r.brand, model: r.model,
+      createdBy: r.created_by, createdAt: r.created_at, updatedAt: r.updated_at,
+    }))
 
     // Datos cargados correctamente desde Turso
-    return { orders, clients, inventory, suppliers }
+    return { orders, clients, inventory, suppliers, deviceCatalog }
   } catch (e) {
     console.warn('[Turso] fetchAll failed:', e)
     return null
@@ -259,6 +293,7 @@ export const useStore = create(
       clients: [],
       inventory: [],
       suppliers: [],
+      deviceCatalog: [],
       appUsers: [],
       loginLogs: [],
       darkMode: false,
@@ -293,7 +328,7 @@ export const useStore = create(
               })
               set({ auth: { isLoggedIn: true, username, role: userRow.role } })
               const result = await fetchAllFromTurso({ username })
-              if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [] })
+              if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], deviceCatalog: result.deviceCatalog || [] })
               return true
             }
           } catch (e) {
@@ -301,42 +336,15 @@ export const useStore = create(
           }
         }
 
-        // Fallback: hardcoded superadmin
-        if (username === SUPERADMIN && password === 'admin123') {
-          const ip = await getClientIp()
-          if (isTursoConfigured) {
-            try {
-              await turso.execute({
-                sql: `INSERT INTO login_logs (id, username, role, ip_address, user_agent, logged_in_at)
-                      VALUES (?, ?, ?, ?, ?, ?)`,
-                args: [
-                  `LOG-${Date.now()}`,
-                  username,
-                  'superadmin',
-                  ip,
-                  navigator.userAgent,
-                  new Date().toISOString(),
-                ],
-              })
-            } catch (e) {
-              console.warn('[Turso] login log insert failed:', e)
-            }
-          }
-          set({ auth: { isLoggedIn: true, username, role: 'superadmin' } })
-          const result = await fetchAllFromTurso({ username })
-          if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [] })
-          return true
-        }
-
         return false
       },
 
-      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [] }),
+      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [], deviceCatalog: [] }),
 
       loadFromTurso: async () => {
         const { auth } = get()
         const result = await fetchAllFromTurso({ username: auth?.username })
-        if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [] })
+        if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], deviceCatalog: result.deviceCatalog || [] })
       },
 
       // ── Inventory ──────────────────────────────────────────────────
@@ -422,6 +430,41 @@ export const useStore = create(
       deleteSupplier: (id) => {
         set((s) => ({ suppliers: s.suppliers.filter((sup) => sup.id !== id) }))
         deleteSupplierFromTurso(id)
+      },
+
+      // ── Device Catalog ─────────────────────────────────────────────
+      addCatalogItem: (data) => {
+        const { auth } = get()
+        const username = auth?.username || ''
+        const item = {
+          id: `CAT-${Date.now()}`,
+          category: data.category.trim(),
+          brand: data.brand.trim(),
+          model: data.model.trim(),
+          createdBy: username,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        set((s) => ({ deviceCatalog: [...s.deviceCatalog, item].sort((a, b) => `${a.category}${a.brand}${a.model}`.localeCompare(`${b.category}${b.brand}${b.model}`)) }))
+        syncCatalogItemToTurso(item)
+        return item
+      },
+
+      updateCatalogItem: (id, data) => {
+        set((s) => {
+          const updated = s.deviceCatalog.map((item) => {
+            if (item.id !== id) return item
+            const next = { ...item, category: data.category.trim(), brand: data.brand.trim(), model: data.model.trim(), updatedAt: new Date().toISOString() }
+            syncCatalogItemToTurso(next)
+            return next
+          })
+          return { deviceCatalog: updated.sort((a, b) => `${a.category}${a.brand}${a.model}`.localeCompare(`${b.category}${b.brand}${b.model}`)) }
+        })
+      },
+
+      deleteCatalogItem: (id) => {
+        set((s) => ({ deviceCatalog: s.deviceCatalog.filter((item) => item.id !== id) }))
+        deleteCatalogItemFromTurso(id)
       },
 
       // ── App Users (superadmin only) ────────────────────────────────
