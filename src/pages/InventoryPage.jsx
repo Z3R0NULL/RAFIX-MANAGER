@@ -109,7 +109,7 @@ function ItemModal({ item, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
           <h2 className="font-semibold text-slate-900 dark:text-white">
@@ -183,7 +183,7 @@ function ItemModal({ item, onClose, onSave }) {
           </button>
           <button
             onClick={handleSave}
-            className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center gap-2"
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center gap-2"
           >
             <Check size={14} />
             {item ? 'Guardar cambios' : 'Agregar ítem'}
@@ -293,7 +293,7 @@ export default function InventoryPage() {
         </div>
         <button
           onClick={() => setModal('new')}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} />
           Agregar ítem
@@ -318,7 +318,7 @@ export default function InventoryPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre, marca, modelo, ubicación…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 transition-colors"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -338,7 +338,7 @@ export default function InventoryPage() {
         </div>
 
         {/* View toggle */}
-        <div className="flex border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden text-sm">
+        <div className="flex border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden text-sm">
           <button
             onClick={() => setViewMode('table')}
             className={`px-3 py-2 transition-colors ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
@@ -356,7 +356,7 @@ export default function InventoryPage() {
 
       {/* ── Empty state ── */}
       {inventory.length === 0 && (
-        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
           <Package size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
           <p className="text-slate-500 dark:text-slate-400 font-medium">No hay ítems en el inventario</p>
           <p className="text-xs text-slate-400 mt-1 mb-4">Empezá agregando módulos, herramientas o cualquier producto</p>
@@ -379,19 +379,19 @@ export default function InventoryPage() {
 
       {/* ── Table view ── */}
       {viewMode === 'table' && filtered.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
-                  <th className="px-4 py-3 text-left font-medium">Nombre</th>
-                  <th className="px-4 py-3 text-left font-medium">Categoría</th>
-                  <th className="px-4 py-3 text-left font-medium">Marca / Modelo</th>
-                  <th className="px-4 py-3 text-center font-medium">Stock</th>
-                  <th className="px-4 py-3 text-right font-medium">Precio venta</th>
-                  <th className="px-4 py-3 text-right font-medium">Costo</th>
-                  <th className="px-4 py-3 text-left font-medium">Ubicación</th>
-                  <th className="px-4 py-3 text-right font-medium">Acciones</th>
+                <tr className="thead-row">
+                  <th className="th-std">Nombre</th>
+                  <th className="th-std">Categoría</th>
+                  <th className="th-std">Marca / Modelo</th>
+                  <th className="th-std-center">Stock</th>
+                  <th className="th-std-right">Precio venta</th>
+                  <th className="th-std-right">Costo</th>
+                  <th className="th-std">Ubicación</th>
+                  <th className="th-std-right">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -547,7 +547,7 @@ export default function InventoryPage() {
       {/* ── Confirm delete ── */}
       {confirmDel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
                 <Trash2 size={18} className="text-red-500" />
@@ -560,13 +560,13 @@ export default function InventoryPage() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setConfirmDel(null)}
-                className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={() => handleDelete(confirmDel)}
-                className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors"
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors"
               >
                 Eliminar
               </button>

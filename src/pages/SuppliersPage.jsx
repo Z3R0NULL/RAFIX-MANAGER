@@ -91,7 +91,7 @@ function SupplierModal({ supplier, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
           <h2 className="font-semibold text-slate-900 dark:text-white">
@@ -242,7 +242,7 @@ function SupplierModal({ supplier, onClose, onSave }) {
           </button>
           <button
             onClick={handleSave}
-            className="px-5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center gap-2"
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center gap-2"
           >
             <Check size={14} />
             {supplier ? 'Guardar cambios' : 'Agregar proveedor'}
@@ -415,7 +415,7 @@ export default function SuppliersPage() {
         </div>
         <button
           onClick={() => setModal('new')}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} />
           Nuevo proveedor
@@ -440,7 +440,7 @@ export default function SuppliersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre, contacto, teléfono, email…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 transition-colors"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -452,7 +452,7 @@ export default function SuppliersPage() {
         {/* Favorite toggle */}
         <button
           onClick={() => setFilterFav((v) => !v)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
             filterFav
               ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400'
               : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -475,7 +475,7 @@ export default function SuppliersPage() {
 
       {/* ── Empty state ── */}
       {suppliers.length === 0 && (
-        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
           <Truck size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
           <p className="text-slate-500 dark:text-slate-400 font-medium">No hay proveedores registrados</p>
           <p className="text-xs text-slate-400 mt-1 mb-4">Agregá tus distribuidores, mayoristas y contactos de compra</p>
@@ -498,18 +498,18 @@ export default function SuppliersPage() {
 
       {/* ── Table ── */}
       {filtered.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
-                  <th className="px-4 py-3 text-left font-medium w-6" />
-                  <th className="px-4 py-3 text-left font-medium">Proveedor</th>
-                  <th className="px-4 py-3 text-left font-medium">Categoría</th>
-                  <th className="px-4 py-3 text-left font-medium">Contacto</th>
-                  <th className="px-4 py-3 text-left font-medium">Calificación</th>
-                  <th className="px-4 py-3 text-left font-medium">Pago</th>
-                  <th className="px-4 py-3 text-right font-medium">Acciones</th>
+                <tr className="thead-row">
+                  <th className="px-4 py-3 w-6" />
+                  <th className="th-std">Proveedor</th>
+                  <th className="th-std">Categoría</th>
+                  <th className="th-std">Contacto</th>
+                  <th className="th-std">Calificación</th>
+                  <th className="th-std">Pago</th>
+                  <th className="th-std-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -629,7 +629,7 @@ export default function SuppliersPage() {
 
       {confirmDel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
                 <Trash2 size={18} className="text-red-500" />
@@ -642,13 +642,13 @@ export default function SuppliersPage() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setConfirmDel(null)}
-                className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={() => handleDelete(confirmDel)}
-                className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors"
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors"
               >
                 Eliminar
               </button>

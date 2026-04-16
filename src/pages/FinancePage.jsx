@@ -574,13 +574,13 @@ export default function FinancePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
-                  <th className="px-5 py-3 text-left font-medium">Período</th>
-                  <th className="px-5 py-3 text-right font-medium">Entregas</th>
-                  <th className="px-5 py-3 text-right font-medium text-emerald-600">Ingresos</th>
-                  <th className="px-5 py-3 text-right font-medium text-rose-500">Costos</th>
-                  <th className="px-5 py-3 text-right font-medium">Ganancia</th>
-                  <th className="px-5 py-3 text-right font-medium">Margen</th>
+                <tr className="thead-row">
+                  <th className="th-std">Período</th>
+                  <th className="th-std-right">Entregas</th>
+                  <th className="th-std-right">Ingresos</th>
+                  <th className="th-std-right">Costos</th>
+                  <th className="th-std-right">Ganancia</th>
+                  <th className="th-std-right">Margen</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -711,7 +711,7 @@ function MarginBadge({ margin, bold }) {
   const cls = margin >= 50
     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
     : margin >= 20
-      ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
       : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
   return (
     <span className={`text-xs ${bold ? 'font-bold' : 'font-semibold'} px-2 py-0.5 rounded-full ${cls}`}>

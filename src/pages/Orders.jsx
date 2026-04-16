@@ -117,13 +117,13 @@ export default function Orders() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/60">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Order #</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Customer</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden sm:table-cell">Device</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden md:table-cell">Entry</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden lg:table-cell">Price</th>
+                <tr className="thead-row">
+                  <th className="th-std">Order #</th>
+                  <th className="th-std">Customer</th>
+                  <th className="th-std hidden sm:table-cell">Device</th>
+                  <th className="th-std">Status</th>
+                  <th className="th-std hidden md:table-cell">Entry</th>
+                  <th className="th-std hidden lg:table-cell">Price</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>

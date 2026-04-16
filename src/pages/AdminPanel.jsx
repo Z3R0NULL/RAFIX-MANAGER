@@ -50,7 +50,7 @@ function RoleBadge({ role }) {
 function Modal({ title, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/60">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700/60">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700/60">
           <h3 className="font-semibold text-slate-900 dark:text-white text-sm">{title}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
@@ -337,16 +337,12 @@ export default function AdminPanel() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-slate-800">
-                    <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 dark:text-slate-400">Usuario</th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 dark:text-slate-400">Rol</th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 dark:text-slate-400">
-                      <span className="flex items-center gap-1"><Globe size={11} />IP</span>
-                    </th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 dark:text-slate-400">
-                      <span className="flex items-center gap-1"><Clock size={11} />Fecha y hora</span>
-                    </th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 dark:text-slate-400">Dispositivo</th>
+                  <tr className="thead-row">
+                    <th className="th-std">Usuario</th>
+                    <th className="th-std">Rol</th>
+                    <th className="th-std"><span className="flex items-center gap-1"><Globe size={11} />IP</span></th>
+                    <th className="th-std"><span className="flex items-center gap-1"><Clock size={11} />Fecha y hora</span></th>
+                    <th className="th-std">Dispositivo</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800/80">

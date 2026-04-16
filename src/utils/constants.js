@@ -34,8 +34,8 @@ export const STATUS_CONFIG = {
   },
   waiting_approval: {
     label: 'Esperando aprobación',
-    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-    dot: 'bg-yellow-500',
+    color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    dot: 'bg-amber-500',
   },
   in_repair: {
     label: 'En reparación',

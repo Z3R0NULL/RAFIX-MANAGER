@@ -58,10 +58,10 @@ function getDeliveryStatus(estimatedDelivery) {
       type: 'soon',
       label: hrs <= 1 ? 'Vence en 1h' : `Vence en ${hrs}h`,
       detail: `${hrs} hora${hrs !== 1 ? 's' : ''} restante${hrs !== 1 ? 's' : ''}`,
-      color: 'text-yellow-700 dark:text-yellow-400',
-      bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-      dot: 'bg-yellow-500',
-      border: 'border-yellow-200 dark:border-yellow-800',
+      color: 'text-amber-700 dark:text-amber-400',
+      bg: 'bg-amber-50 dark:bg-amber-900/20',
+      dot: 'bg-amber-500',
+      border: 'border-amber-200 dark:border-amber-800',
     }
   } else {
     const days = Math.ceil(diffDays)
@@ -116,7 +116,7 @@ export default function Dashboard() {
     { label: 'Pendientes', value: stats.pending, icon: Clock, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-800' },
     { label: 'En reparación', value: stats.inRepair, icon: Wrench, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
     { label: 'Completados', value: stats.completed + stats.delivered, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
-    { label: 'Esperando aprobación', value: stats.waitingApproval, icon: AlertTriangle, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
+    { label: 'Esperando aprobación', value: stats.waitingApproval, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
     { label: 'Diagnóstico', value: stats.diagnosing, icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
   ]
 

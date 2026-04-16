@@ -1,17 +1,5 @@
 /**
  * components/Sidebar.jsx — Barra de navegación lateral.
- *
- * Muestra:
- *  - Logo/nombre de la app (RepairPro).
- *  - Links de navegación principales (NAV_ITEMS) con resaltado activo.
- *  - Sección de Administración solo para usuarios con rol 'superadmin':
- *      · Panel Global (/admin/dashboard)
- *      · Gestión de Usuarios (/admin)
- *  - Botón de toggle Dark/Light mode.
- *  - Info del usuario autenticado + botón de cerrar sesión.
- *
- * Prop onClose: función opcional llamada al hacer clic en un link (usada
- * en móvil para cerrar el overlay del sidebar).
  */
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
@@ -34,9 +22,9 @@ import { useStore } from '../store/useStore'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/orders', label: 'Orders', icon: ClipboardList, end: true },
-  { to: '/clients', label: 'Clients', icon: Users },
-  { to: '/devices', label: 'Devices', icon: Smartphone },
+  { to: '/orders', label: 'Órdenes', icon: ClipboardList, end: true },
+  { to: '/clients', label: 'Clientes', icon: Users },
+  { to: '/devices', label: 'Dispositivos', icon: Smartphone },
   { to: '/finance', label: 'Finanzas', icon: BarChart2 },
   { to: '/inventory', label: 'Inventario', icon: Package },
   { to: '/suppliers', label: 'Proveedores', icon: Truck },
@@ -52,98 +40,97 @@ export default function Sidebar({ onClose }) {
     navigate('/login')
   }
 
+  const navLinkClass = ({ isActive }) =>
+    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+      isActive
+        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
+    }`
+
+  const adminNavLinkClass = ({ isActive }) =>
+    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+      isActive
+        ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
+    }`
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/60 w-64">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-200 dark:border-slate-700/60">
         <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
-          <Wrench size={16} className="text-white" />
+          <Wrench size={15} className="text-white" />
         </div>
         <div>
-          <p className="font-semibold text-slate-900 dark:text-white text-sm">RepairPro</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Service Manager</p>
+          <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">RAFIX</p>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Service Manager</p>
         </div>
       </div>
 
-      {/* Nav */}
+      {/* Main Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto scrollbar-thin">
+        <p className="px-3 mb-2 text-[10px] font-semibold text-slate-400 dark:text-slate-600 uppercase tracking-widest">
+          Principal
+        </p>
         {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
-              }`
-            }
+            className={navLinkClass}
           >
-            <Icon size={16} />
-            {label}
+            <Icon size={16} className="flex-shrink-0" />
+            <span className="flex-1">{label}</span>
           </NavLink>
         ))}
-      </nav>
 
-      {/* Superadmin section */}
-      {isSuperAdmin && (
-        <div className="px-3 pb-2">
-          <p className="px-3 py-1.5 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            Administración
-          </p>
-          <NavLink
-            to="/admin/dashboard"
-            onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
-              }`
-            }
-          >
-            <Globe size={16} />
-            Panel Global
-          </NavLink>
-          <NavLink
-            to="/admin"
-            end
-            onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
-              }`
-            }
-          >
-            <ShieldCheck size={16} />
-            Usuarios
-          </NavLink>
-        </div>
-      )}
+        {/* Superadmin section */}
+        {isSuperAdmin && (
+          <div className="pt-4">
+            <p className="px-3 mb-2 text-[10px] font-semibold text-slate-400 dark:text-slate-600 uppercase tracking-widest">
+              Administración
+            </p>
+            <NavLink to="/admin/dashboard" onClick={onClose} className={adminNavLinkClass}>
+              <Globe size={16} className="flex-shrink-0" />
+              <span className="flex-1">Panel Global</span>
+            </NavLink>
+            <NavLink to="/admin" end onClick={onClose} className={adminNavLinkClass}>
+              <ShieldCheck size={16} className="flex-shrink-0" />
+              <span className="flex-1">Usuarios</span>
+            </NavLink>
+          </div>
+        )}
+      </nav>
 
       {/* Bottom */}
       <div className="px-3 py-4 border-t border-slate-200 dark:border-slate-700/60 space-y-1">
+        {/* User info card */}
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 mb-2">
+          <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase">
+              {auth?.username?.[0] || 'U'}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{auth?.username || 'Admin'}</p>
+            <p className="text-[11px] text-slate-400 capitalize">{auth?.role || 'usuario'}</p>
+          </div>
+        </div>
+
         <button
           onClick={toggleDarkMode}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
         >
-          {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-          {darkMode ? 'Light Mode' : 'Dark Mode'}
+          {darkMode ? <Sun size={16} className="flex-shrink-0" /> : <Moon size={16} className="flex-shrink-0" />}
+          {darkMode ? 'Modo claro' : 'Modo oscuro'}
         </button>
-        <div className="px-3 py-2">
-          <p className="text-xs text-slate-500 dark:text-slate-500">Logged in as</p>
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{auth.username || 'Admin'}</p>
-        </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-colors"
         >
-          <LogOut size={16} />
-          Sign Out
+          <LogOut size={16} className="flex-shrink-0" />
+          Cerrar sesión
         </button>
       </div>
     </div>

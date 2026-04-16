@@ -58,8 +58,8 @@ function ClientModal({ client, onSave, onClose, onDelete }) {
           <h2 className="font-semibold text-slate-900 dark:text-white">
             {client ? 'Edit Client' : 'New Client'}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-            <X size={18} />
+          <button onClick={onClose} className="btn-modal-close">
+            <X size={16} />
           </button>
         </div>
 
