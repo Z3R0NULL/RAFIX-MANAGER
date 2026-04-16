@@ -15,6 +15,8 @@ import FinancePage from './pages/FinancePage'
 import AdminPanel from './pages/AdminPanel'
 import AdminDashboard from './pages/AdminDashboard'
 import Clients from './pages/Clients'
+import InventoryPage from './pages/InventoryPage'
+import SuppliersPage from './pages/SuppliersPage'
 
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
@@ -149,6 +151,26 @@ export default function App() {
               <PrivateRoute>
                 <Layout>
                   <FinancePage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/inventory"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <InventoryPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/suppliers"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <SuppliersPage />
                 </Layout>
               </PrivateRoute>
             }

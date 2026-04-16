@@ -3,64 +3,33 @@
 > vite --host 0.0.0.0 --port 3000
 
 Port 3000 is in use, trying another one...
-4:51:53 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+12:05:00 AM [vite] (client) Re-optimizing dependencies because vite config has changed
 
-  VITE v8.0.8  ready in 220 ms
+  VITE v8.0.8  ready in 267 ms
 
   ➜  Local:   http://localhost:3001/
-  ➜  Network: http://172.20.0.10:3001/
-4:55:33 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-4:55:43 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-4:55:57 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-4:58:03 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-4:58:17 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-5:01:48 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-5:02:02 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-5:02:05 AM [vite] (client) [Unhandled error] ReferenceError: DonutSection is not defined
- > FinancePage src/pages/FinancePage.jsx:541:9
-    539 |        {/* ── Ganancias por categoría (donut) ── */}
-    540 |        {categoryData.length > 0 && (
-    541 |          <DonutSection categoryData={categoryData} formatCurrency={formatCurrency} globalProfit={global.profit} />
-        |           ^
-    542 |        )}
-    543 |  
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
-
-5:02:05 AM [vite] (client) [console.warn] An error occurred in the <FinancePage> component.
-
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
-
-5:02:15 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-5:07:19 AM [vite] (client) hmr update /src/index.css, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/OrderDetail.jsx, /src/pages/SearchPage.jsx, /src/pages/TrackOrder.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminDashboard.jsx, /src/components/StatusBadge.jsx, /src/components/OrderForm.jsx
-5:07:41 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/NewOrder.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/OrderDetail.jsx, /src/pages/SearchPage.jsx, /src/pages/TrackOrder.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/Sidebar.jsx, /src/components/OrderForm.jsx, /src/index.css
-5:07:52 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/NewOrder.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/OrderDetail.jsx, /src/pages/SearchPage.jsx, /src/pages/TrackOrder.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/Sidebar.jsx, /src/components/OrderForm.jsx, /src/index.css
-5:08:21 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-5:08:27 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-5:08:38 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-5:08:45 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-5:09:43 AM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
-5:10:19 AM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-5:16:39 AM [vite] (client) hmr update /src/index.css, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/OrderDetail.jsx, /src/pages/SearchPage.jsx, /src/pages/TrackOrder.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminDashboard.jsx, /src/components/StatusBadge.jsx, /src/components/OrderForm.jsx, /src/App.jsx, /src/pages/Login.jsx, /src/pages/NewOrder.jsx, /src/pages/AdminPanel.jsx, /src/pages/Clients.jsx, /src/components/Sidebar.jsx
-6:03:09 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:03:18 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:03:36 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:09:03 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:09:12 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:09:27 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:14:05 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:14:16 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:15:44 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:21:48 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:21:54 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-6:24:19 AM [vite] (client) hmr update /src/pages/OrderDetail.jsx, /src/index.css
-6:24:33 AM [vite] (client) hmr update /src/pages/OrderDetail.jsx, /src/index.css
-6:25:13 AM [vite] (client) hmr update /src/pages/OrderDetail.jsx, /src/index.css
+  ➜  Network: http://172.20.0.3:3001/
+12:19:04 AM [vite] (client) hmr update /src/index.css, /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx
+12:19:20 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/index.css
+12:19:29 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/index.css
+12:19:35 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/index.css
+12:19:42 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/index.css
+12:19:48 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/index.css
+12:19:55 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/index.css
+12:20:01 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/index.css
+12:20:11 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/index.css
+12:22:08 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+12:22:15 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+12:22:29 AM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+12:22:35 AM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+12:26:36 AM [vite] (client) hmr update /src/index.css, /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/pages/InventoryPage.jsx
+12:26:52 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/pages/InventoryPage.jsx, /src/index.css
+12:27:02 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/pages/InventoryPage.jsx, /src/index.css
+12:27:08 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/pages/InventoryPage.jsx, /src/index.css
+12:27:15 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/pages/InventoryPage.jsx, /src/index.css
+12:27:21 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/pages/InventoryPage.jsx, /src/index.css
+12:27:32 AM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/AdminDashboard.jsx, /src/pages/Clients.jsx, /src/components/OrderForm.jsx, /src/components/Sidebar.jsx, /src/pages/InventoryPage.jsx, /src/index.css
+12:29:35 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+12:29:42 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+12:29:48 AM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+12:29:54 AM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx

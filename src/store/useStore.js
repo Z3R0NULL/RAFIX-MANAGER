@@ -82,6 +82,58 @@ async function syncOrderToTurso(order) {
   }
 }
 
+async function syncInventoryItemToTurso(item, username) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({
+      sql: `INSERT INTO inventory (id, created_by, data, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              created_by = excluded.created_by,
+              data       = excluded.data,
+              updated_at = excluded.updated_at`,
+      args: [item.id, username || item.createdBy || 'admin', JSON.stringify(item), new Date().toISOString()],
+    })
+  } catch (e) {
+    console.warn('[Turso] inventory sync failed:', e)
+  }
+}
+
+async function syncSupplierToTurso(supplier, username) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({
+      sql: `INSERT INTO suppliers (id, created_by, data, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              created_by = excluded.created_by,
+              data       = excluded.data,
+              updated_at = excluded.updated_at`,
+      args: [supplier.id, username || supplier.createdBy || 'admin', JSON.stringify(supplier), new Date().toISOString()],
+    })
+  } catch (e) {
+    console.warn('[Turso] supplier sync failed:', e)
+  }
+}
+
+async function deleteSupplierFromTurso(id) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({ sql: 'DELETE FROM suppliers WHERE id = ?', args: [id] })
+  } catch (e) {
+    console.warn('[Turso] supplier delete failed:', e)
+  }
+}
+
+async function deleteInventoryItemFromTurso(id) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({ sql: 'DELETE FROM inventory WHERE id = ?', args: [id] })
+  } catch (e) {
+    console.warn('[Turso] inventory delete failed:', e)
+  }
+}
+
 async function deleteOrderFromTurso(id) {
   if (!isTursoConfigured) return
   try {
@@ -142,11 +194,23 @@ export async function fetchAllFromTurso({ username } = {}) {
       args: [username],
     })
 
-    const orders = ordersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
-    const clients = clientsRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+    const inventoryRes = await turso.execute({
+      sql: 'SELECT data FROM inventory WHERE created_by = ? ORDER BY updated_at DESC',
+      args: [username],
+    })
 
-    console.log(`[Turso] loaded ${orders.length} orders, ${clients.length} clients (user: ${username})`)
-    return { orders, clients }
+    const suppliersRes = await turso.execute({
+      sql: 'SELECT data FROM suppliers WHERE created_by = ? ORDER BY updated_at DESC',
+      args: [username],
+    })
+
+    const orders    = ordersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+    const clients   = clientsRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+    const inventory = inventoryRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+    const suppliers = suppliersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+
+    console.log(`[Turso] loaded ${orders.length} orders, ${clients.length} clients, ${inventory.length} inventory, ${suppliers.length} suppliers (user: ${username})`)
+    return { orders, clients, inventory, suppliers }
   } catch (e) {
     console.warn('[Turso] fetchAll failed:', e)
     return null
@@ -160,6 +224,8 @@ export const useStore = create(
     (set, get) => ({
       orders: [],
       clients: [],
+      inventory: [],
+      suppliers: [],
       appUsers: [],
       loginLogs: [],
       darkMode: false,
@@ -194,7 +260,7 @@ export const useStore = create(
               })
               set({ auth: { isLoggedIn: true, username, role: userRow.role } })
               const result = await fetchAllFromTurso({ username })
-              if (result) set({ orders: result.orders, clients: result.clients })
+              if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [] })
               return true
             }
           } catch (e) {
@@ -225,19 +291,104 @@ export const useStore = create(
           }
           set({ auth: { isLoggedIn: true, username, role: 'superadmin' } })
           const result = await fetchAllFromTurso({ username })
-          if (result) set({ orders: result.orders, clients: result.clients })
+          if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [] })
           return true
         }
 
         return false
       },
 
-      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [] }),
+      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [] }),
 
       loadFromTurso: async () => {
         const { auth } = get()
         const result = await fetchAllFromTurso({ username: auth?.username })
-        if (result) set({ orders: result.orders, clients: result.clients })
+        if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [] })
+      },
+
+      // ── Inventory ──────────────────────────────────────────────────
+      addInventoryItem: (data) => {
+        const { auth } = get()
+        const username = auth?.username || 'admin'
+        const item = {
+          ...data,
+          id: `INV-${Date.now()}`,
+          createdBy: username,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        set((s) => ({ inventory: [item, ...s.inventory] }))
+        syncInventoryItemToTurso(item, username)
+        return item
+      },
+
+      updateInventoryItem: (id, data) => {
+        const { auth } = get()
+        const username = auth?.username || 'admin'
+        set((s) => {
+          const updated = s.inventory.map((item) => {
+            if (item.id !== id) return item
+            const next = { ...item, ...data, id: item.id, createdBy: item.createdBy, createdAt: item.createdAt, updatedAt: new Date().toISOString() }
+            syncInventoryItemToTurso(next, username)
+            return next
+          })
+          return { inventory: updated }
+        })
+      },
+
+      deleteInventoryItem: (id) => {
+        set((s) => ({ inventory: s.inventory.filter((item) => item.id !== id) }))
+        deleteInventoryItemFromTurso(id)
+      },
+
+      adjustInventoryStock: (id, delta) => {
+        const { auth } = get()
+        const username = auth?.username || 'admin'
+        set((s) => {
+          const updated = s.inventory.map((item) => {
+            if (item.id !== id) return item
+            const newStock = Math.max(0, (item.stock || 0) + delta)
+            const next = { ...item, stock: newStock, updatedAt: new Date().toISOString() }
+            syncInventoryItemToTurso(next, username)
+            return next
+          })
+          return { inventory: updated }
+        })
+      },
+
+      // ── Suppliers ──────────────────────────────────────────────────
+      addSupplier: (data) => {
+        const { auth } = get()
+        const username = auth?.username || 'admin'
+        const supplier = {
+          ...data,
+          id: `SUP-${Date.now()}`,
+          createdBy: username,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        set((s) => ({ suppliers: [supplier, ...s.suppliers] }))
+        syncSupplierToTurso(supplier, username)
+        return supplier
+      },
+
+      updateSupplier: (id, data) => {
+        const { auth } = get()
+        const username = auth?.username || 'admin'
+        set((s) => {
+          const updated = s.suppliers.map((sup) => {
+            if (sup.id !== id) return sup
+            const next = { ...sup, ...data, id: sup.id, createdBy: sup.createdBy, createdAt: sup.createdAt, updatedAt: new Date().toISOString() }
+            syncSupplierToTurso(next, username)
+            return next
+          })
+          return { suppliers: updated }
+        })
+      },
+
+      deleteSupplier: (id) => {
+        set((s) => ({ suppliers: s.suppliers.filter((sup) => sup.id !== id) }))
+        deleteSupplierFromTurso(id)
       },
 
       // ── App Users (superadmin only) ────────────────────────────────

@@ -12,6 +12,8 @@ import {
   Globe,
   Users,
   BarChart2,
+  Package,
+  Truck,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
@@ -21,6 +23,8 @@ const NAV_ITEMS = [
   { to: '/clients', label: 'Clients', icon: Users },
   { to: '/devices', label: 'Devices', icon: Smartphone },
   { to: '/finance', label: 'Finanzas', icon: BarChart2 },
+  { to: '/inventory', label: 'Inventario', icon: Package },
+  { to: '/suppliers', label: 'Proveedores', icon: Truck },
 ]
 
 export default function Sidebar({ onClose }) {

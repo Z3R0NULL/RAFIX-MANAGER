@@ -52,6 +52,18 @@ export async function initDb() {
       user_agent TEXT,
       logged_in_at TEXT NOT NULL
     )`,
+    `CREATE TABLE IF NOT EXISTS inventory (
+      id TEXT PRIMARY KEY,
+      created_by TEXT NOT NULL DEFAULT 'admin',
+      data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS suppliers (
+      id TEXT PRIMARY KEY,
+      created_by TEXT NOT NULL DEFAULT 'admin',
+      data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
   ], 'write')
 
   // Migrate existing tables — safe to run every time (errors = column already exists)
