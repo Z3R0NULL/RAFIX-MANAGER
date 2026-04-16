@@ -1,3 +1,11 @@
+/**
+ * pages/NewOrder.jsx — Crear una nueva orden de servicio.
+ *
+ * Ruta: /orders/new
+ * Renderiza el componente OrderForm vacío. Al enviar, llama a
+ * store.createOrder() y redirige al detalle de la orden recién creada.
+ * Si el usuario viene de Clients (state.prefill), precarga los datos del cliente.
+ */
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'

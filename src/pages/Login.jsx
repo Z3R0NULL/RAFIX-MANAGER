@@ -1,3 +1,11 @@
+/**
+ * pages/Login.jsx — Página de inicio de sesión.
+ *
+ * Ruta pública: /login
+ * Autentica contra Turso DB; fallback al superadmin hardcodeado (admin/admin123).
+ * Si el login es exitoso redirige al Dashboard; si falla muestra error inline.
+ * Incluye botón toggle para mostrar/ocultar la contraseña.
+ */
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Wrench, Eye, EyeOff, AlertCircle } from 'lucide-react'

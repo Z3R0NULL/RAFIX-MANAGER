@@ -1,3 +1,25 @@
+/**
+ * utils/pdfGenerator.js — Generador de PDF para órdenes de servicio.
+ *
+ * Exporta:
+ *  - generateInvoicePDF(order): genera y descarga automáticamente un PDF A4
+ *    con toda la información de la orden pasada como parámetro.
+ *
+ * Estructura del PDF generado:
+ *  1. Encabezado con nombre del sistema (RepairPro), número de orden y fechas.
+ *  2. Pill de estado de la orden.
+ *  3. Sección "Customer Information" — datos del cliente en 2 columnas.
+ *  4. Sección "Device Information" — tipo, marca, modelo, serial y accesorios.
+ *  5. Sección "Reported Issue" — problema descrito por el cliente.
+ *  6. Sección "Work Performed" — solo si workDone tiene contenido.
+ *  7. Sección "Pricing Summary" — precios estimado, de reparación y final.
+ *  8. Cuadro destacado con el TOTAL.
+ *  9. Sección "Terms & Conditions" — 6 cláusulas estándar del taller.
+ * 10. Pie de página con nombre del sistema y fecha de generación.
+ *
+ * Dependencias: jsPDF, y las utilidades formatDate / formatDateShort /
+ *   formatCurrency / STATUS_CONFIG de ./constants.
+ */
 import jsPDF from 'jspdf'
 import { STATUS_CONFIG, formatDate, formatDateShort, formatCurrency } from './constants'
 

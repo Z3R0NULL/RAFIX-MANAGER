@@ -1,3 +1,13 @@
+/**
+ * pages/SearchPage.jsx — Búsqueda global dentro de la app.
+ *
+ * Ruta: /search
+ * Busca simultáneamente en órdenes y clientes del usuario.
+ * Resultados de órdenes: filtra por número, nombre de cliente, dispositivo
+ *   o problema reportado. Muestra link directo al detalle.
+ * Resultados de clientes: filtra por nombre, teléfono, DNI o email.
+ *   Muestra link para crear una nueva orden con el cliente preseleccionado.
+ */
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, ExternalLink } from 'lucide-react'

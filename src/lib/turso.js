@@ -1,3 +1,23 @@
+/**
+ * lib/turso.js — Cliente de base de datos Turso (libSQL sobre SQLite en la nube).
+ *
+ * Exporta:
+ *  - turso: instancia del cliente. Es null si las variables de entorno no están configuradas.
+ *  - isTursoConfigured: booleano que indica si Turso está disponible.
+ *  - initDb(): crea las tablas necesarias si no existen y aplica migraciones
+ *    incremetales (ALTER TABLE). Seguro ejecutar en cada inicio de sesión.
+ *
+ * Tablas creadas:
+ *  - orders: órdenes de servicio técnico.
+ *  - clients: clientes del taller.
+ *  - app_users: usuarios que pueden iniciar sesión en el sistema.
+ *  - login_logs: registro de accesos (IP, user-agent, fecha).
+ *  - inventory: ítems del inventario de piezas/repuestos.
+ *  - suppliers: proveedores del taller.
+ *
+ * Si las variables VITE_TURSO_DATABASE_URL / VITE_TURSO_AUTH_TOKEN no están
+ * definidas, la app funciona únicamente con localStorage (sin sincronización).
+ */
 import { createClient } from '@libsql/client/web'
 
 const tursoUrl = import.meta.env.VITE_TURSO_DATABASE_URL

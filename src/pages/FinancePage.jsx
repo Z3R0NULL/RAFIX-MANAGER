@@ -1,3 +1,15 @@
+/**
+ * pages/FinancePage.jsx — Módulo financiero del taller.
+ *
+ * Ruta: /finance
+ * Calcula y muestra indicadores financieros a partir de las órdenes:
+ *  - Ingresos totales, del mes actual y del mes anterior.
+ *  - Costos de reparación y margen de ganancia.
+ *  - Gráfico/listado de ingresos por mes.
+ *  - Desglose por estado de presupuesto (aprobados, rechazados, pendientes).
+ *  - Filtro por rango de fechas.
+ * No persiste datos propios: todo se calcula sobre las órdenes del store.
+ */
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {

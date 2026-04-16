@@ -1,3 +1,13 @@
+/**
+ * pages/Orders.jsx — Lista completa de órdenes de servicio.
+ *
+ * Ruta: /orders
+ * Muestra todas las órdenes del usuario autenticado con:
+ *  - Buscador por número de orden, cliente o dispositivo.
+ *  - Filtros por estado (todos, pending, in_repair, etc.).
+ *  - Tabla/lista con ordenamiento y acceso al detalle de cada orden.
+ *  - Botón para crear nueva orden.
+ */
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {

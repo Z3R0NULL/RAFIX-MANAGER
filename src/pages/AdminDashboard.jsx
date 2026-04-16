@@ -1,3 +1,15 @@
+/**
+ * pages/AdminDashboard.jsx — Panel global de todas las cuentas (solo superadmin).
+ *
+ * Ruta: /admin/dashboard
+ * A diferencia del Dashboard normal (que solo muestra datos del usuario
+ * autenticado), este panel consulta directamente Turso para obtener
+ * TODAS las órdenes de TODOS los usuarios del sistema.
+ * Muestra:
+ *  - Métricas globales: total de órdenes, usuarios activos, ingresos totales.
+ *  - Lista de órdenes recientes de cualquier usuario con su creador.
+ *  - Gráficos de actividad por usuario y por estado.
+ */
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {

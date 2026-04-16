@@ -1,3 +1,13 @@
+/**
+ * index.css — Estilos globales de la aplicación.
+ *
+ * - Importa Tailwind CSS v4 (incluye utilidades, variantes dark:, etc.).
+ * - Establece Inter como fuente principal en todos los elementos.
+ * - Define color-scheme light/dark para que el navegador adapte
+ *   scrollbars, inputs y selectores de fecha al tema activo.
+ * - Agrega la clase utilitaria .scrollbar-thin para personalizar
+ *   el scrollbar de los paneles con overflow-y.
+ */
 @import "tailwindcss";
 
 * {

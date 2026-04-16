@@ -1,3 +1,15 @@
+/**
+ * pages/OrderDetail.jsx — Detalle completo de una orden de servicio.
+ *
+ * Ruta: /orders/:id
+ * Muestra toda la información de la orden: datos del cliente, dispositivo,
+ * diagnóstico, checklist técnico, presupuesto, historial de estados y fechas.
+ * Permite:
+ *  - Editar la orden (despliega OrderForm en modo edición).
+ *  - Generar e imprimir PDF de la orden (generateInvoicePDF).
+ *  - Eliminar la orden con confirmación.
+ * Usa íconos TriState para visualizar el resultado del checklist técnico.
+ */
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {

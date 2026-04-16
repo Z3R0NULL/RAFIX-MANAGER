@@ -1,3 +1,36 @@
+/**
+ * store/useStore.js — Estado global de la aplicación (Zustand + persist).
+ *
+ * Este archivo es el núcleo de la lógica del sistema. Centraliza:
+ *
+ * Estado persistido en localStorage (solo auth y darkMode):
+ *  - auth: { isLoggedIn, username, role }
+ *  - darkMode: boolean
+ *
+ * Estado en memoria (recargado desde Turso al iniciar sesión):
+ *  - orders: lista de órdenes de servicio del usuario autenticado.
+ *  - clients: lista de clientes registrados por el usuario.
+ *  - inventory: piezas y repuestos del taller.
+ *  - suppliers: proveedores registrados.
+ *  - appUsers: usuarios del sistema (solo visible para superadmin).
+ *  - loginLogs: historial de accesos (solo visible para superadmin).
+ *
+ * Acciones principales:
+ *  - login / logout: autenticación contra Turso; fallback al superadmin hardcodeado.
+ *  - loadFromTurso: recarga todos los datos del usuario desde la DB.
+ *  - CRUD de orders, clients, inventory, suppliers, appUsers.
+ *  - getOrder / getOrderByNumber: búsqueda local de órdenes.
+ *
+ * Helpers internos (no exportados):
+ *  - syncOrderToTurso / syncInventoryItemToTurso / etc.: sincronizan cada
+ *    operación local hacia la DB en segundo plano.
+ *  - fetchAllFromTurso: obtiene todos los registros del usuario desde Turso.
+ *  - getClientIp: obtiene la IP pública del cliente para el log de acceso.
+ *  - generateOrderNumber: genera un número de orden único (ORD-XXXXXXXX).
+ *
+ * initialOrder: objeto con todos los campos vacíos de una orden nueva.
+ *   Se exporta para usarlo como valor por defecto en el formulario.
+ */
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { turso, isTursoConfigured, initDb } from '../lib/turso'

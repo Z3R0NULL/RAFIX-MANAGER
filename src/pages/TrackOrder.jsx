@@ -1,3 +1,14 @@
+/**
+ * pages/TrackOrder.jsx — Seguimiento público de órdenes por número.
+ *
+ * Rutas públicas: /track  y  /track/:orderNumber
+ * Permite que un cliente consulte el estado de su equipo sin iniciar sesión.
+ * Busca la orden en el store por número. Si la encuentra muestra:
+ *  - Estado actual con badge, fechas de ingreso y entrega.
+ *  - Información del dispositivo, problema reportado y trabajo realizado.
+ *  - Historial de cambios de estado.
+ * Si no la encuentra muestra un mensaje de error.
+ */
 import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {

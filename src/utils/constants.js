@@ -1,3 +1,30 @@
+/**
+ * utils/constants.js — Constantes globales y utilidades puras de la app.
+ *
+ * Exporta:
+ *
+ * STATUS_CONFIG: configuración visual (label, colores Tailwind, punto de color)
+ *   para cada estado posible de una orden de servicio:
+ *   pending → diagnosing → waiting_approval → in_repair → completed / irreparable → delivered / abandoned
+ *
+ * canTransitionTo(order, newStatus): valida si una orden puede cambiar al nuevo
+ *   estado según las reglas de flujo (TRANSITION_RULES). Devuelve { ok, reason }.
+ *
+ * BUDGET_STATUS_CONFIG: colores para los estados del presupuesto (pending, approved, rejected).
+ *
+ * DEVICE_TYPES: tipos de dispositivos para el select del formulario.
+ *
+ * ACCESSORIES_OPTIONS: accesorios comunes que puede traer el cliente con el equipo.
+ *
+ * DEVICE_SUGGESTIONS: marcas y modelos sugeridos en los autocomplete del formulario.
+ *   Clave = nombre de la marca, valor = array de modelos.
+ *
+ * BRAND_LIST: solo los nombres de las marcas (Object.keys de DEVICE_SUGGESTIONS).
+ *
+ * formatDate(iso): fecha completa con hora en es-AR.
+ * formatDateShort(iso): fecha sin hora en es-AR.
+ * formatCurrency(val): formato ARS sin decimales (ej. $ 15.000).
+ */
 export const STATUS_CONFIG = {
   pending: {
     label: 'Pendiente',

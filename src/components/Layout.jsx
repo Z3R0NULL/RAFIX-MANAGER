@@ -1,3 +1,13 @@
+/**
+ * components/Layout.jsx — Shell visual principal de la app (post-login).
+ *
+ * Envuelve todas las páginas protegidas y provee:
+ *  - Sidebar fijo en escritorio (md+).
+ *  - Overlay de sidebar en móvil: botón hamburguesa en el topbar abre
+ *    el sidebar sobre un fondo oscuro semitransparente, y lo cierra al
+ *    hacer clic fuera o al navegar.
+ *  - <main> con scroll independiente donde se renderiza el {children}.
+ */
 import React, { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import Sidebar from './Sidebar'

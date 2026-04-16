@@ -1,3 +1,15 @@
+/**
+ * pages/SuppliersPage.jsx — Gestión de proveedores del taller.
+ *
+ * Ruta: /suppliers
+ * CRUD completo de proveedores:
+ *  - Agregar, editar y eliminar proveedores.
+ *  - Campos: nombre, contacto, teléfono, email, web, dirección, notas,
+ *    categorías de productos y calificación (estrella favorito).
+ *  - Buscador por nombre, contacto o email.
+ *  - Filtro por categoría de producto.
+ * Los datos se persisten en Turso a través del store (addSupplier, etc.).
+ */
 import React, { useState, useMemo } from 'react'
 import {
   Truck, Plus, Search, Pencil, Trash2, X, Check,

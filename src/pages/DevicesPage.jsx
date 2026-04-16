@@ -1,3 +1,14 @@
+/**
+ * pages/DevicesPage.jsx — Estadísticas de dispositivos reparados.
+ *
+ * Ruta: /devices
+ * Agrupa las órdenes del usuario por modelo de dispositivo y muestra:
+ *  - Tarjetas por marca con total de reparaciones.
+ *  - Buscador por marca o modelo.
+ *  - Ordenamiento por cantidad de reparaciones o nombre.
+ *  - Acceso al detalle de cada modelo (/devices/:slug).
+ * No persiste datos propios: deriva todo de las órdenes del store.
+ */
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Smartphone, ChevronRight, Search, TrendingUp, Clock, CheckCircle2, Wrench } from 'lucide-react'

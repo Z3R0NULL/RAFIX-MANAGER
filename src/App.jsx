@@ -1,3 +1,13 @@
+/**
+ * App.jsx — Componente raíz de la aplicación.
+ *
+ * Define el enrutamiento global con React Router y gestiona:
+ * - Rutas públicas: /login (inicio de sesión) y /track (seguimiento de órdenes por cliente).
+ * - Rutas protegidas (PrivateRoute): requieren que el usuario esté autenticado.
+ * - Rutas de superadmin (SuperAdminRoute): requieren rol 'superadmin'.
+ * - AppWithDarkMode: aplica la clase CSS 'dark' al <html> y carga los datos
+ *   desde Turso DB una vez que Zustand termina de rehidratar desde localStorage.
+ */
 import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useStore } from './store/useStore'

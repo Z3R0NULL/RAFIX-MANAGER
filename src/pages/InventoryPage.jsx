@@ -1,3 +1,15 @@
+/**
+ * pages/InventoryPage.jsx — Gestión del inventario de piezas y repuestos.
+ *
+ * Ruta: /inventory
+ * Permite administrar el stock de componentes del taller:
+ *  - Agregar, editar y eliminar ítems (nombre, categoría, stock, precio, proveedor).
+ *  - Ajuste rápido de stock (+1 / -1).
+ *  - Buscador y filtro por categoría.
+ *  - Alerta visual para ítems con stock bajo (bajo el umbral configurado).
+ *  - Ordenamiento por nombre, stock o precio.
+ * Los datos se persisten en Turso a través del store (addInventoryItem, etc.).
+ */
 import React, { useState, useMemo } from 'react'
 import {
   Package, Plus, Search, Pencil, Trash2, X, Check,

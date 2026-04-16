@@ -1,3 +1,16 @@
+/**
+ * pages/AdminPanel.jsx — Gestión de usuarios del sistema (solo superadmin).
+ *
+ * Ruta: /admin
+ * Permite al superadmin administrar las cuentas de otros usuarios:
+ *  - Listar todos los usuarios (id, username, rol, estado activo/inactivo).
+ *  - Crear nuevos usuarios (username, contraseña, rol).
+ *  - Editar username, contraseña, rol y estado activo/inactivo.
+ *  - Eliminar usuarios con confirmación.
+ *  - Ver el historial de accesos (IP, user-agent, fecha) del último tab.
+ * Usa store.fetchAppUsers(), createAppUser(), updateAppUser(), deleteAppUser()
+ * y store.fetchLoginLogs().
+ */
 import React, { useEffect, useState } from 'react'
 import {
   Users, Plus, Pencil, Trash2, ShieldCheck, Shield,

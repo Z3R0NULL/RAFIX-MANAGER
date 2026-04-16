@@ -1,3 +1,33 @@
+/**
+ * components/OrderForm.jsx — Formulario completo para crear/editar órdenes.
+ *
+ * Es el formulario más extenso de la app. Se divide en secciones colapsables:
+ *  1. Datos del Cliente: manual o selección desde clientes registrados.
+ *  2. Información del Dispositivo: tipo, marca, modelo, serial, email, accesorios.
+ *  3. Seguridad / Bloqueo: contraseña/PIN y notas de bloqueo.
+ *  4. Diagnóstico: problema reportado, notas del técnico, flags de daño.
+ *  5. Checklist Técnico: estado físico, funciones, cámaras, audio, conectividad,
+ *     humedad y software. Con botones para rellenar todo de golpe.
+ *  6. Presupuesto y Precios (ARS): precios estimado, final, costo y trabajo hecho.
+ *  7. Estado de la Orden: selector con validación de transición y fecha de entrega.
+ *
+ * Props:
+ *  - initialData: datos de la orden a editar (opcional).
+ *  - onSubmit(formData): callback al enviar.
+ *  - onCancel(): callback para cancelar (botón visible solo si se pasa).
+ *  - submitLabel: texto del botón (default: 'Guardar Orden').
+ *  - isLoading: desactiva el botón de envío mientras se procesa.
+ *
+ * Subcomponentes internos:
+ *  - Section: sección colapsable con ícono y título.
+ *  - Field: label + input wrapper.
+ *  - AutocompleteInput: input con dropdown de sugerencias filtradas.
+ *  - ClientSearch: buscador de clientes existentes en el store global.
+ *  - TriState: OK / Falla / No probado (checklist funcional).
+ *  - BoolState: Sí / No / N/A (ítems informativos).
+ *  - PhysState: opciones de estado físico personalizadas.
+ *  - CheckGroup: separador de categoría dentro del checklist.
+ */
 import React, { useState, useRef, useEffect } from 'react'
 import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,

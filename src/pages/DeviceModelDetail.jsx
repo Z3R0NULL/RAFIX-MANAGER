@@ -1,3 +1,12 @@
+/**
+ * pages/DeviceModelDetail.jsx — Detalle de órdenes por modelo de dispositivo.
+ *
+ * Ruta: /devices/:slug (slug = brand-model en kebab-case)
+ * Muestra todas las órdenes del usuario que corresponden a ese modelo con:
+ *  - Métricas: total, completadas, en progreso, ingresos generados.
+ *  - Historial de precios (promedio estimado y final).
+ *  - Lista de órdenes con acceso directo al detalle.
+ */
 import React, { useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {

@@ -1,3 +1,18 @@
+/**
+ * components/Sidebar.jsx — Barra de navegación lateral.
+ *
+ * Muestra:
+ *  - Logo/nombre de la app (RepairPro).
+ *  - Links de navegación principales (NAV_ITEMS) con resaltado activo.
+ *  - Sección de Administración solo para usuarios con rol 'superadmin':
+ *      · Panel Global (/admin/dashboard)
+ *      · Gestión de Usuarios (/admin)
+ *  - Botón de toggle Dark/Light mode.
+ *  - Info del usuario autenticado + botón de cerrar sesión.
+ *
+ * Prop onClose: función opcional llamada al hacer clic en un link (usada
+ * en móvil para cerrar el overlay del sidebar).
+ */
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {

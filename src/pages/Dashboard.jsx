@@ -1,3 +1,13 @@
+/**
+ * pages/Dashboard.jsx — Panel principal del taller.
+ *
+ * Ruta: /
+ * Muestra un resumen del estado actual del negocio:
+ *  - Tarjetas de métricas: total de órdenes, en reparación, completadas, ingresos del mes.
+ *  - Lista de órdenes recientes con estado, dispositivo y cliente.
+ *  - Acceso rápido a crear nueva orden y ver todas las órdenes.
+ * Los datos se obtienen directamente del store (sin llamadas extra a la DB).
+ */
 import React from 'react'
 import { Link } from 'react-router-dom'
 import {

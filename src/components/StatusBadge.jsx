@@ -1,3 +1,15 @@
+/**
+ * components/StatusBadge.jsx — Badges visuales de estado.
+ *
+ * Exporta dos componentes de solo presentación (sin lógica):
+ *
+ *  - StatusBadge({ status }): pill con punto de color y label del estado
+ *    de una orden de servicio. Usa STATUS_CONFIG de constants.js.
+ *    Fallback: muestra 'pending' si el status no existe en la config.
+ *
+ *  - BudgetBadge({ status }): pill simple (sin punto) para el estado del
+ *    presupuesto (pending / approved / rejected). Usa BUDGET_STATUS_CONFIG.
+ */
 import React from 'react'
 import { STATUS_CONFIG, BUDGET_STATUS_CONFIG } from '../utils/constants'
 

@@ -1,3 +1,14 @@
+/**
+ * pages/Clients.jsx — Gestión del registro de clientes.
+ *
+ * Ruta: /clients
+ * Lista todos los clientes del usuario con:
+ *  - Buscador por nombre, teléfono, DNI o email.
+ *  - Edición inline de datos del cliente.
+ *  - Eliminación con confirmación.
+ *  - Acceso rápido para crear una nueva orden pre-cargada con los datos del cliente.
+ * Los cambios se persisten en Turso a través del store (updateClient / deleteClient).
+ */
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
