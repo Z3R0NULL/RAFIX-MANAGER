@@ -36,6 +36,7 @@ import {
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 import { useStore } from '../store/useStore'
 import ImageUploader from './ImageUploader'
+import PatternInput from './PatternInput'
 
 // ── Sección colapsable ──────────────────────────────────────────────────────
 const Section = ({ title, icon: Icon, children, defaultOpen = true }) => {
@@ -281,6 +282,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     deviceEmail: '',
     accessories: [],
     devicePassword: '',
+    devicePattern: [],
     lockNotes: '',
     reportedIssue: '',
     technicianNotes: '',
@@ -547,12 +549,34 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
       {/* ── Seguridad ── */}
       <Section title="Seguridad / Bloqueo" icon={Shield} defaultOpen={false}>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Contraseña / PIN / Patrón">
-            <input className={inputClass} value={form.devicePassword} onChange={(e) => set('devicePassword', e.target.value)} placeholder="Código de desbloqueo" />
+          <Field label="Contraseña / PIN">
+            <input
+              className={inputClass}
+              value={form.devicePassword}
+              onChange={(e) => set('devicePassword', e.target.value)}
+              placeholder="1234, code, etc."
+            />
           </Field>
+
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+              Patrón de desbloqueo
+            </label>
+            <PatternInput
+              value={form.devicePattern}
+              onChange={(p) => set('devicePattern', p)}
+            />
+          </div>
+
           <div className="col-span-2">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Notas de bloqueo</label>
-            <textarea className={`${inputClass} resize-none`} rows={2} value={form.lockNotes} onChange={(e) => set('lockNotes', e.target.value)} placeholder="Cuentas bloqueadas, Find My, iCloud, etc." />
+            <textarea
+              className={`${inputClass} resize-none`}
+              rows={2}
+              value={form.lockNotes}
+              onChange={(e) => set('lockNotes', e.target.value)}
+              placeholder="Cuentas bloqueadas, Find My, iCloud, etc."
+            />
           </div>
         </div>
       </Section>

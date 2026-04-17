@@ -4,6 +4,7 @@ import {
   Wrench, Search, Clock, DollarSign, MessageCircle, Loader2,
   AlertCircle, RefreshCw, Smartphone, CheckCircle2,
   XCircle, Info, Calendar, Tag, ShieldCheck, ThumbsUp, ThumbsDown,
+  Camera, ZoomIn, X, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured } from '../lib/turso'
@@ -12,6 +13,92 @@ import {
   formatDate, formatDateShort, formatCurrency, STATUS_CONFIG,
   BUDGET_STATUS_CONFIG, DEVICE_TYPES,
 } from '../utils/constants'
+
+function PhotoGallery({ photos, label }) {
+  const [lightbox, setLightbox] = useState(null)
+
+  const prev = () => setLightbox((i) => (i - 1 + photos.length) % photos.length)
+  const next = () => setLightbox((i) => (i + 1) % photos.length)
+
+  if (!photos?.length) return null
+
+  return (
+    <>
+      <div className="bg-slate-900 rounded-xl border border-slate-700/60 p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Camera size={15} className="text-slate-400" />
+          <h2 className="font-semibold text-white text-sm">{label || 'Fotos del equipo'}</h2>
+          <span className="text-xs text-slate-500 ml-auto">{photos.length} foto{photos.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {photos.map((src, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setLightbox(i)}
+              className="relative group aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <img src={src} alt={`foto-${i + 1}`} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <ZoomIn size={18} className="text-white" />
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {lightbox !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <div className="relative max-w-3xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={photos[lightbox]}
+              alt={`foto-${lightbox + 1}`}
+              className="w-full h-full object-contain rounded-xl"
+            />
+            <button
+              type="button"
+              onClick={() => setLightbox(null)}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/80 flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
+            >
+              <X size={16} />
+            </button>
+            {photos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={prev}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-900/80 flex items-center justify-center text-white hover:bg-slate-700 transition-colors"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={next}
+                  className="absolute right-12 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-900/80 flex items-center justify-center text-white hover:bg-slate-700 transition-colors"
+                >
+                  <ChevronRight size={18} />
+                </button>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {photos.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setLightbox(i)}
+                      className={`w-2 h-2 rounded-full transition-colors ${i === lightbox ? 'bg-white' : 'bg-slate-600 hover:bg-slate-400'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
 
 function InfoRow({ label, value, mono }) {
   if (!value && value !== 0) return null
@@ -495,6 +582,10 @@ export default function TrackOrder() {
                 </div>
               )}
             </div>
+
+            {/* Photos */}
+            <PhotoGallery photos={order.photosEntry} label="Fotos de ingreso" />
+            <PhotoGallery photos={order.photosExit} label="Fotos de salida" />
 
             {/* Pricing breakdown */}
             {(order.estimatedPrice || order.finalPrice) && (

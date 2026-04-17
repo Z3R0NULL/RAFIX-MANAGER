@@ -67,6 +67,7 @@ export const initialOrder = {
   deviceEmail: '',
   accessories: [],
   devicePassword: '',
+  devicePattern: [],
   lockNotes: '',
   reportedIssue: '',
   technicianNotes: '',
@@ -86,6 +87,8 @@ export const initialOrder = {
   workDone: '',
   status: 'pending',
   estimatedDelivery: '',
+  photosEntry: [],
+  photosExit: [],
 }
 
 // ── Turso helpers ────────────────────────────────────────────────────────────
