@@ -103,7 +103,7 @@ export const DEVICE_TYPES = [
   { value: 'tv', label: 'TV / Monitor' },
   { value: 'printer', label: 'Impresora' },
   { value: 'network', label: 'Equipo de red' },
-  { value: 'camera', label: 'Cámara' },
+  { value: 'camera', label: 'Camara' },
   { value: 'drone', label: 'Drone' },
   { value: 'board', label: 'Placa' },
   { value: 'other', label: 'Otro' },
