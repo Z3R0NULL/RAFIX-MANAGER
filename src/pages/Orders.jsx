@@ -8,26 +8,45 @@
  *  - Tabla/lista con ordenamiento y acceso al detalle de cada orden.
  *  - Botón para crear nueva orden.
  */
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import {
   PlusCircle,
   Search,
   ChevronDown,
   Eye,
   ClipboardList,
+  X,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { useNavigate } from 'react-router-dom'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatDateShort, formatCurrency, STATUS_CONFIG, DEVICE_TYPES } from '../utils/constants'
 
 export default function Orders() {
   const { orders } = useStore()
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const getClientFilter = (search) => {
+    const params = new URLSearchParams(search)
+    return { phone: params.get('phone') || '', dni: params.get('dni') || '', email: params.get('email') || '' }
+  }
+
+  const [clientFilter, setClientFilter] = useState(() => getClientFilter(location.search))
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [deviceFilter, setDeviceFilter] = useState('')
 
+  useEffect(() => {
+    setClientFilter(getClientFilter(location.search))
+    setSearch('')
+  }, [location.search])
+
   const filtered = orders.filter((o) => {
+    if (clientFilter.phone) return o.customerPhone === clientFilter.phone
+    if (clientFilter.dni) return o.customerDni === clientFilter.dni
+    if (clientFilter.email) return o.customerEmail === clientFilter.email
     const q = search.toLowerCase()
     const matchSearch =
       !q ||
@@ -58,7 +77,23 @@ export default function Orders() {
         </Link>
       </div>
 
+      {/* Client filter banner */}
+      {(clientFilter.phone || clientFilter.dni || clientFilter.email) && (
+        <div className="flex items-center justify-between px-4 py-2.5 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700/50 rounded-lg text-sm text-indigo-700 dark:text-indigo-300">
+          <span>
+            Mostrando órdenes de: <span className="font-medium">{clientFilter.phone || clientFilter.dni || clientFilter.email}</span>
+          </span>
+          <button
+            onClick={() => navigate('/orders')}
+            className="flex items-center gap-1 text-xs hover:text-indigo-900 dark:hover:text-indigo-100 transition-colors"
+          >
+            <X size={13} /> Limpiar filtro
+          </button>
+        </div>
+      )}
+
       {/* Filters */}
+      {!clientFilter.phone && !clientFilter.dni && !clientFilter.email && (
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -97,6 +132,7 @@ export default function Orders() {
           <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         </div>
       </div>
+      )}
 
       {/* Table */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">

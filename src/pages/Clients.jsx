@@ -24,8 +24,10 @@ import {
   MapPin,
   CreditCard,
   ClipboardList,
+  DollarSign,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { formatCurrency } from '../utils/constants'
 
 const emptyForm = { name: '', phone: '', email: '', dni: '', address: '' }
 
@@ -174,12 +176,34 @@ export default function Clients() {
     )
   })
 
-  const getOrderCount = (client) =>
+  const getClientOrders = (client) =>
     orders.filter(
       (o) =>
-        (o.customerPhone && o.customerPhone === client.phone) ||
-        (o.customerDni && o.customerDni === client.dni)
-    ).length
+        (o.customerPhone && client.phone && o.customerPhone === client.phone) ||
+        (o.customerDni && client.dni && o.customerDni === client.dni) ||
+        (o.customerEmail && client.email && o.customerEmail === client.email)
+    )
+
+  const getOrderCount = (client) => getClientOrders(client).length
+
+  const getClientStatus = (client) => {
+    const clientOrders = getClientOrders(client)
+    if (clientOrders.length === 0) return null
+    if (clientOrders.some((o) => o.status === 'abandoned'))
+      return { label: 'Riesgoso', dot: 'bg-red-500', text: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20' }
+    const oneMonthAgo = new Date()
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+    const recentOrders = clientOrders.filter((o) => o.entryDate && new Date(o.entryDate) >= oneMonthAgo)
+    if (recentOrders.length >= 4)
+      return { label: 'Frecuente', dot: 'bg-green-500', text: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20' }
+    return { label: 'Ocasional', dot: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20' }
+  }
+
+  const getTotalSpent = (client) =>
+    getClientOrders(client).reduce((sum, o) => {
+      const val = parseFloat(o.finalPrice)
+      return sum + (isNaN(val) ? 0 : val)
+    }, 0)
 
   const handleSave = (form) => {
     if (modal && modal !== 'new') {
@@ -263,6 +287,8 @@ export default function Clients() {
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((client) => {
             const orderCount = getOrderCount(client)
+            const totalSpent = getTotalSpent(client)
+            const clientStatus = getClientStatus(client)
             return (
               <div
                 key={client.id}
@@ -271,7 +297,15 @@ export default function Clients() {
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-white truncate">{client.name || '—'}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-slate-900 dark:text-white truncate">{client.name || '—'}</p>
+                      {clientStatus && (
+                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-medium ${clientStatus.bg} ${clientStatus.text}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${clientStatus.dot}`} />
+                          {clientStatus.label}
+                        </span>
+                      )}
+                    </div>
                     {client.dni && (
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <CreditCard size={12} className="text-slate-400 flex-shrink-0" />
@@ -321,13 +355,19 @@ export default function Clients() {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 mt-auto">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                    <ClipboardList size={13} />
-                    {orderCount} order{orderCount !== 1 ? 's' : ''}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                      <ClipboardList size={13} />
+                      {orderCount} order{orderCount !== 1 ? 's' : ''}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                      <DollarSign size={13} />
+                      {totalSpent > 0 ? formatCurrency(totalSpent) : '—'}
+                    </div>
                   </div>
                   {orderCount > 0 && (
                     <Link
-                      to={`/orders?customer=${encodeURIComponent(client.name || '')}`}
+                      to={`/orders?${client.phone ? `phone=${encodeURIComponent(client.phone)}` : client.dni ? `dni=${encodeURIComponent(client.dni)}` : `email=${encodeURIComponent(client.email || '')}`}`}
                       className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                     >
                       View orders
