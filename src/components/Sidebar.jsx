@@ -17,7 +17,7 @@ import { useStore } from '../store/useStore'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/orders', label: 'Órdenes', icon: ClipboardList, end: true },
+  { to: '/orders', label: 'Ordenes', icon: ClipboardList, end: true },
   { to: '/clients', label: 'Clientes', icon: Users },
   { to: '/devices', label: 'Dispositivos', icon: Smartphone },
   { to: '/finance', label: 'Finanzas', icon: BarChart2 },

@@ -24,7 +24,6 @@ import {
   MapPin,
   CreditCard,
   ClipboardList,
-  DollarSign,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { formatCurrency } from '../utils/constants'
@@ -73,6 +72,10 @@ function ClientModal({ client, onSave, onClose, onDelete }) {
             </label>
             <input
               {...field('name')}
+              onChange={(ev) => {
+                const val = ev.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '')
+                setForm((f) => ({ ...f, name: val }))
+              }}
               placeholder="John Doe"
               className={`w-full px-3.5 py-2.5 rounded-lg border text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition ${
                 errors.name ? 'border-red-400' : 'border-slate-200 dark:border-slate-700'
@@ -87,6 +90,10 @@ function ClientModal({ client, onSave, onClose, onDelete }) {
               <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Phone</label>
               <input
                 {...field('phone')}
+                onChange={(ev) => {
+                  const val = ev.target.value.replace(/[^0-9+\s\-()]/g, '')
+                  setForm((f) => ({ ...f, phone: val }))
+                }}
                 placeholder="+1 555 0000"
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
               />
@@ -361,7 +368,7 @@ export default function Clients() {
                       {orderCount} order{orderCount !== 1 ? 's' : ''}
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                      <DollarSign size={13} />
+                      <CreditCard size={13} />
                       {totalSpent > 0 ? formatCurrency(totalSpent) : '—'}
                     </div>
                   </div>

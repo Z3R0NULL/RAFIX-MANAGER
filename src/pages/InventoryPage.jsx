@@ -60,6 +60,27 @@ const fmt = (v) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
 }
 
+// ── ModalField ────────────────────────────────────────────────────────────────
+function ModalField({ label, name, type = 'text', placeholder, value, onChange, error }) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`w-full px-3 py-2 rounded-lg border text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-colors focus:ring-2 ${
+          error
+            ? 'border-red-400 focus:ring-red-200 dark:focus:ring-red-900/40'
+            : 'border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-900/40'
+        }`}
+      />
+      {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+    </div>
+  )
+}
+
 // ── ItemModal ─────────────────────────────────────────────────────────────────
 function ItemModal({ item, onClose, onSave }) {
   const [form, setForm] = useState(item ? { ...item } : { ...BLANK })
@@ -89,24 +110,6 @@ function ItemModal({ item, onClose, onSave }) {
     })
   }
 
-  const Field = ({ label, name, type = 'text', placeholder }) => (
-    <div>
-      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{label}</label>
-      <input
-        type={type}
-        value={form[name]}
-        onChange={(e) => set(name, e.target.value)}
-        placeholder={placeholder}
-        className={`w-full px-3 py-2 rounded-lg border text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-colors focus:ring-2 ${
-          errors[name]
-            ? 'border-red-400 focus:ring-red-200 dark:focus:ring-red-900/40'
-            : 'border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-900/40'
-        }`}
-      />
-      {errors[name] && <p className="text-xs text-red-500 mt-0.5">{errors[name]}</p>}
-    </div>
-  )
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -123,7 +126,7 @@ function ItemModal({ item, onClose, onSave }) {
         {/* Body */}
         <div className="px-6 py-5 space-y-4">
           {/* Name */}
-          <Field label="Nombre *" name="name" placeholder="Ej: Módulo Samsung A32" />
+          <ModalField label="Nombre *" placeholder="Ej: Módulo Samsung A32" value={form.name} onChange={(e) => set('name', e.target.value)} error={errors.name} />
 
           {/* Category */}
           <div>
@@ -141,24 +144,24 @@ function ItemModal({ item, onClose, onSave }) {
 
           {/* Brand + Model */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Marca" name="brand" placeholder="Samsung, Apple…" />
-            <Field label="Modelo" name="model" placeholder="A32, iPhone 13…" />
+            <ModalField label="Marca" placeholder="Samsung, Apple…" value={form.brand} onChange={(e) => set('brand', e.target.value)} error={errors.brand} />
+            <ModalField label="Modelo" placeholder="A32, iPhone 13…" value={form.model} onChange={(e) => set('model', e.target.value)} error={errors.model} />
           </div>
 
           {/* Stock + Min stock */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Stock actual" name="stock" type="number" placeholder="0" />
-            <Field label="Stock mínimo" name="minStock" type="number" placeholder="0" />
+            <ModalField label="Stock actual" type="number" placeholder="0" value={form.stock} onChange={(e) => set('stock', e.target.value)} error={errors.stock} />
+            <ModalField label="Stock mínimo" type="number" placeholder="0" value={form.minStock} onChange={(e) => set('minStock', e.target.value)} error={errors.minStock} />
           </div>
 
           {/* Prices */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Precio de venta ($)" name="price" type="number" placeholder="0" />
-            <Field label="Precio de costo ($)" name="costPrice" type="number" placeholder="0" />
+            <ModalField label="Precio de venta ($)" type="number" placeholder="0" value={form.price} onChange={(e) => set('price', e.target.value)} error={errors.price} />
+            <ModalField label="Precio de costo ($)" type="number" placeholder="0" value={form.costPrice} onChange={(e) => set('costPrice', e.target.value)} error={errors.costPrice} />
           </div>
 
           {/* Location */}
-          <Field label="Ubicación / Depósito" name="location" placeholder="Ej: Estante A2, Caja 3…" />
+          <ModalField label="Ubicación / Depósito" placeholder="Ej: Estante A2, Caja 3…" value={form.location} onChange={(e) => set('location', e.target.value)} error={errors.location} />
 
           {/* Notes */}
           <div>

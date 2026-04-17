@@ -48,6 +48,30 @@ const BLANK = {
   favorite: false,
 }
 
+// ── SupplierModalField ────────────────────────────────────────────────────────
+function SupplierModalField({ label, type = 'text', placeholder, icon: Icon, value, onChange, error }) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{label}</label>
+      <div className="relative">
+        {Icon && <Icon size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />}
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`w-full ${Icon ? 'pl-8' : 'px-3'} pr-3 py-2 rounded-lg border text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-colors focus:ring-2 ${
+            error
+              ? 'border-red-400 focus:ring-red-200 dark:focus:ring-red-900/40'
+              : 'border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-900/40'
+          }`}
+        />
+      </div>
+      {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+    </div>
+  )
+}
+
 // ── SupplierModal ─────────────────────────────────────────────────────────────
 function SupplierModal({ supplier, onClose, onSave }) {
   const [form, setForm] = useState(supplier ? { ...supplier } : { ...BLANK })
@@ -67,27 +91,6 @@ function SupplierModal({ supplier, onClose, onSave }) {
     if (!validate()) return
     onSave({ ...form })
   }
-
-  const Field = ({ label, name, type = 'text', placeholder, icon: Icon }) => (
-    <div>
-      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{label}</label>
-      <div className="relative">
-        {Icon && <Icon size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />}
-        <input
-          type={type}
-          value={form[name]}
-          onChange={(e) => set(name, e.target.value)}
-          placeholder={placeholder}
-          className={`w-full ${Icon ? 'pl-8' : 'px-3'} pr-3 py-2 rounded-lg border text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-colors focus:ring-2 ${
-            errors[name]
-              ? 'border-red-400 focus:ring-red-200 dark:focus:ring-red-900/40'
-              : 'border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-900/40'
-          }`}
-        />
-      </div>
-      {errors[name] && <p className="text-xs text-red-500 mt-0.5">{errors[name]}</p>}
-    </div>
-  )
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -152,20 +155,20 @@ function SupplierModal({ supplier, onClose, onSave }) {
 
           {/* Contact name + phone */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Nombre de contacto" name="contactName" placeholder="Juan García" />
-            <Field label="Teléfono / WhatsApp" name="phone" icon={Phone} placeholder="+54 11 …" />
+            <SupplierModalField label="Nombre de contacto" placeholder="Juan García" value={form.contactName} onChange={(e) => set('contactName', e.target.value)} error={errors.contactName} />
+            <SupplierModalField label="Teléfono / WhatsApp" icon={Phone} placeholder="+54 11 …" value={form.phone} onChange={(e) => set('phone', e.target.value)} error={errors.phone} />
           </div>
 
           {/* Email + website */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Email" name="email" type="email" icon={Mail} placeholder="ventas@proveedor.com" />
-            <Field label="Sitio web" name="website" icon={Globe} placeholder="www.proveedor.com" />
+            <SupplierModalField label="Email" type="email" icon={Mail} placeholder="ventas@proveedor.com" value={form.email} onChange={(e) => set('email', e.target.value)} error={errors.email} />
+            <SupplierModalField label="Sitio web" icon={Globe} placeholder="www.proveedor.com" value={form.website} onChange={(e) => set('website', e.target.value)} error={errors.website} />
           </div>
 
           {/* Address + Tax ID */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Dirección" name="address" icon={MapPin} placeholder="Calle 123, Ciudad" />
-            <Field label="CUIT / RUT / Tax ID" name="taxId" icon={Hash} placeholder="20-12345678-9" />
+            <SupplierModalField label="Dirección" icon={MapPin} placeholder="Calle 123, Ciudad" value={form.address} onChange={(e) => set('address', e.target.value)} error={errors.address} />
+            <SupplierModalField label="CUIT / RUT / Tax ID" icon={Hash} placeholder="20-12345678-9" value={form.taxId} onChange={(e) => set('taxId', e.target.value)} error={errors.taxId} />
           </div>
 
           {/* Payment terms + delivery days */}
@@ -186,7 +189,7 @@ function SupplierModal({ supplier, onClose, onSave }) {
                 <option value="otro">Otro</option>
               </select>
             </div>
-            <Field label="Días de entrega estimados" name="deliveryDays" type="number" placeholder="3" />
+            <SupplierModalField label="Días de entrega estimados" type="number" placeholder="3" value={form.deliveryDays} onChange={(e) => set('deliveryDays', e.target.value)} error={errors.deliveryDays} />
           </div>
 
           {/* Rating */}
