@@ -377,7 +377,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     })
   }
 
-  // Validación de transición de estado
+  // Validación de transición de estado (solo para delivered/abandoned)
   const statusTransitionError = initialData
     ? canTransitionTo(initialData, form.status)
     : { ok: true }
@@ -791,12 +791,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
           <Field label="Nota del cambio">
             <input className={inputClass} value={form.statusNote} onChange={(e) => set('statusNote', e.target.value)} placeholder="Nota opcional..." />
           </Field>
-          {!statusTransitionError.ok && (
-            <div className="col-span-2 flex items-start gap-2.5 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-400">
-              <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="currentColor"/><path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
-              {statusTransitionError.reason}
-            </div>
-          )}
           <div className="col-span-2 sm:col-span-1">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
               Fecha estimada de entrega
@@ -806,8 +800,15 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
               type="date"
               value={form.estimatedDelivery}
               onChange={(e) => set('estimatedDelivery', e.target.value)}
+              min={(initialData?.entryDate || new Date().toISOString()).slice(0, 10)}
             />
           </div>
+          {!statusTransitionError.ok && (
+            <div className="col-span-2 flex items-start gap-2.5 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-sm text-amber-700 dark:text-amber-400">
+              <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="currentColor"/><path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+              {statusTransitionError.reason}
+            </div>
+          )}
         </div>
       </div>
 

@@ -34,7 +34,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { turso, isTursoConfigured, initDb } from '../lib/turso'
-import { canTransitionTo } from '../utils/constants'
+import { canTransitionTo, buildStatusHistory } from '../utils/constants'
 
 
 async function getClientIp() {
@@ -713,14 +713,11 @@ export const useStore = create(
             if (o.id !== id) return o
             const updated = { ...o, ...data }
             if (data.status && data.status !== o.status) {
-              updated.statusHistory = [
-                ...(o.statusHistory || []),
-                {
-                  status: data.status,
-                  timestamp: new Date().toISOString(),
-                  note: data.statusNote || '',
-                },
-              ]
+              updated.statusHistory = buildStatusHistory(
+                o.statusHistory,
+                data.status,
+                data.statusNote || ''
+              )
               if (data.status === 'delivered') {
                 updated.deliveryDate = new Date().toISOString()
               }

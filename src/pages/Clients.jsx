@@ -207,10 +207,12 @@ export default function Clients() {
   }
 
   const getTotalSpent = (client) =>
-    getClientOrders(client).reduce((sum, o) => {
-      const val = parseFloat(o.finalPrice)
-      return sum + (isNaN(val) ? 0 : val)
-    }, 0)
+    getClientOrders(client)
+      .filter((o) => o.status === 'delivered')
+      .reduce((sum, o) => {
+        const val = parseFloat(o.finalPrice)
+        return sum + (isNaN(val) ? 0 : val)
+      }, 0)
 
   const handleSave = (form) => {
     if (modal && modal !== 'new') {

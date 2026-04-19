@@ -64,21 +64,72 @@ export const STATUS_CONFIG = {
   },
 }
 
-// Reglas de transición: newStatus → [estados previos requeridos (al menos uno)]
-const TRANSITION_RULES = {
-  in_repair:   { prereqs: ['diagnosing'], reason: 'Debe pasar por Diagnóstico antes de marcar En reparación.' },
-  irreparable: { prereqs: ['diagnosing'], reason: 'Debe pasar por Diagnóstico antes de marcar Sin reparación.' },
-  completed:   { prereqs: ['in_repair'],  reason: 'Debe pasar por En reparación antes de marcar Completado.' },
-  delivered:   { prereqs: ['completed', 'irreparable'], reason: 'Debe pasar por Completado o Sin reparación antes de marcar Entregado.' },
+// Ruta canónica implícita para cada estado final
+// Define todos los pasos que "ya habrían ocurrido" antes de llegar a ese estado
+export const STATUS_PATHS = {
+  pending:          ['pending'],
+  diagnosing:       ['pending', 'diagnosing'],
+  waiting_approval: ['pending', 'diagnosing', 'waiting_approval'],
+  in_repair:        ['pending', 'diagnosing', 'waiting_approval', 'in_repair'],
+  completed:        ['pending', 'diagnosing', 'waiting_approval', 'in_repair', 'completed'],
+  irreparable:      ['pending', 'diagnosing', 'irreparable'],
+  // delivered y abandoned heredan la ruta según si la orden pasó por completed o irreparable
+  delivered:        null,
+  abandoned:        null,
 }
 
-// Valida si una orden puede pasar al nuevo estado
+// Rutas canónicas para delivered y abandoned según el camino previo de la orden
+const PATH_VIA_COMPLETED = ['pending', 'diagnosing', 'waiting_approval', 'in_repair', 'completed']
+const PATH_VIA_IRREPARABLE = ['pending', 'diagnosing', 'irreparable']
+
+function getTerminalPath(existingHistory, terminalStatus) {
+  const history = existingHistory || []
+  const viaIrrep = history.some((e) => e.status === 'irreparable')
+  const base = viaIrrep ? PATH_VIA_IRREPARABLE : PATH_VIA_COMPLETED
+
+  // Si vamos a "delivered" y ya hubo un "abandoned" previo, conservarlo en la ruta
+  if (terminalStatus === 'delivered' && history.some((e) => e.status === 'abandoned')) {
+    return [...base, 'abandoned', 'delivered']
+  }
+
+  return [...base, terminalStatus]
+}
+
+// Genera el statusHistory completo para un estado destino.
+// Para estados con ruta canónica fija, reconstruye esa ruta preservando timestamps reales.
+// Para delivered/abandoned, detecta el camino previo (completed vs irreparable) y arma la ruta correcta.
+export function buildStatusHistory(existingHistory, newStatus, note = '') {
+  const now = new Date().toISOString()
+
+  const path =
+    newStatus === 'delivered' || newStatus === 'abandoned'
+      ? getTerminalPath(existingHistory, newStatus)
+      : STATUS_PATHS[newStatus]
+
+  return path.map((s, i) => {
+    const isLast = i === path.length - 1
+    const existing = (existingHistory || []).find((e) => e.status === s)
+    return {
+      status: s,
+      timestamp: existing?.timestamp || now,
+      note: isLast ? note : (existing?.note || ''),
+    }
+  })
+}
+
+// Valida si una orden puede pasar al nuevo estado.
+// Solo bloquea delivered/abandoned si no hubo completed ni irreparable antes.
 export function canTransitionTo(order, newStatus) {
-  const rule = TRANSITION_RULES[newStatus]
-  if (!rule) return { ok: true }
-  const history = order.statusHistory || []
-  const hadPrereq = history.some((h) => rule.prereqs.includes(h.status))
-  if (!hadPrereq) return { ok: false, reason: rule.reason }
+  if (newStatus === 'delivered' || newStatus === 'abandoned') {
+    const history = order.statusHistory || []
+    const hadFinal = history.some((h) => h.status === 'completed' || h.status === 'irreparable')
+    if (!hadFinal) {
+      return {
+        ok: false,
+        reason: 'La orden debe estar en "Completado" o "Sin reparación" antes de marcarla como Entregada o Abandonada.',
+      }
+    }
+  }
   return { ok: true }
 }
 
