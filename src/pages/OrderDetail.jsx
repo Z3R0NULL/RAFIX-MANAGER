@@ -15,7 +15,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, Edit3, Printer, ExternalLink, CheckCircle2, XCircle, MinusCircle,
   Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2,
-  RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2,
+  RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2, Mail, ChevronDown,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useStore } from '../store/useStore'
@@ -143,13 +143,18 @@ export default function OrderDetail() {
   const [remoteOrder, setRemoteOrder] = useState(null)
   const [loadingRemote, setLoadingRemote] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
   const [qrModal, setQrModal] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState('')
   const shareRef = useRef(null)
+  const contactRef = useRef(null)
 
-  // Cerrar dropdown share al click fuera
+  // Cerrar dropdowns al click fuera
   useEffect(() => {
-    const handler = (e) => { if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false) }
+    const handler = (e) => {
+      if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false)
+      if (contactRef.current && !contactRef.current.contains(e.target)) setContactOpen(false)
+    }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
@@ -236,7 +241,35 @@ export default function OrderDetail() {
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank')
   }
 
+  const openMail = () => {
+    const email = order.customerEmail
+    if (!email) return
+    const status = STATUS_CONFIG[order.status]?.label || order.status
+    const trackingUrl = buildTrackingUrl()
+    const subject = encodeURIComponent(`Actualización de tu reparación · ${order.orderNumber}`)
+    const body = encodeURIComponent(
+      [
+        `Hola ${order.customerName || 'cliente'},`,
+        ``,
+        `Te contactamos desde el taller por tu ${order.deviceBrand ? order.deviceBrand + ' ' : ''}${order.deviceModel || 'equipo'}.`,
+        ``,
+        `📋 Orden: ${order.orderNumber}`,
+        `🔧 Estado: ${status}`,
+        order.estimatedDelivery ? `📅 Entrega estimada: ${order.estimatedDelivery}` : '',
+        order.finalPrice ? `💰 Precio final: $${order.finalPrice}` : '',
+        ``,
+        `Podés seguir el estado de tu reparación en: ${trackingUrl}`,
+        ``,
+        `Saludos,`,
+        `El equipo del taller`,
+      ].filter((l) => l !== undefined).join('\n')
+    )
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank')
+  }
+
   const hasWhatsApp = !!(order.customerPhone || '').replace(/\D/g, '')
+  const hasMail = !!order.customerEmail
+  const hasContact = hasWhatsApp || hasMail
 
   const deviceTypeLabel = DEVICE_TYPES.find((d) => d.value === order.deviceType)?.label || order.deviceType
 
@@ -263,22 +296,24 @@ export default function OrderDetail() {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white font-mono">{order.orderNumber}</h1>
-              <StatusBadge status={order.status} />
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white font-mono">{order.orderNumber}</h1>
+                <StatusBadge status={order.status} />
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                {order.customerName} · {order.deviceBrand} {order.deviceModel}
+              </p>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              {order.customerName} · {order.deviceBrand} {order.deviceModel}
-            </p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -288,14 +323,39 @@ export default function OrderDetail() {
               Solo lectura · {order.createdBy}
             </span>
           )}
-          {hasWhatsApp && (
-            <button
-              onClick={openWhatsApp}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-green-200 dark:border-green-800/60 bg-green-50 dark:bg-green-900/20 text-sm text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors font-medium"
-            >
-              <MessageCircle size={14} />
-              WhatsApp
-            </button>
+          {hasContact && (
+            <div className="relative" ref={contactRef}>
+              <button
+                onClick={() => setContactOpen((o) => !o)}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                <MessageCircle size={14} />
+                Contactar
+                <ChevronDown size={13} className={`transition-transform ${contactOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {contactOpen && (
+                <div className="absolute left-0 mt-1.5 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                  {hasWhatsApp && (
+                    <button
+                      onClick={() => { setContactOpen(false); openWhatsApp() }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0"
+                    >
+                      <MessageCircle size={15} className="text-green-500" />
+                      WhatsApp
+                    </button>
+                  )}
+                  {hasMail && (
+                    <button
+                      onClick={() => { setContactOpen(false); openMail() }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0"
+                    >
+                      <Mail size={15} className="text-indigo-500" />
+                      Mail
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
           {/* Dropdown Compartir */}
           <div className="relative" ref={shareRef}>
@@ -305,6 +365,7 @@ export default function OrderDetail() {
             >
               {copied ? <Check size={14} className="text-green-500" /> : <Share2 size={14} />}
               {copied ? 'Copiado!' : 'Compartir'}
+              <ChevronDown size={13} className={`transition-transform ${shareOpen ? 'rotate-180' : ''}`} />
             </button>
             {shareOpen && (
               <div className="absolute right-0 mt-1.5 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
@@ -474,11 +535,18 @@ export default function OrderDetail() {
             </div>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">Customer-Reported Issue</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">Problema reportado por el cliente</p>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.reportedIssue || '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">Technician Notes</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">Problema encontrado por el técnico</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.techFindings || '—'}</p>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-xs text-slate-400 dark:text-slate-500">Observaciones del técnico</p>
+                  <span className="px-1.5 py-0.5 rounded text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium">Privado</span>
+                </div>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.technicianNotes || '—'}</p>
               </div>
               <div className="flex gap-2 flex-wrap pt-1">

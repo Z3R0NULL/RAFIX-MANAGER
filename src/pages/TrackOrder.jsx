@@ -353,11 +353,11 @@ export default function TrackOrder() {
                   </div>
                 )}
 
-                {/* Notas del técnico si las hay */}
-                {order.technicianNotes && (
+                {/* Problema encontrado por el técnico */}
+                {order.techFindings && (
                   <div className="bg-slate-900/50 rounded-lg px-4 py-3 mb-4">
-                    <p className="text-xs font-medium text-slate-400 mb-1">Nota del técnico</p>
-                    <p className="text-sm text-slate-300">{order.technicianNotes}</p>
+                    <p className="text-xs font-medium text-slate-400 mb-1">Problema encontrado</p>
+                    <p className="text-sm text-slate-300">{order.techFindings}</p>
                   </div>
                 )}
 

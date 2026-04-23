@@ -325,6 +325,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     devicePattern: [],
     lockNotes: '',
     reportedIssue: '',
+    techFindings: '',
     technicianNotes: '',
     waterDamage: false,
     physicalDamage: false,
@@ -594,11 +595,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
           </Field>
 
           <div className="col-span-2">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Email asociado al dispositivo</label>
-            <input className={inputClass} type="email" value={form.deviceEmail} onChange={(e) => set('deviceEmail', e.target.value)} placeholder="icloud@email.com" />
-          </div>
-
-          <div className="col-span-2">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Accesorios recibidos</label>
             <div className="flex flex-wrap gap-2">
               {ACCESSORIES_OPTIONS.map((acc) => (
@@ -665,8 +661,15 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.reportedIssue} onChange={(e) => set('reportedIssue', e.target.value)} placeholder="¿Qué le pasa al dispositivo según el cliente?" required />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Observaciones del técnico</label>
-            <textarea className={`${inputClass} resize-none`} rows={3} value={form.technicianNotes} onChange={(e) => set('technicianNotes', e.target.value)} placeholder="Notas internas del técnico..." />
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Problema encontrado por el técnico</label>
+            <textarea className={`${inputClass} resize-none`} rows={3} value={form.techFindings} onChange={(e) => set('techFindings', e.target.value)} placeholder="¿Qué encontró el técnico al revisar el equipo?" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Observaciones del técnico</label>
+              <span className="px-1.5 py-0.5 rounded text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium">Privado</span>
+            </div>
+            <textarea className={`${inputClass} resize-none`} rows={3} value={form.technicianNotes} onChange={(e) => set('technicianNotes', e.target.value)} placeholder="Notas internas del técnico (no visible para el cliente)..." />
           </div>
           <div className="flex flex-wrap gap-3">
             {[
