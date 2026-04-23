@@ -10,13 +10,14 @@
  *  - Eliminar la orden con confirmación.
  * Usa íconos TriState para visualizar el resultado del checklist técnico.
  */
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, Edit3, Printer, ExternalLink, CheckCircle2, XCircle, MinusCircle,
   Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2,
-  RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight,
+  RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2,
 } from 'lucide-react'
+import QRCode from 'qrcode'
 import { useStore } from '../store/useStore'
 import { StatusBadge, BudgetBadge } from '../components/StatusBadge'
 import OrderForm from '../components/OrderForm'
@@ -141,6 +142,17 @@ export default function OrderDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [remoteOrder, setRemoteOrder] = useState(null)
   const [loadingRemote, setLoadingRemote] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [qrModal, setQrModal] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState('')
+  const shareRef = useRef(null)
+
+  // Cerrar dropdown share al click fuera
+  useEffect(() => {
+    const handler = (e) => { if (shareRef.current && !shareRef.current.contains(e.target)) setShareOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const isSuperAdmin = auth?.role === 'superadmin'
   const localOrder = getOrder(id)
@@ -193,8 +205,38 @@ export default function OrderDetail() {
   const copyTrackingLink = () => {
     navigator.clipboard.writeText(buildTrackingUrl())
     setCopied(true)
+    setShareOpen(false)
     setTimeout(() => setCopied(false), 2000)
   }
+
+  const openQrModal = async () => {
+    setShareOpen(false)
+    const url = buildTrackingUrl()
+    const dataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2, color: { dark: '#1e2937', light: '#ffffff' } })
+    setQrDataUrl(dataUrl)
+    setQrModal(true)
+  }
+
+  const openWhatsApp = () => {
+    const phone = (order.customerPhone || '').replace(/\D/g, '')
+    if (!phone) return
+    const status = STATUS_CONFIG[order.status]?.label || order.status
+    const trackingUrl = buildTrackingUrl()
+    const msg = [
+      `¡Hola ${order.customerName || 'cliente'}! 👋`,
+      `Te contactamos desde el taller por tu ${order.deviceBrand ? order.deviceBrand + ' ' : ''}${order.deviceModel || 'equipo'}.`,
+      ``,
+      `📋 *Orden:* ${order.orderNumber}`,
+      `🔧 *Estado:* ${status}`,
+      order.estimatedDelivery ? `📅 *Entrega estimada:* ${order.estimatedDelivery}` : '',
+      order.finalPrice ? `💰 *Precio final:* $${order.finalPrice}` : '',
+      ``,
+      `🔗 Seguí el estado de tu reparación en: ${trackingUrl}`,
+    ].filter((l) => l !== undefined && !(l === '' && false)).join('\n')
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank')
+  }
+
+  const hasWhatsApp = !!(order.customerPhone || '').replace(/\D/g, '')
 
   const deviceTypeLabel = DEVICE_TYPES.find((d) => d.value === order.deviceType)?.label || order.deviceType
 
@@ -246,13 +288,43 @@ export default function OrderDetail() {
               Solo lectura · {order.createdBy}
             </span>
           )}
-          <button
-            onClick={copyTrackingLink}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-            {copied ? 'Copiado!' : 'Compartir'}
-          </button>
+          {hasWhatsApp && (
+            <button
+              onClick={openWhatsApp}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-green-200 dark:border-green-800/60 bg-green-50 dark:bg-green-900/20 text-sm text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors font-medium"
+            >
+              <MessageCircle size={14} />
+              WhatsApp
+            </button>
+          )}
+          {/* Dropdown Compartir */}
+          <div className="relative" ref={shareRef}>
+            <button
+              onClick={() => setShareOpen((o) => !o)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              {copied ? <Check size={14} className="text-green-500" /> : <Share2 size={14} />}
+              {copied ? 'Copiado!' : 'Compartir'}
+            </button>
+            {shareOpen && (
+              <div className="absolute right-0 mt-1.5 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                <button
+                  onClick={openQrModal}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800"
+                >
+                  <QrCode size={15} className="text-indigo-500" />
+                  Código QR
+                </button>
+                <button
+                  onClick={copyTrackingLink}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <Link2 size={15} className="text-indigo-500" />
+                  Copiar enlace
+                </button>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => window.open(buildTrackingUrl(), '_blank')}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -314,6 +386,45 @@ export default function OrderDetail() {
         </div>
       )}
 
+      {/* Modal QR */}
+      {qrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm" onClick={() => setQrModal(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 max-w-xs w-full shadow-2xl flex flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between w-full">
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Código QR de seguimiento</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{order.orderNumber}</p>
+              </div>
+              <button onClick={() => setQrModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+            {qrDataUrl && (
+              <img src={qrDataUrl} alt="QR seguimiento" className="w-52 h-52 rounded-xl border border-slate-100 dark:border-slate-800" />
+            )}
+            <p className="text-xs text-slate-400 text-center leading-relaxed">
+              El cliente puede escanear este QR para ver el estado de su reparación en tiempo real
+            </p>
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={copyTrackingLink}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                {copied ? 'Copiado!' : 'Copiar enlace'}
+              </button>
+              <a
+                href={qrDataUrl}
+                download={`qr-${order.orderNumber}.png`}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-medium text-white transition-colors"
+              >
+                Descargar QR
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Left column */}
         <div className="lg:col-span-2 space-y-5">
@@ -321,13 +432,13 @@ export default function OrderDetail() {
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
             <div className="flex items-center gap-2 mb-4">
               <User size={14} className="text-indigo-500" />
-              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Customer</h2>
+              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Cliente</h2>
             </div>
-            <InfoRow label="Full Name" value={order.customerName} />
-            <InfoRow label="ID / DNI" value={order.customerDni} />
-            <InfoRow label="Phone (WhatsApp)" value={order.customerPhone} />
+            <InfoRow label="Nombre completo" value={order.customerName} />
+            <InfoRow label="DNI" value={order.customerDni} />
+            <InfoRow label="Teléfono (WhatsApp)" value={order.customerPhone} />
             <InfoRow label="Email" value={order.customerEmail} />
-            <InfoRow label="Address" value={order.customerAddress} />
+            <InfoRow label="Dirección" value={order.customerAddress} />
           </div>
 
           {/* Device */}

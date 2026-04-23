@@ -21,9 +21,14 @@
  *   formatCurrency / STATUS_CONFIG de ./constants.
  */
 import jsPDF from 'jspdf'
+import QRCode from 'qrcode'
 import { STATUS_CONFIG, formatDate, formatDateShort, formatCurrency } from './constants'
 
-export function generateInvoicePDF(order) {
+async function qrDataUrl(text) {
+  return QRCode.toDataURL(text, { width: 160, margin: 1, color: { dark: '#1e2937', light: '#ffffff' } })
+}
+
+export async function generateInvoicePDF(order) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const pageW = 210
   const pageH = 297
@@ -223,6 +228,24 @@ export function generateInvoicePDF(order) {
     y += lines.length * 3.5 + 1.5
   })
 
+  // QR de seguimiento
+  const trackingUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/track/${order.orderNumber}`
+  try {
+    const qrImg = await qrDataUrl(trackingUrl)
+    const qrSize = 28
+    const qrX = pageW - margin - qrSize
+    const qrY = pageH - 15 - qrSize - 8
+    doc.addImage(qrImg, 'PNG', qrX, qrY, qrSize, qrSize)
+    doc.setFont(font, 'bold')
+    doc.setFontSize(6.5)
+    doc.setTextColor(...indigo)
+    doc.text('SEGUIMIENTO', qrX + qrSize / 2, qrY + qrSize + 4, { align: 'center' })
+    doc.setFont(font, 'normal')
+    doc.setFontSize(5.5)
+    doc.setTextColor(...mid)
+    doc.text('Escaneá para ver el estado', qrX + qrSize / 2, qrY + qrSize + 7.5, { align: 'center' })
+  } catch (_) { /* sin QR si falla */ }
+
   // Footer
   y = pageH - 15
   doc.setDrawColor(...border)
@@ -231,7 +254,7 @@ export function generateInvoicePDF(order) {
   doc.setFontSize(7)
   doc.setTextColor(...mid)
   doc.text('RepairPro — Service Order Management', margin, y + 5)
-  doc.text(`Generated: ${formatDate(new Date().toISOString())}`, pageW - margin, y + 5, { align: 'right' })
+  doc.text(`Generado: ${formatDate(new Date().toISOString())}`, pageW - margin, y + 5, { align: 'right' })
 
   doc.save(`${order.orderNumber || 'order'}-invoice.pdf`)
 }

@@ -31,7 +31,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
-  ChevronDown, ChevronUp, Search, UserCheck, UserPlus, Camera
+  ChevronDown, ChevronUp, Search, UserCheck, UserPlus, Camera, Pencil, X
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 import { useStore } from '../store/useStore'
@@ -235,7 +235,7 @@ function ClientSearch({ onSelect }) {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
-          placeholder="Buscar por nombre, teléfono o DNI..."
+          placeholder="Buscar cliente por nombre, teléfono o DNI..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoComplete="off"
@@ -263,11 +263,51 @@ function ClientSearch({ onSelect }) {
   )
 }
 
+// ── Chip del cliente seleccionado ───────────────────────────────────────────
+function SelectedClientChip({ client, onEdit, onClear }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700/60">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center flex-shrink-0">
+          <UserCheck size={14} className="text-indigo-600 dark:text-indigo-300" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100 truncate">{client.name}</p>
+          <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate">
+            {[client.phone, client.dni && `DNI ${client.dni}`, client.email].filter(Boolean).join(' · ')}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 flex-shrink-0 ml-3">
+        <button
+          type="button"
+          onClick={onEdit}
+          className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md border border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800/60 transition-colors"
+        >
+          <Pencil size={11} />
+          Editar
+        </button>
+        <button
+          type="button"
+          onClick={onClear}
+          title="Cambiar cliente"
+          className="p-1 rounded-md text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-200 hover:bg-indigo-100 dark:hover:bg-indigo-800/60 transition-colors"
+        >
+          <X size={14} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Formulario principal ───────────────────────────────────────────────────
 export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel = 'Guardar Orden', isLoading }) {
   const clients = useStore((s) => s.clients)
   const deviceCatalog = useStore((s) => s.deviceCatalog)
-  const [clientMode, setClientMode] = useState('manual')
+  // null = buscando / sin selección | { id, ... } = cliente seleccionado de la DB
+  const [selectedClient, setSelectedClient] = useState(null)
+  // true = campos de cliente en modo edición (solo lectura por defecto si hay cliente seleccionado)
+  const [clientEditing, setClientEditing] = useState(false)
 
   const [form, setForm] = useState(() => ({
     customerName: '',
@@ -388,6 +428,8 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
   }
 
   const fillFromClient = (client) => {
+    setSelectedClient(client)
+    setClientEditing(false)
     setForm((f) => ({
       ...f,
       customerName: client.name || '',
@@ -396,16 +438,29 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
       customerEmail: client.email || '',
       customerAddress: client.address || '',
     }))
-    setClientMode('manual')
   }
+
+  const clearSelectedClient = () => {
+    setSelectedClient(null)
+    setClientEditing(false)
+    setForm((f) => ({
+      ...f,
+      customerName: '',
+      customerDni: '',
+      customerPhone: '',
+      customerEmail: '',
+      customerAddress: '',
+    }))
+  }
+
+  // Campos de cliente en solo lectura si hay cliente seleccionado y no está en modo edición
+  const clientReadOnly = selectedClient !== null && !clientEditing
 
   // Brand and model suggestions come exclusively from the DB catalog
   const brandSuggestions = [...new Set(deviceCatalog.map((i) => i.brand))].sort()
   const modelSuggestions = deviceCatalog
     .filter((i) => i.brand === form.deviceBrand)
     .map((i) => i.model)
-
-  const hasClients = clients.length > 0
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -417,72 +472,91 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
       {/* ── Cliente ── */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <User size={15} className="text-indigo-500" />
-            <span className="font-semibold text-slate-900 dark:text-white text-sm">Datos del Cliente</span>
-          </div>
-          {hasClients && (
-            <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden text-xs">
-              <button
-                type="button"
-                onClick={() => setClientMode('existing')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors ${
-                  clientMode === 'existing'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-                }`}
-              >
-                <UserCheck size={12} />
-                Cliente registrado
-              </button>
-              <button
-                type="button"
-                onClick={() => setClientMode('manual')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors ${
-                  clientMode === 'manual'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-                }`}
-              >
-                <UserPlus size={12} />
-                Nuevo
-              </button>
-            </div>
-          )}
+        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5">
+          <User size={15} className="text-indigo-500" />
+          <span className="font-semibold text-slate-900 dark:text-white text-sm">Datos del Cliente</span>
         </div>
 
-        <div className="p-5">
-          {clientMode === 'existing' && hasClients && (
-            <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800/40">
-              <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium mb-2">
-                Seleccioná un cliente para autocompletar:
-              </p>
+        <div className="p-5 space-y-4">
+          {/* Buscador siempre visible arriba */}
+          {!selectedClient ? (
+            <div>
               <ClientSearch onSelect={fillFromClient} />
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
-                {clients.length} cliente{clients.length !== 1 ? 's' : ''} registrado{clients.length !== 1 ? 's' : ''}
-              </p>
+              {clients.length > 0 && (
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 flex items-center gap-1">
+                  <UserCheck size={11} />
+                  {clients.length} cliente{clients.length !== 1 ? 's' : ''} registrado{clients.length !== 1 ? 's' : ''} · Si no aparece, rellena los campos de abajo para crear uno nuevo
+                </p>
+              )}
             </div>
+          ) : (
+            <SelectedClientChip
+              client={selectedClient}
+              onEdit={() => setClientEditing(true)}
+              onClear={clearSelectedClient}
+            />
           )}
 
+          {/* Campos del cliente */}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Nombre completo" required>
-              <input className={inputClass} value={form.customerName} onChange={(e) => set('customerName', e.target.value)} placeholder="Juan Pérez" required />
+              <input
+                className={`${inputClass} ${clientReadOnly ? 'opacity-70 cursor-default' : ''}`}
+                value={form.customerName}
+                onChange={(e) => set('customerName', e.target.value)}
+                placeholder="Juan Pérez"
+                required
+                readOnly={clientReadOnly}
+              />
             </Field>
             <Field label="DNI">
-              <input className={inputClass} value={form.customerDni} onChange={(e) => set('customerDni', e.target.value)} placeholder="12345678" />
+              <input
+                className={`${inputClass} ${clientReadOnly ? 'opacity-70 cursor-default' : ''}`}
+                value={form.customerDni}
+                onChange={(e) => set('customerDni', e.target.value)}
+                placeholder="12345678"
+                readOnly={clientReadOnly}
+              />
             </Field>
             <Field label="Teléfono (WhatsApp)">
-              <input className={inputClass} type="tel" value={form.customerPhone} onChange={(e) => set('customerPhone', e.target.value)} placeholder="+54 11 1234-5678" />
+              <input
+                className={`${inputClass} ${clientReadOnly ? 'opacity-70 cursor-default' : ''}`}
+                type="tel"
+                value={form.customerPhone}
+                onChange={(e) => set('customerPhone', e.target.value)}
+                placeholder="+54 11 1234-5678"
+                readOnly={clientReadOnly}
+              />
             </Field>
             <Field label="Email">
-              <input className={inputClass} type="email" value={form.customerEmail} onChange={(e) => set('customerEmail', e.target.value)} placeholder="cliente@email.com" />
+              <input
+                className={`${inputClass} ${clientReadOnly ? 'opacity-70 cursor-default' : ''}`}
+                type="email"
+                value={form.customerEmail}
+                onChange={(e) => set('customerEmail', e.target.value)}
+                placeholder="cliente@email.com"
+                readOnly={clientReadOnly}
+              />
             </Field>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Dirección (opcional)</label>
-              <input className={inputClass} value={form.customerAddress} onChange={(e) => set('customerAddress', e.target.value)} placeholder="Calle, Ciudad, CP" />
+              <input
+                className={`${inputClass} ${clientReadOnly ? 'opacity-70 cursor-default' : ''}`}
+                value={form.customerAddress}
+                onChange={(e) => set('customerAddress', e.target.value)}
+                placeholder="Calle, Ciudad, CP"
+                readOnly={clientReadOnly}
+              />
             </div>
           </div>
+
+          {/* Indicador de modo edición */}
+          {clientEditing && selectedClient && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+              <Pencil size={11} />
+              Editando datos del cliente — los cambios se guardarán al crear la orden
+            </p>
+          )}
         </div>
       </div>
 
