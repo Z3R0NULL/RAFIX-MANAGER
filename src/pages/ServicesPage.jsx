@@ -42,7 +42,13 @@ const EMPTY_FORM = {
 // ── Modal de creación / edición ───────────────────────────────────────────────
 
 function ServiceModal({ service, onClose, onSave }) {
-  const [form, setForm] = useState(service ? { ...service } : { ...EMPTY_FORM })
+  const [form, setForm] = useState(service
+    ? {
+        ...service,
+        priceType: service.priceType || 'fixed',
+        price: service.price != null ? String(service.price) : '',
+      }
+    : { ...EMPTY_FORM })
   const [errors, setErrors] = useState({})
 
   const set = (field, val) => {
@@ -145,16 +151,38 @@ function ServiceModal({ service, onClose, onSave }) {
               </button>
             </div>
             <div className="relative">
-              <input
-                className="input-std pr-12"
-                placeholder={form.priceType === 'fixed' ? '0.00' : '100'}
-                value={form.price}
-                onChange={(e) => set('price', e.target.value)}
-                inputMode="decimal"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">
-                {form.priceType === 'fixed' ? '$' : '%'}
-              </span>
+              {form.priceType !== 'percent' ? (
+                <>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none z-10">$</span>
+                  <input
+                    style={{ paddingLeft: '1.75rem' }}
+                    className="w-full pr-3.5 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors"
+                    placeholder="0"
+                    type="text"
+                    inputMode="numeric"
+                    value={form.price === '' || form.price == null ? '' : Number(form.price).toLocaleString('es-AR')}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                      set('price', raw === '' ? '' : raw)
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <input
+                    className="input-std pr-10"
+                    placeholder="100"
+                    type="text"
+                    inputMode="numeric"
+                    value={form.price}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^\d]/g, '')
+                      set('price', raw)
+                    }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">%</span>
+                </>
+              )}
             </div>
             {errors.price && <p className="text-xs text-red-400 mt-1">{errors.price}</p>}
           </div>

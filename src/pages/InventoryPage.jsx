@@ -93,7 +93,13 @@ function ModalField({ label, name, type = 'text', placeholder, value, onChange, 
 
 // ── ItemModal ─────────────────────────────────────────────────────────────────
 function ItemModal({ item, onClose, onSave }) {
-  const [form, setForm] = useState(item ? { ...item } : { ...BLANK })
+  const [form, setForm] = useState(item
+    ? {
+        ...item,
+        price:     item.price     != null ? String(item.price)     : '',
+        costPrice: item.costPrice != null ? String(item.costPrice) : '',
+      }
+    : { ...BLANK })
   const [errors, setErrors] = useState({})
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
@@ -166,8 +172,50 @@ function ItemModal({ item, onClose, onSave }) {
 
           {/* Prices */}
           <div className="grid grid-cols-2 gap-3">
-            <ModalField label="Precio de venta ($)" type="number" placeholder="0" value={form.price} onChange={(e) => set('price', e.target.value)} error={errors.price} />
-            <ModalField label="Precio de costo ($)" type="number" placeholder="0" value={form.costPrice} onChange={(e) => set('costPrice', e.target.value)} error={errors.costPrice} />
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Precio de venta ($)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">$</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={form.price === '' || form.price == null ? '' : Number(form.price).toLocaleString('es-AR')}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                    set('price', raw === '' ? '' : raw)
+                  }}
+                  className={`w-full pl-7 pr-3 py-2 rounded-lg border text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-colors focus:ring-2 ${
+                    errors.price
+                      ? 'border-red-400 focus:ring-red-200 dark:focus:ring-red-900/40'
+                      : 'border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-900/40'
+                  }`}
+                />
+              </div>
+              {errors.price && <p className="text-xs text-red-500 mt-0.5">{errors.price}</p>}
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Precio de costo ($)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">$</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={form.costPrice === '' || form.costPrice == null ? '' : Number(form.costPrice).toLocaleString('es-AR')}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                    set('costPrice', raw === '' ? '' : raw)
+                  }}
+                  className={`w-full pl-7 pr-3 py-2 rounded-lg border text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-colors focus:ring-2 ${
+                    errors.costPrice
+                      ? 'border-red-400 focus:ring-red-200 dark:focus:ring-red-900/40'
+                      : 'border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-indigo-100 dark:focus:ring-indigo-900/40'
+                  }`}
+                />
+              </div>
+              {errors.costPrice && <p className="text-xs text-red-500 mt-0.5">{errors.costPrice}</p>}
+            </div>
           </div>
 
           {/* Location */}

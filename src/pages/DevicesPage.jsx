@@ -445,11 +445,14 @@ function HistorialTab() {
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function DevicesPage() {
   const [activeTab, setActiveTab] = useState('catalog')
+  const dataLoading = useStore((s) => s.dataLoading)
 
   const tabs = [
     { id: 'catalog', label: 'Catálogo', icon: BookOpen },
     { id: 'history', label: 'Historial', icon: TrendingUp },
   ]
+
+  if (dataLoading) return <PageLoader rows={6} title="Cargando dispositivos..." />
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">

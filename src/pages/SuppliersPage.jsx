@@ -5,16 +5,16 @@
  * CRUD completo de proveedores:
  *  - Agregar, editar y eliminar proveedores.
  *  - Campos: nombre, contacto, teléfono, email, web, dirección, notas,
- *    categorías de productos y calificación (estrella favorito).
+ *    tags de productos (multi-tag libre) y calificación (estrella favorito).
  *  - Buscador por nombre, contacto o email.
- *  - Filtro por categoría de producto.
+ *  - Filtro por tag.
  * Los datos se persisten en Turso a través del store (addSupplier, etc.).
  */
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 import {
   Truck, Plus, Search, Pencil, Trash2, X, Check,
   Phone, Mail, Globe, MapPin, Hash, Star, StarOff,
-  ChevronDown, ChevronUp, MessageSquare, Package,
+  ChevronDown, ChevronUp, MessageSquare, Tag,
   LayoutGrid, List, ArrowUpDown,
 } from 'lucide-react'
 
@@ -28,23 +28,34 @@ const SORT_OPTIONS_SUP = [
 import { PageLoader } from '../components/PageLoader'
 import { useStore } from '../store/useStore'
 
-// ── Category config ───────────────────────────────────────────────────────────
-const CATEGORIES = [
-  { value: 'modulos',      label: 'Módulos / Pantallas' },
-  { value: 'repuestos',    label: 'Repuestos' },
-  { value: 'herramientas', label: 'Herramientas' },
-  { value: 'accesorios',   label: 'Accesorios' },
-  { value: 'equipos',      label: 'Equipos / Celulares' },
-  { value: 'insumos',      label: 'Insumos generales' },
-  { value: 'otro',         label: 'Otro' },
+// ── Tag suggestions ───────────────────────────────────────────────────────────
+const TAG_SUGGESTIONS = [
+  'Módulos', 'Pantallas', 'Baterías', 'Repuestos', 'Herramientas',
+  'Accesorios', 'Celulares', 'Insumos', 'Carcasas', 'Conectores',
+  'Cámaras', 'Botones', 'Cables', 'Cargadores', 'Mayorista',
 ]
+
+// Normaliza un proveedor viejo (category string) a tags array
+function normalizeTags(supplier) {
+  if (!supplier) return []
+  if (Array.isArray(supplier.tags)) return supplier.tags
+  if (supplier.category) {
+    // mapeo legacy
+    const MAP = {
+      modulos: 'Módulos', repuestos: 'Repuestos', herramientas: 'Herramientas',
+      accesorios: 'Accesorios', equipos: 'Celulares', insumos: 'Insumos', otro: 'Otro',
+    }
+    return [MAP[supplier.category] || supplier.category]
+  }
+  return []
+}
 
 const RATINGS = [1, 2, 3, 4, 5]
 
 // ── Blank form ────────────────────────────────────────────────────────────────
 const BLANK = {
   name: '',
-  category: 'repuestos',
+  tags: [],
   contactName: '',
   phone: '',
   email: '',
@@ -56,6 +67,106 @@ const BLANK = {
   deliveryDays: '',
   notes: '',
   favorite: false,
+}
+
+// ── TagInput ──────────────────────────────────────────────────────────────────
+function TagInput({ tags, onChange }) {
+  const [input, setInput] = useState('')
+  const [focused, setFocused] = useState(false)
+  const inputRef = useRef(null)
+
+  const suggestions = TAG_SUGGESTIONS.filter(
+    (s) => s.toLowerCase().includes(input.toLowerCase()) && !tags.includes(s)
+  )
+  const showSuggestions = focused && (input.length > 0 ? suggestions.length > 0 : TAG_SUGGESTIONS.filter((s) => !tags.includes(s)).length > 0)
+  const visibleSuggestions = input.length > 0 ? suggestions : TAG_SUGGESTIONS.filter((s) => !tags.includes(s)).slice(0, 8)
+
+  const addTag = (tag) => {
+    const t = tag.trim()
+    if (!t || tags.includes(t)) return
+    onChange([...tags, t])
+    setInput('')
+    inputRef.current?.focus()
+  }
+
+  const removeTag = (tag) => onChange(tags.filter((t) => t !== tag))
+
+  const handleKeyDown = (e) => {
+    if ((e.key === 'Enter' || e.key === ',') && input.trim()) {
+      e.preventDefault()
+      addTag(input)
+    } else if (e.key === 'Backspace' && !input && tags.length > 0) {
+      removeTag(tags[tags.length - 1])
+    }
+  }
+
+  return (
+    <div className="relative">
+      <div
+        className="min-h-[2.5rem] w-full px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-wrap gap-1.5 items-center cursor-text focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 dark:focus-within:ring-indigo-900/40 transition-colors"
+        onClick={() => inputRef.current?.focus()}
+      >
+        {tags.map((tag) => (
+          <span
+            key={tag}
+            className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
+          >
+            {tag}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); removeTag(tag) }}
+              className="hover:bg-indigo-200 dark:hover:bg-indigo-800 rounded p-0.5 transition-colors"
+            >
+              <X size={10} />
+            </button>
+          </span>
+        ))}
+        <input
+          ref={inputRef}
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setTimeout(() => setFocused(false), 150)}
+          placeholder={tags.length === 0 ? 'Ej: Módulos, Baterías…' : ''}
+          className="flex-1 min-w-[80px] bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none py-0.5"
+        />
+      </div>
+      {/* Suggestions dropdown */}
+      {showSuggestions && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+          <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800">
+            <p className="text-[10px] text-slate-400 uppercase tracking-wide font-medium">Sugerencias</p>
+          </div>
+          <div className="flex flex-wrap gap-1.5 p-2.5">
+            {visibleSuggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); addTag(s) }}
+                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          {input.trim() && !TAG_SUGGESTIONS.includes(input.trim()) && (
+            <div className="border-t border-slate-100 dark:border-slate-800 px-2.5 pb-2.5 pt-1.5">
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); addTag(input.trim()) }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+              >
+                <Plus size={11} />
+                Agregar "{input.trim()}"
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 // ── SupplierModalField ────────────────────────────────────────────────────────
@@ -84,7 +195,9 @@ function SupplierModalField({ label, type = 'text', placeholder, icon: Icon, val
 
 // ── SupplierModal ─────────────────────────────────────────────────────────────
 function SupplierModal({ supplier, onClose, onSave }) {
-  const [form, setForm] = useState(supplier ? { ...supplier } : { ...BLANK })
+  const [form, setForm] = useState(supplier
+    ? { ...supplier, tags: normalizeTags(supplier) }
+    : { ...BLANK })
   const [errors, setErrors] = useState({})
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
@@ -149,18 +262,13 @@ function SupplierModal({ supplier, onClose, onSave }) {
             {errors.name && <p className="text-xs text-red-500 mt-0.5">{errors.name}</p>}
           </div>
 
-          {/* Category */}
+          {/* Tags */}
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Categoría</label>
-            <select
-              value={form.category}
-              onChange={(e) => set('category', e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 transition-colors"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+              Tags / Rubros
+              <span className="ml-1.5 text-slate-400 font-normal">Enter o coma para agregar</span>
+            </label>
+            <TagInput tags={form.tags} onChange={(tags) => set('tags', tags)} />
           </div>
 
           {/* Contact name + phone */}
@@ -283,6 +391,30 @@ function StarRating({ rating }) {
   )
 }
 
+// ── TagChips display ──────────────────────────────────────────────────────────
+function TagChips({ tags, max = 3 }) {
+  if (!tags || tags.length === 0) return <span className="text-xs text-slate-400">—</span>
+  const visible = tags.slice(0, max)
+  const extra = tags.length - max
+  return (
+    <div className="flex flex-wrap gap-1">
+      {visible.map((tag) => (
+        <span
+          key={tag}
+          className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
+        >
+          {tag}
+        </span>
+      ))}
+      {extra > 0 && (
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          +{extra}
+        </span>
+      )}
+    </div>
+  )
+}
+
 // ── ContactLink ───────────────────────────────────────────────────────────────
 function ContactLink({ icon: Icon, value, href }) {
   if (!value) return null
@@ -355,11 +487,11 @@ export default function SuppliersPage() {
   const dataLoading     = useStore((s) => s.dataLoading)
 
   const [search, setSearch]         = useState('')
-  const [filterCat, setFilterCat]   = useState('all')
+  const [filterTag, setFilterTag]   = useState('all')
   const [filterFav, setFilterFav]   = useState(false)
-  const [modal, setModal]           = useState(null)      // null | 'new' | supplier
-  const [confirmDel, setConfirmDel] = useState(null)      // supplier id
-  const [expanded, setExpanded]     = useState(null)      // supplier id
+  const [modal, setModal]           = useState(null)
+  const [confirmDel, setConfirmDel] = useState(null)
+  const [expanded, setExpanded]     = useState(null)
   const [viewMode, setViewMode]     = useState(() => localStorage.getItem('suppliersView') || 'table')
   const [sort, setSort]             = useState('fav_first')
   const [sortOpen, setSortOpen]     = useState(false)
@@ -372,13 +504,21 @@ export default function SuppliersPage() {
 
   React.useEffect(() => { localStorage.setItem('suppliersView', viewMode) }, [viewMode])
 
+  // ── All tags used across suppliers (for filter row) ────────────────────────
+  const allTags = useMemo(() => {
+    const set = new Set()
+    suppliers.forEach((s) => normalizeTags(s).forEach((t) => set.add(t)))
+    return [...set].sort()
+  }, [suppliers])
+
   // ── Stats ──────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const total     = suppliers.length
     const favorites = suppliers.filter((s) => s.favorite).length
     const withPhone = suppliers.filter((s) => s.phone).length
-    const avgRating = suppliers.filter((s) => s.rating > 0).length
-      ? (suppliers.filter((s) => s.rating > 0).reduce((a, s) => a + s.rating, 0) / suppliers.filter((s) => s.rating > 0).length).toFixed(1)
+    const rated     = suppliers.filter((s) => s.rating > 0)
+    const avgRating = rated.length
+      ? (rated.reduce((a, s) => a + s.rating, 0) / rated.length).toFixed(1)
       : '—'
     return { total, favorites, withPhone, avgRating }
   }, [suppliers])
@@ -387,7 +527,7 @@ export default function SuppliersPage() {
   const filtered = useMemo(() => {
     let list = [...suppliers]
     if (filterFav) list = list.filter((s) => s.favorite)
-    if (filterCat !== 'all') list = list.filter((s) => s.category === filterCat)
+    if (filterTag !== 'all') list = list.filter((s) => normalizeTags(s).includes(filterTag))
     if (search.trim()) {
       const q = search.toLowerCase()
       list = list.filter((s) =>
@@ -396,7 +536,8 @@ export default function SuppliersPage() {
         s.phone?.includes(q) ||
         s.email?.toLowerCase().includes(q) ||
         s.notes?.toLowerCase().includes(q) ||
-        s.address?.toLowerCase().includes(q)
+        s.address?.toLowerCase().includes(q) ||
+        normalizeTags(s).some((t) => t.toLowerCase().includes(q))
       )
     }
     return list.sort((a, b) => {
@@ -411,7 +552,7 @@ export default function SuppliersPage() {
           return (a.name || '').localeCompare(b.name || '')
       }
     })
-  }, [suppliers, filterCat, filterFav, search, sort])
+  }, [suppliers, filterTag, filterFav, search, sort])
 
   const handleSave = (data) => {
     if (modal === 'new') addSupplier(data)
@@ -425,8 +566,6 @@ export default function SuppliersPage() {
   }
 
   const toggleExpanded = (id) => setExpanded((prev) => (prev === id ? null : id))
-
-  const catLabel = (val) => CATEGORIES.find((c) => c.value === val)?.label || val
 
   const PAYMENT_LABELS = {
     contado: 'Contado', '15dias': '15 días', '30dias': '30 días',
@@ -457,24 +596,23 @@ export default function SuppliersPage() {
 
       {/* ── KPI cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Total proveedores" value={stats.total}     icon={Truck}          color="indigo" />
-        <KpiCard label="Favoritos"          value={stats.favorites} icon={Star}           color="amber" />
-        <KpiCard label="Con teléfono"       value={stats.withPhone} icon={Phone}          color="emerald" />
-        <KpiCard label="Calificación media" value={stats.avgRating} icon={Star}           color="violet" isText />
+        <KpiCard label="Total proveedores" value={stats.total}     icon={Truck}  color="indigo" />
+        <KpiCard label="Favoritos"          value={stats.favorites} icon={Star}   color="amber" />
+        <KpiCard label="Con teléfono"       value={stats.withPhone} icon={Phone}  color="emerald" />
+        <KpiCard label="Calificación media" value={stats.avgRating} icon={Star}   color="violet" isText />
       </div>
 
       {/* ── Filters ── */}
       <div className="flex flex-col gap-3">
         {/* Row 1: Search + Favorite + View/Sort */}
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por nombre, contacto, teléfono, email…"
+              placeholder="Buscar por nombre, contacto, tag…"
               className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 transition-colors"
             />
             {search && (
@@ -484,7 +622,6 @@ export default function SuppliersPage() {
             )}
           </div>
 
-          {/* Favorite toggle */}
           <button
             onClick={() => setFilterFav((v) => !v)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex-shrink-0 ${
@@ -499,57 +636,52 @@ export default function SuppliersPage() {
 
           {/* View + Sort */}
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex-shrink-0">
-          <button
-            onClick={() => setViewMode('table')}
-            title="Vista lista"
-            className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-          >
-            <List size={14} />
-          </button>
-          <button
-            onClick={() => setViewMode('grid')}
-            title="Vista cuadrícula"
-            className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-          >
-            <LayoutGrid size={14} />
-          </button>
-          <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
-          <div className="relative" data-sort-dropdown>
-            <button
-              onClick={() => setSortOpen((o) => !o)}
-              className="flex items-center gap-1.5 pl-2 pr-2.5 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors whitespace-nowrap"
-            >
-              <ArrowUpDown size={14} className="text-slate-500 dark:text-slate-400" />
-              {SORT_OPTIONS_SUP.find((o) => o.value === sort)?.label}
-              <ChevronDown size={12} className={`text-slate-400 transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+            <button onClick={() => setViewMode('table')} title="Vista lista"
+              className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
+              <List size={14} />
             </button>
-            {sortOpen && (
-              <div className="absolute right-0 mt-1.5 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
-                {SORT_OPTIONS_SUP.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => { setSort(opt.value); setSortOpen(false) }}
-                    className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0
-                      ${sort === opt.value ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            <button onClick={() => setViewMode('grid')} title="Vista cuadrícula"
+              className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
+              <LayoutGrid size={14} />
+            </button>
+            <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+            <div className="relative" data-sort-dropdown>
+              <button
+                onClick={() => setSortOpen((o) => !o)}
+                className="flex items-center gap-1.5 pl-2 pr-2.5 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors whitespace-nowrap"
+              >
+                <ArrowUpDown size={14} className="text-slate-500 dark:text-slate-400" />
+                {SORT_OPTIONS_SUP.find((o) => o.value === sort)?.label}
+                <ChevronDown size={12} className={`text-slate-400 transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {sortOpen && (
+                <div className="absolute right-0 mt-1.5 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                  {SORT_OPTIONS_SUP.map((opt) => (
+                    <button key={opt.value} onClick={() => { setSort(opt.value); setSortOpen(false) }}
+                      className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0 ${sort === opt.value ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          </div>{/* end View+Sort */}
-        </div>{/* end Row 1 */}
-
-        {/* Row 2: Category filters */}
-        <div className="flex gap-1.5 flex-wrap">
-          <FilterBtn active={filterCat === 'all'} onClick={() => setFilterCat('all')}>Todos</FilterBtn>
-          {CATEGORIES.map((c) => (
-            <FilterBtn key={c.value} active={filterCat === c.value} onClick={() => setFilterCat(c.value)}>
-              {c.label}
-            </FilterBtn>
-          ))}
         </div>
+
+        {/* Row 2: Tag filters (dynamic from data) */}
+        {allTags.length > 0 && (
+          <div className="flex gap-1.5 flex-wrap items-center">
+            <span className="flex items-center gap-1 text-[10px] text-slate-400 uppercase tracking-wide font-medium mr-0.5">
+              <Tag size={10} /> Tags
+            </span>
+            <FilterBtn active={filterTag === 'all'} onClick={() => setFilterTag('all')}>Todos</FilterBtn>
+            {allTags.map((tag) => (
+              <FilterBtn key={tag} active={filterTag === tag} onClick={() => setFilterTag(tag)}>
+                {tag}
+              </FilterBtn>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Empty state ── */}
@@ -558,10 +690,8 @@ export default function SuppliersPage() {
           <Truck size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
           <p className="text-slate-500 dark:text-slate-400 font-medium">No hay proveedores registrados</p>
           <p className="text-xs text-slate-400 mt-1 mb-4">Agregá tus distribuidores, mayoristas y contactos de compra</p>
-          <button
-            onClick={() => setModal('new')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
+          <button onClick={() => setModal('new')}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
             <Plus size={14} />
             Agregar primer proveedor
           </button>
@@ -578,49 +708,50 @@ export default function SuppliersPage() {
       {/* ── Grid view ── */}
       {filtered.length > 0 && viewMode === 'grid' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((sup) => (
-            <div key={sup.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
-              {/* Top */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {sup.favorite && <Star size={12} className="text-amber-400 flex-shrink-0" fill="currentColor" />}
-                    <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{sup.name}</p>
+          {filtered.map((sup) => {
+            const tags = normalizeTags(sup)
+            return (
+              <div key={sup.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+                {/* Top */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                      {sup.favorite && <Star size={12} className="text-amber-400 flex-shrink-0" fill="currentColor" />}
+                      <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{sup.name}</p>
+                    </div>
+                    {sup.contactName && <p className="text-xs text-slate-400">{sup.contactName}</p>}
+                    {tags.length > 0 && <div className="mt-1.5"><TagChips tags={tags} max={4} /></div>}
                   </div>
-                  {sup.contactName && <p className="text-xs text-slate-400 mt-0.5">{sup.contactName}</p>}
                 </div>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 flex-shrink-0">
-                  {catLabel(sup.category)}
-                </span>
-              </div>
-              {/* Contact */}
-              <div className="space-y-1">
-                <ContactLink icon={Phone} value={sup.phone} href={sup.phone ? `tel:${sup.phone}` : null} />
-                <ContactLink icon={Mail}  value={sup.email} href={sup.email ? `mailto:${sup.email}` : null} />
-                <ContactLink icon={Globe} value={sup.website} href={sup.website ? (sup.website.startsWith('http') ? sup.website : `https://${sup.website}`) : null} />
-              </div>
-              {/* Rating + actions */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                <StarRating rating={sup.rating} />
-                <div className="flex gap-1">
-                  {sup.phone && (
-                    <a href={`https://wa.me/${sup.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
-                      className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-400 hover:text-emerald-600 transition-colors">
-                      <MessageSquare size={13} />
-                    </a>
-                  )}
-                  <button onClick={() => setModal(sup)}
-                    className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-600 transition-colors">
-                    <Pencil size={13} />
-                  </button>
-                  <button onClick={() => setConfirmDel(sup.id)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors">
-                    <Trash2 size={13} />
-                  </button>
+                {/* Contact */}
+                <div className="space-y-1">
+                  <ContactLink icon={Phone} value={sup.phone} href={sup.phone ? `tel:${sup.phone}` : null} />
+                  <ContactLink icon={Mail}  value={sup.email} href={sup.email ? `mailto:${sup.email}` : null} />
+                  <ContactLink icon={Globe} value={sup.website} href={sup.website ? (sup.website.startsWith('http') ? sup.website : `https://${sup.website}`) : null} />
+                </div>
+                {/* Rating + actions */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <StarRating rating={sup.rating} />
+                  <div className="flex gap-1">
+                    {sup.phone && (
+                      <a href={`https://wa.me/${sup.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
+                        className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-400 hover:text-emerald-600 transition-colors">
+                        <MessageSquare size={13} />
+                      </a>
+                    )}
+                    <button onClick={() => setModal(sup)}
+                      className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-600 transition-colors">
+                      <Pencil size={13} />
+                    </button>
+                    <button onClick={() => setConfirmDel(sup.id)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors">
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -633,7 +764,7 @@ export default function SuppliersPage() {
                 <tr className="thead-row">
                   <th className="px-4 py-3 w-6" />
                   <th className="th-std">Proveedor</th>
-                  <th className="th-std">Categoría</th>
+                  <th className="th-std">Tags</th>
                   <th className="th-std">Contacto</th>
                   <th className="th-std">Calificación</th>
                   <th className="th-std">Pago</th>
@@ -643,44 +774,28 @@ export default function SuppliersPage() {
               <tbody>
                 {filtered.map((sup) => {
                   const isExpanded = expanded === sup.id
+                  const tags = normalizeTags(sup)
                   return (
                     <React.Fragment key={sup.id}>
-                      <tr
-                        className={`border-b border-slate-100 dark:border-slate-800 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${isExpanded ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}
-                      >
-                        {/* Expand toggle */}
+                      <tr className={`border-b border-slate-100 dark:border-slate-800 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${isExpanded ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}>
                         <td className="px-2 py-3 text-center">
-                          <button
-                            onClick={() => toggleExpanded(sup.id)}
-                            className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-400"
-                          >
+                          <button onClick={() => toggleExpanded(sup.id)}
+                            className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-400">
                             {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                           </button>
                         </td>
-
-                        {/* Name */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            {sup.favorite && (
-                              <Star size={12} className="text-amber-400 flex-shrink-0" fill="currentColor" />
-                            )}
+                            {sup.favorite && <Star size={12} className="text-amber-400 flex-shrink-0" fill="currentColor" />}
                             <div className="min-w-0">
                               <p className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[180px]">{sup.name}</p>
-                              {sup.contactName && (
-                                <p className="text-xs text-slate-400 truncate">{sup.contactName}</p>
-                              )}
+                              {sup.contactName && <p className="text-xs text-slate-400 truncate">{sup.contactName}</p>}
                             </div>
                           </div>
                         </td>
-
-                        {/* Category */}
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
-                            {catLabel(sup.category)}
-                          </span>
+                          <TagChips tags={tags} max={3} />
                         </td>
-
-                        {/* Contact */}
                         <td className="px-4 py-3">
                           <div className="space-y-0.5">
                             <ContactLink icon={Phone} value={sup.phone} href={sup.phone ? `tel:${sup.phone}` : null} />
@@ -688,51 +803,31 @@ export default function SuppliersPage() {
                             <ContactLink icon={Globe} value={sup.website} href={sup.website ? (sup.website.startsWith('http') ? sup.website : `https://${sup.website}`) : null} />
                           </div>
                         </td>
-
-                        {/* Rating */}
-                        <td className="px-4 py-3">
-                          <StarRating rating={sup.rating} />
-                        </td>
-
-                        {/* Payment */}
+                        <td className="px-4 py-3"><StarRating rating={sup.rating} /></td>
                         <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
                           {sup.paymentTerms ? PAYMENT_LABELS[sup.paymentTerms] || sup.paymentTerms : '—'}
-                          {sup.deliveryDays && (
-                            <span className="block text-slate-400">{sup.deliveryDays}d entrega</span>
-                          )}
+                          {sup.deliveryDays && <span className="block text-slate-400">{sup.deliveryDays}d entrega</span>}
                         </td>
-
-                        {/* Actions */}
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">
                             {sup.phone && (
-                              <a
-                                href={`https://wa.me/${sup.phone.replace(/\D/g, '')}`}
-                                target="_blank"
-                                rel="noreferrer"
+                              <a href={`https://wa.me/${sup.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
                                 title="WhatsApp"
-                                className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                              >
+                                className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                                 <MessageSquare size={13} />
                               </a>
                             )}
-                            <button
-                              onClick={() => setModal(sup)}
-                              className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                            >
+                            <button onClick={() => setModal(sup)}
+                              className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                               <Pencil size={13} />
                             </button>
-                            <button
-                              onClick={() => setConfirmDel(sup.id)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors"
-                            >
+                            <button onClick={() => setConfirmDel(sup.id)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors">
                               <Trash2 size={13} />
                             </button>
                           </div>
                         </td>
                       </tr>
-
-                      {/* Expanded detail row */}
                       {isExpanded && <ExpandedRow supplier={sup} colSpan={7} />}
                     </React.Fragment>
                   )
@@ -768,16 +863,12 @@ export default function SuppliersPage() {
               </div>
             </div>
             <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setConfirmDel(null)}
-                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-              >
+              <button onClick={() => setConfirmDel(null)}
+                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                 Cancelar
               </button>
-              <button
-                onClick={() => handleDelete(confirmDel)}
-                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors"
-              >
+              <button onClick={() => handleDelete(confirmDel)}
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors">
                 Eliminar
               </button>
             </div>

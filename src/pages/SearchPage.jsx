@@ -13,11 +13,15 @@ import { Link } from 'react-router-dom'
 import { Search, ExternalLink } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
+import { PageLoader } from '../components/PageLoader'
 import { formatDateShort, formatCurrency } from '../utils/constants'
 
 export default function SearchPage() {
   const orders = useStore((s) => s.orders)
+  const dataLoading = useStore((s) => s.dataLoading)
   const [q, setQ] = useState('')
+
+  if (dataLoading) return <PageLoader rows={4} title="Cargando búsqueda..." />
 
   const results = q.trim().length < 2 ? [] : orders.filter((o) => {
     const query = q.toLowerCase()
