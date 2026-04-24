@@ -558,7 +558,7 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
                       className="w-14 text-center text-xs px-1.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
                     />
                     <span className="text-xs text-slate-400">×</span>
-                    {it.type === 'inventory' ? (
+                    {it.type === 'inventory' || it.type === 'service' ? (
                       <span className="w-24 text-right text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
                         ${Number(it.unitPrice).toLocaleString('es-AR')}
                       </span>
@@ -1118,19 +1118,49 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
           <Field label="Precio estimado">
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
-              <input className={`${inputClass} pl-7`} type="number" step="1" min="0" value={form.estimatedPrice} onChange={(e) => set('estimatedPrice', e.target.value)} placeholder="0" />
+              <input
+                className={`${inputClass} pl-7`}
+                type="text"
+                inputMode="numeric"
+                value={form.estimatedPrice === '' ? '' : Number(form.estimatedPrice).toLocaleString('es-AR')}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                  set('estimatedPrice', raw === '' ? '' : raw)
+                }}
+                placeholder="0"
+              />
             </div>
           </Field>
           <Field label="Precio final">
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
-              <input className={`${inputClass} pl-7`} type="number" step="1" min="0" value={form.finalPrice} onChange={(e) => set('finalPrice', e.target.value)} placeholder="0" />
+              <input
+                className={`${inputClass} pl-7`}
+                type="text"
+                inputMode="numeric"
+                value={form.finalPrice === '' ? '' : Number(form.finalPrice).toLocaleString('es-AR')}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                  set('finalPrice', raw === '' ? '' : raw)
+                }}
+                placeholder="0"
+              />
             </div>
           </Field>
           <Field label="Costo de reparación">
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
-              <input className={`${inputClass} pl-7`} type="number" step="1" min="0" value={form.repairCost} onChange={(e) => set('repairCost', e.target.value)} placeholder="0" />
+              <input
+                className={`${inputClass} pl-7`}
+                type="text"
+                inputMode="numeric"
+                value={form.repairCost === '' ? '' : Number(form.repairCost).toLocaleString('es-AR')}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                  set('repairCost', raw === '' ? '' : raw)
+                }}
+                placeholder="0"
+              />
             </div>
           </Field>
           <div className="col-span-2 sm:col-span-1">

@@ -198,12 +198,14 @@ export default function Clients() {
     if (clientOrders.length === 0) return null
     if (clientOrders.some((o) => o.status === 'abandoned'))
       return { label: 'Riesgoso', dot: 'bg-red-500', text: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20' }
-    const oneMonthAgo = new Date()
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-    const recentOrders = clientOrders.filter((o) => o.entryDate && new Date(o.entryDate) >= oneMonthAgo)
+    const twoMonthsAgo = new Date()
+    twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2)
+    const recentOrders = clientOrders.filter((o) => o.entryDate && new Date(o.entryDate) >= twoMonthsAgo)
     if (recentOrders.length >= 4)
       return { label: 'Frecuente', dot: 'bg-green-500', text: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20' }
-    return { label: 'Ocasional', dot: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20' }
+    if (recentOrders.length >= 2)
+      return { label: 'Ocasional', dot: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20' }
+    return null
   }
 
   const getTotalSpent = (client) =>
