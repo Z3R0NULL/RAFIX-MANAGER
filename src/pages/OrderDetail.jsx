@@ -545,7 +545,6 @@ export default function OrderDetail() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-xs text-slate-400 dark:text-slate-500">Observaciones del técnico</p>
-                  <span className="px-1.5 py-0.5 rounded text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium">Privado</span>
                 </div>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.technicianNotes || '—'}</p>
               </div>

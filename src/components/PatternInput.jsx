@@ -30,6 +30,7 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
   const svgRef = useRef(null)
   const [drawing, setDrawing] = useState(false)
   const [cursor, setCursor] = useState(null) // {x,y} en %
+  const [locked, setLocked] = useState(false) // true cuando hay patrón y no se ha borrado
 
   const pattern = value || []
   const hasPattern = pattern.length > 0
@@ -58,7 +59,7 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
   }, [])
 
   const handleStart = useCallback((e) => {
-    if (readOnly) return
+    if (readOnly || locked) return
     e.preventDefault()
     const pos = toPercent(e)
     if (!pos) return
@@ -68,7 +69,7 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
       setDrawing(true)
       setCursor(pos)
     }
-  }, [readOnly, toPercent, hitTest, onChange])
+  }, [readOnly, locked, toPercent, hitTest, onChange])
 
   const handleMove = useCallback((e) => {
     if (!drawing || readOnly) return
@@ -85,6 +86,8 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
   const handleEnd = useCallback(() => {
     setDrawing(false)
     setCursor(null)
+    // Una vez terminado el trazo, bloquear para que no se pueda redibujar sin borrar
+    setLocked(true)
   }, [])
 
   useEffect(() => {
@@ -101,6 +104,7 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
     onChange([])
     setDrawing(false)
     setCursor(null)
+    setLocked(false)
   }
 
   // Colores
@@ -126,8 +130,8 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
       <div className="flex items-center gap-3">
         <div
           className={`relative w-36 h-36 rounded-xl bg-slate-800 border ${
-            readOnly ? 'border-slate-700' : hasPattern ? 'border-indigo-500/50' : 'border-slate-700'
-          } ${!readOnly ? 'cursor-crosshair select-none touch-none' : ''}`}
+            readOnly ? 'border-slate-700' : locked ? 'border-slate-600' : hasPattern ? 'border-indigo-500/50' : 'border-slate-700'
+          } ${!readOnly ? (locked ? 'cursor-not-allowed select-none touch-none' : 'cursor-crosshair select-none touch-none') : ''}`}
         >
           <svg
             ref={svgRef}
@@ -154,12 +158,24 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
             {DOT_POSITIONS.map((pos, i) => {
               const num = i + 1
               const active = pattern.includes(num)
-              const order  = pattern.indexOf(num)
+              const stepIndex = pattern.indexOf(num)
+              const isFirst = stepIndex === 0
+              const isLast  = stepIndex === pattern.length - 1 && pattern.length > 1
               return (
                 <g key={num}>
                   {/* Halo activo */}
                   {active && (
                     <circle cx={pos.x} cy={pos.y} r="9" fill={dotActive} opacity="0.15" />
+                  )}
+                  {/* Anillo de inicio */}
+                  {isFirst && (
+                    <circle
+                      cx={pos.x} cy={pos.y} r="7.5"
+                      fill="none"
+                      stroke={dotActive}
+                      strokeWidth="1.5"
+                      opacity="0.7"
+                    />
                   )}
                   {/* Punto principal */}
                   <circle
@@ -167,7 +183,7 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
                     fill={active ? dotActive : dotInactive}
                     className="transition-colors duration-100"
                   />
-                  {/* Número de orden */}
+                  {/* Número de orden (edición) */}
                   {active && !readOnly && (
                     <text
                       x={pos.x} y={pos.y + 0.8}
@@ -178,7 +194,35 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
                       fontWeight="700"
                       style={{ userSelect: 'none', pointerEvents: 'none' }}
                     >
-                      {order + 1}
+                      {stepIndex + 1}
+                    </text>
+                  )}
+                  {/* Indicador INICIO en readOnly */}
+                  {isFirst && readOnly && (
+                    <text
+                      x={pos.x} y={pos.y - 11}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize="3.8"
+                      fill={dotActive}
+                      fontWeight="700"
+                      style={{ userSelect: 'none', pointerEvents: 'none' }}
+                    >
+                      INICIO
+                    </text>
+                  )}
+                  {/* Indicador FIN en readOnly */}
+                  {isLast && readOnly && (
+                    <text
+                      x={pos.x} y={pos.y + 13}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize="3.8"
+                      fill="#94a3b8"
+                      fontWeight="600"
+                      style={{ userSelect: 'none', pointerEvents: 'none' }}
+                    >
+                      FIN
                     </text>
                   )}
                 </g>

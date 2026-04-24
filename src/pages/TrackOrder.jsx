@@ -4,7 +4,9 @@ import {
   Wrench, Search, Clock, DollarSign, MessageCircle, Loader2,
   AlertCircle, RefreshCw, Smartphone, CheckCircle2,
   XCircle, Info, Calendar, Tag, ShieldCheck, ThumbsUp, ThumbsDown,
-  Camera, ZoomIn, X, ChevronLeft, ChevronRight,
+  Camera, ZoomIn, X, ChevronLeft, ChevronRight, Package, ClipboardList,
+  Wifi, Bluetooth, Mic, Speaker, Fingerprint, Zap, MapPin, RotateCcw,
+  Monitor, Layers, Grid3x3, Droplets,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured } from '../lib/turso'
@@ -495,10 +497,10 @@ export default function TrackOrder() {
                 </div>
               )}
 
-              {order.technicianNotes && !showBudgetApproval && (
+              {order.techFindings && !showBudgetApproval && (
                 <div className="bg-indigo-900/20 rounded-lg p-3.5 mb-3">
-                  <p className="text-xs font-medium text-indigo-400 mb-1">Notas del técnico</p>
-                  <p className="text-sm text-slate-300">{order.technicianNotes}</p>
+                  <p className="text-xs font-medium text-indigo-400 mb-1">Problema encontrado por el técnico</p>
+                  <p className="text-sm text-slate-300">{order.techFindings}</p>
                 </div>
               )}
 
@@ -543,45 +545,138 @@ export default function TrackOrder() {
                 <InfoRow label="Marca" value={order.deviceBrand} />
                 <InfoRow label="Modelo" value={order.deviceModel} />
                 <InfoRow label="N° de serie" value={order.deviceSerial} mono />
-                {order.accessories?.length > 0 && (
-                  <InfoRow label="Accesorios incluidos" value={order.accessories.join(', ')} />
+              </div>
+            </div>
+
+            {/* Accessories */}
+            {order.accessories?.length > 0 && (
+              <div className="bg-slate-900 rounded-xl border border-slate-700/60 p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Package size={15} className="text-slate-400" />
+                  <h2 className="font-semibold text-white text-sm">Accesorios Entregados</h2>
+                  <span className="ml-auto text-xs text-slate-500">{order.accessories.length} ítem{order.accessories.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {order.accessories.map((acc, i) => (
+                    <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300">
+                      <CheckCircle2 size={11} className="text-green-500" />
+                      {acc}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Technical checklist */}
+            {(order.powersOn !== null || order.charges !== null || order.screenWorks !== null ||
+              order.touchWorks !== null || order.audioWorks !== null || order.buttonsWork !== null ||
+              order.rearCameraWorks !== null || order.frontCameraWorks !== null || order.flashWorks !== null ||
+              order.wifiWorks !== null || order.bluetoothWorks !== null || order.micWorks !== null ||
+              order.earSpeakerWorks !== null || order.vibrationWorks !== null || order.biometricWorks !== null ||
+              order.chargingPortWorks !== null || order.gpsWorks !== null ||
+              order.waterDamage || order.physicalDamage || order.previouslyOpened ||
+              order.humidityIndicator !== null || order.liquidSigns !== null || order.corrosionVisible !== null) && (
+              <div className="bg-slate-900 rounded-xl border border-slate-700/60 p-5">
+                <div className="flex items-center gap-2 mb-5">
+                  <ClipboardList size={15} className="text-slate-400" />
+                  <h2 className="font-semibold text-white text-sm">Check Técnico al Ingreso</h2>
+                </div>
+
+                {/* Funciones básicas */}
+                {(order.powersOn !== null || order.charges !== null || order.screenWorks !== null ||
+                  order.touchWorks !== null || order.audioWorks !== null || order.buttonsWork !== null ||
+                  order.chargingPortWorks !== null) && (
+                  <div className="mb-5">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Funciones básicas</p>
+                    <div className="grid grid-cols-2 gap-y-2.5 gap-x-4">
+                      <CheckItem label="Enciende" value={order.powersOn} />
+                      <CheckItem label="Carga" value={order.charges} />
+                      <CheckItem label="Pantalla funciona" value={order.screenWorks} />
+                      <CheckItem label="Touch funciona" value={order.touchWorks} />
+                      <CheckItem label="Audio / Parlante" value={order.audioWorks} />
+                      <CheckItem label="Botones físicos" value={order.buttonsWork} />
+                      <CheckItem label="Puerto de carga" value={order.chargingPortWorks} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Cámaras */}
+                {(order.rearCameraWorks !== null || order.frontCameraWorks !== null || order.flashWorks !== null) && (
+                  <div className="mb-5">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Cámaras</p>
+                    <div className="grid grid-cols-2 gap-y-2.5 gap-x-4">
+                      <CheckItem label="Cámara trasera" value={order.rearCameraWorks} />
+                      <CheckItem label="Cámara frontal" value={order.frontCameraWorks} />
+                      <CheckItem label="Flash" value={order.flashWorks} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Conectividad y sensores */}
+                {(order.wifiWorks !== null || order.bluetoothWorks !== null || order.gpsWorks !== null ||
+                  order.micWorks !== null || order.earSpeakerWorks !== null || order.vibrationWorks !== null ||
+                  order.biometricWorks !== null) && (
+                  <div className="mb-5">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Conectividad y sensores</p>
+                    <div className="grid grid-cols-2 gap-y-2.5 gap-x-4">
+                      <CheckItem label="Wi-Fi" value={order.wifiWorks} />
+                      <CheckItem label="Bluetooth" value={order.bluetoothWorks} />
+                      <CheckItem label="GPS" value={order.gpsWorks} />
+                      <CheckItem label="Micrófono" value={order.micWorks} />
+                      <CheckItem label="Parlante auricular" value={order.earSpeakerWorks} />
+                      <CheckItem label="Vibración" value={order.vibrationWorks} />
+                      <CheckItem label="Biométrico / Huella" value={order.biometricWorks} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Daños y observaciones físicas */}
+                {(order.waterDamage || order.physicalDamage || order.previouslyOpened ||
+                  order.humidityIndicator !== null || order.liquidSigns !== null || order.corrosionVisible !== null) && (
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Estado físico</p>
+                    <div className="flex flex-col gap-2">
+                      {order.waterDamage && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-900/20 border border-blue-800/40">
+                          <Droplets size={13} className="text-blue-400 flex-shrink-0" />
+                          <span className="text-xs text-blue-300">Daño por líquido</span>
+                        </div>
+                      )}
+                      {order.physicalDamage && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-900/20 border border-amber-800/40">
+                          <Info size={13} className="text-amber-400 flex-shrink-0" />
+                          <span className="text-xs text-amber-300">Daño físico visible</span>
+                        </div>
+                      )}
+                      {order.previouslyOpened && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700">
+                          <Info size={13} className="text-slate-400 flex-shrink-0" />
+                          <span className="text-xs text-slate-300">Equipo abierto previamente</span>
+                        </div>
+                      )}
+                      {order.humidityIndicator === true && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-900/20 border border-blue-800/40">
+                          <Droplets size={13} className="text-blue-400 flex-shrink-0" />
+                          <span className="text-xs text-blue-300">Indicador de humedad activado</span>
+                        </div>
+                      )}
+                      {order.liquidSigns === true && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-900/20 border border-blue-800/40">
+                          <Droplets size={13} className="text-blue-400 flex-shrink-0" />
+                          <span className="text-xs text-blue-300">Signos visibles de líquido</span>
+                        </div>
+                      )}
+                      {order.corrosionVisible === true && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-900/20 border border-amber-800/40">
+                          <Info size={13} className="text-amber-400 flex-shrink-0" />
+                          <span className="text-xs text-amber-300">Corrosión visible</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {(order.powersOn !== null || order.charges !== null || order.screenWorks !== null ||
-                order.touchWorks !== null || order.audioWorks !== null || order.buttonsWork !== null ||
-                order.waterDamage || order.physicalDamage || order.previouslyOpened) && (
-                <div className="mt-4 pt-4 border-t border-slate-800">
-                  <p className="text-xs font-medium text-slate-500 mb-3">Estado al ingreso</p>
-                  <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-                    <CheckItem label="Enciende" value={order.powersOn} />
-                    <CheckItem label="Carga" value={order.charges} />
-                    <CheckItem label="Pantalla funciona" value={order.screenWorks} />
-                    <CheckItem label="Touch funciona" value={order.touchWorks} />
-                    <CheckItem label="Audio funciona" value={order.audioWorks} />
-                    <CheckItem label="Botones funcionan" value={order.buttonsWork} />
-                    {order.waterDamage && (
-                      <div className="flex items-center gap-2 col-span-2">
-                        <Info size={13} className="text-amber-500 flex-shrink-0" />
-                        <span className="text-xs text-amber-400">Daño por líquido</span>
-                      </div>
-                    )}
-                    {order.physicalDamage && (
-                      <div className="flex items-center gap-2 col-span-2">
-                        <Info size={13} className="text-amber-500 flex-shrink-0" />
-                        <span className="text-xs text-amber-400">Daño físico visible</span>
-                      </div>
-                    )}
-                    {order.previouslyOpened && (
-                      <div className="flex items-center gap-2 col-span-2">
-                        <Info size={13} className="text-slate-400 flex-shrink-0" />
-                        <span className="text-xs text-slate-400">Equipo abierto previamente</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
 
             {/* Photos */}
             <PhotoGallery photos={order.photosEntry} label="Fotos de ingreso" />
@@ -625,7 +720,6 @@ export default function TrackOrder() {
                             </span>
                             <span className="text-xs text-slate-500">{formatDate(entry.timestamp)}</span>
                           </div>
-                          {entry.note && <p className="text-xs text-slate-500 mt-0.5">{entry.note}</p>}
                         </div>
                       </div>
                     )

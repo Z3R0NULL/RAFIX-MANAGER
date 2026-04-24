@@ -667,7 +667,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Observaciones del técnico</label>
-              <span className="px-1.5 py-0.5 rounded text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium">Privado</span>
             </div>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.technicianNotes} onChange={(e) => set('technicianNotes', e.target.value)} placeholder="Notas internas del técnico (no visible para el cliente)..." />
           </div>
