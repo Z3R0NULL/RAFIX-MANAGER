@@ -460,49 +460,41 @@ export default function SuppliersPage() {
       </div>
 
       {/* ── Filters ── */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre, contacto, teléfono, email…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 transition-colors"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-              <X size={13} />
-            </button>
-          )}
-        </div>
+      <div className="flex flex-col gap-3">
+        {/* Row 1: Search + Favorite + View/Sort */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por nombre, contacto, teléfono, email…"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 transition-colors"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X size={13} />
+              </button>
+            )}
+          </div>
 
-        {/* Favorite toggle */}
-        <button
-          onClick={() => setFilterFav((v) => !v)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-            filterFav
-              ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400'
-              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Star size={14} fill={filterFav ? 'currentColor' : 'none'} />
-          Favoritos
-        </button>
+          {/* Favorite toggle */}
+          <button
+            onClick={() => setFilterFav((v) => !v)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex-shrink-0 ${
+              filterFav
+                ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Star size={14} fill={filterFav ? 'currentColor' : 'none'} />
+            Favoritos
+          </button>
 
-        {/* Category filter */}
-        <div className="flex gap-1 flex-wrap">
-          <FilterBtn active={filterCat === 'all'} onClick={() => setFilterCat('all')}>Todos</FilterBtn>
-          {CATEGORIES.map((c) => (
-            <FilterBtn key={c.value} active={filterCat === c.value} onClick={() => setFilterCat(c.value)}>
-              {c.label}
-            </FilterBtn>
-          ))}
-        </div>
-
-        {/* View + Sort */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex-shrink-0">
+          {/* View + Sort */}
+          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex-shrink-0">
           <button
             onClick={() => setViewMode('table')}
             title="Vista lista"
@@ -542,6 +534,17 @@ export default function SuppliersPage() {
               </div>
             )}
           </div>
+          </div>{/* end View+Sort */}
+        </div>{/* end Row 1 */}
+
+        {/* Row 2: Category filters */}
+        <div className="flex gap-1.5 flex-wrap">
+          <FilterBtn active={filterCat === 'all'} onClick={() => setFilterCat('all')}>Todos</FilterBtn>
+          {CATEGORIES.map((c) => (
+            <FilterBtn key={c.value} active={filterCat === c.value} onClick={() => setFilterCat(c.value)}>
+              {c.label}
+            </FilterBtn>
+          ))}
         </div>
       </div>
 
