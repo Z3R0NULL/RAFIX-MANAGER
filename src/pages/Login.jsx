@@ -7,17 +7,20 @@ export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const login = useStore((s) => s.login)
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
     const ok = await login(form.username, form.password)
     if (ok) {
       navigate('/')
     } else {
       setError('Usuario o contraseña incorrectos.')
+      setLoading(false)
     }
   }
 
@@ -83,9 +86,20 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-medium rounded-lg transition-all mt-1"
+              disabled={loading}
+              className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-medium rounded-lg transition-all mt-1 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Iniciar sesión
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Verificando...
+                </>
+              ) : (
+                'Iniciar sesión'
+              )}
             </button>
           </form>
         </div>

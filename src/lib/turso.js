@@ -15,6 +15,7 @@
  *  - inventory: ítems del inventario de piezas/repuestos.
  *  - suppliers: proveedores del taller.
  *  - device_catalog: catálogo de dispositivos (categoría, marca, modelo).
+ *  - services: catálogo de servicios prestados (mano de obra, reparaciones, etc.).
  *
  * Si las variables VITE_TURSO_DATABASE_URL / VITE_TURSO_AUTH_TOKEN no están
  * definidas, la app funciona únicamente con localStorage (sin sincronización).
@@ -92,6 +93,12 @@ export async function initDb() {
       model TEXT NOT NULL,
       created_by TEXT NOT NULL,
       created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS services (
+      id TEXT PRIMARY KEY,
+      created_by TEXT NOT NULL DEFAULT 'admin',
+      data TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`,
   ], 'write')

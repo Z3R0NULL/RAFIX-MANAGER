@@ -196,6 +196,33 @@ async function deleteCatalogItemFromTurso(id) {
   }
 }
 
+async function syncServiceToTurso(service, username) {
+  if (!isTursoConfigured) return
+  try {
+    await initDb()
+    await turso.execute({
+      sql: `INSERT INTO services (id, created_by, data, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              created_by = excluded.created_by,
+              data       = excluded.data,
+              updated_at = excluded.updated_at`,
+      args: [service.id, username || service.createdBy || 'admin', JSON.stringify(service), new Date().toISOString()],
+    })
+  } catch (e) {
+    console.warn('[Turso] service sync failed:', e)
+  }
+}
+
+async function deleteServiceFromTurso(id) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({ sql: 'DELETE FROM services WHERE id = ?', args: [id] })
+  } catch (e) {
+    console.warn('[Turso] service delete failed:', e)
+  }
+}
+
 async function deleteOrderFromTurso(id) {
   if (!isTursoConfigured) return
   try {
@@ -270,17 +297,23 @@ export async function fetchAllFromTurso({ username } = {}) {
       'SELECT id, category, brand, model, created_by, created_at, updated_at FROM device_catalog ORDER BY category, brand, model'
     )
 
+    const servicesRes = await turso.execute({
+      sql: 'SELECT data FROM services WHERE created_by = ? ORDER BY updated_at DESC',
+      args: [username],
+    })
+
     const orders    = ordersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const clients   = clientsRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const inventory = inventoryRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const suppliers = suppliersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+    const services  = servicesRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const deviceCatalog = catalogRes.rows.map((r) => ({
       id: r.id, category: r.category, brand: r.brand, model: r.model,
       createdBy: r.created_by, createdAt: r.created_at, updatedAt: r.updated_at,
     }))
 
     // Datos cargados correctamente desde Turso
-    return { orders, clients, inventory, suppliers, deviceCatalog }
+    return { orders, clients, inventory, suppliers, deviceCatalog, services }
   } catch (e) {
     console.warn('[Turso] fetchAll failed:', e)
     return null
@@ -296,6 +329,7 @@ export const useStore = create(
       clients: [],
       inventory: [],
       suppliers: [],
+      services: [],
       deviceCatalog: [],
       appUsers: [],
       loginLogs: [],
@@ -331,7 +365,7 @@ export const useStore = create(
               })
               set({ auth: { isLoggedIn: true, username, role: userRow.role } })
               const result = await fetchAllFromTurso({ username })
-              if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], deviceCatalog: result.deviceCatalog || [] })
+              if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], deviceCatalog: result.deviceCatalog || [] })
               return true
             }
           } catch (e) {
@@ -342,12 +376,12 @@ export const useStore = create(
         return false
       },
 
-      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [], deviceCatalog: [] }),
+      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [], services: [], deviceCatalog: [] }),
 
       loadFromTurso: async () => {
         const { auth } = get()
         const result = await fetchAllFromTurso({ username: auth?.username })
-        if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], deviceCatalog: result.deviceCatalog || [] })
+        if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], deviceCatalog: result.deviceCatalog || [] })
       },
 
       // ── Inventory ──────────────────────────────────────────────────
@@ -398,6 +432,41 @@ export const useStore = create(
           })
           return { inventory: updated }
         })
+      },
+
+      // ── Services ───────────────────────────────────────────────────
+      addService: (data) => {
+        const { auth } = get()
+        const username = auth?.username || 'admin'
+        const service = {
+          ...data,
+          id: `SVC-${Date.now()}`,
+          createdBy: username,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        set((s) => ({ services: [service, ...s.services] }))
+        syncServiceToTurso(service, username)
+        return service
+      },
+
+      updateService: (id, data) => {
+        const { auth } = get()
+        const username = auth?.username || 'admin'
+        set((s) => {
+          const updated = s.services.map((svc) => {
+            if (svc.id !== id) return svc
+            const next = { ...svc, ...data, id: svc.id, createdBy: svc.createdBy, createdAt: svc.createdAt, updatedAt: new Date().toISOString() }
+            syncServiceToTurso(next, username)
+            return next
+          })
+          return { services: updated }
+        })
+      },
+
+      deleteService: (id) => {
+        set((s) => ({ services: s.services.filter((svc) => svc.id !== id) }))
+        deleteServiceFromTurso(id)
       },
 
       // ── Suppliers ──────────────────────────────────────────────────

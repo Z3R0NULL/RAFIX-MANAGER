@@ -27,6 +27,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import Clients from './pages/Clients'
 import InventoryPage from './pages/InventoryPage'
 import SuppliersPage from './pages/SuppliersPage'
+import ServicesPage from './pages/ServicesPage'
 
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
@@ -176,6 +177,17 @@ export default function App() {
               <PrivateRoute>
                 <Layout>
                   <SuppliersPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/services"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <ServicesPage />
                 </Layout>
               </PrivateRoute>
             }

@@ -26,11 +26,45 @@ function getCenter(idx) {
   return DOT_POSITIONS[idx - 1]
 }
 
+// Retorna los puntos (1-9) que están exactamente en la línea recta entre `from` y `to`,
+// que todavía no están en el patrón actual. Esto replica el comportamiento de Android.
+function getIntermediatePoints(from, to, currentPattern) {
+  const between = []
+  const ax = DOT_POSITIONS[from - 1].x
+  const ay = DOT_POSITIONS[from - 1].y
+  const bx = DOT_POSITIONS[to - 1].x
+  const by = DOT_POSITIONS[to - 1].y
+
+  for (let i = 1; i <= 9; i++) {
+    if (i === from || i === to || currentPattern.includes(i)) continue
+    const cx = DOT_POSITIONS[i - 1].x
+    const cy = DOT_POSITIONS[i - 1].y
+
+    // El punto C está entre A y B si es colineal y el parámetro t está en (0,1)
+    const dx = bx - ax, dy = by - ay
+    const len2 = dx * dx + dy * dy
+    if (len2 === 0) continue
+
+    const t = ((cx - ax) * dx + (cy - ay) * dy) / len2
+    if (t <= 0 || t >= 1) continue
+
+    // Verificar colinealidad: distancia del punto C a la recta AB < umbral
+    const cross = Math.abs((cy - ay) * dx - (cx - ax) * dy)
+    if (cross / Math.sqrt(len2) < 2.5) {
+      between.push({ dot: i, t })
+    }
+  }
+
+  // Ordenar por posición a lo largo del segmento (de A hacia B)
+  between.sort((a, b) => a.t - b.t)
+  return between.map((p) => p.dot)
+}
+
 export default function PatternInput({ value = [], onChange, readOnly = false }) {
   const svgRef = useRef(null)
   const [drawing, setDrawing] = useState(false)
   const [cursor, setCursor] = useState(null) // {x,y} en %
-  const [locked, setLocked] = useState(false) // true cuando hay patrón y no se ha borrado
+  const [locked, setLocked] = useState(() => (value?.length ?? 0) > 0) // bloqueado si ya hay patrón cargado
 
   const pattern = value || []
   const hasPattern = pattern.length > 0
@@ -79,7 +113,9 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
     setCursor(pos)
     const hit = hitTest(pos.x, pos.y)
     if (hit && !pattern.includes(hit)) {
-      onChange([...pattern, hit])
+      const last = pattern[pattern.length - 1]
+      const intermediates = last ? getIntermediatePoints(last, hit, pattern) : []
+      onChange([...pattern, ...intermediates, hit])
     }
   }, [drawing, readOnly, toPercent, hitTest, pattern, onChange])
 

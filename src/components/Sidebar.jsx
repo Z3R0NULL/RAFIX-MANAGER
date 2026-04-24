@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { to: '/devices', label: 'Dispositivos', icon: Smartphone },
   { to: '/finance', label: 'Finanzas', icon: BarChart2 },
   { to: '/inventory', label: 'Inventario', icon: Package },
+  { to: '/services',  label: 'Servicios',   icon: Wrench },
   { to: '/suppliers', label: 'Proveedores', icon: Truck },
 ]
 
