@@ -15,7 +15,16 @@ import {
   Truck, Plus, Search, Pencil, Trash2, X, Check,
   Phone, Mail, Globe, MapPin, Hash, Star, StarOff,
   ChevronDown, ChevronUp, MessageSquare, Package,
+  LayoutGrid, List, ArrowUpDown,
 } from 'lucide-react'
+
+const SORT_OPTIONS_SUP = [
+  { value: 'name_az',     label: 'Nombre A→Z' },
+  { value: 'name_za',     label: 'Nombre Z→A' },
+  { value: 'rating_desc', label: 'Mayor calificación' },
+  { value: 'rating_asc',  label: 'Menor calificación' },
+  { value: 'fav_first',   label: 'Favoritos primero' },
+]
 import { useStore } from '../store/useStore'
 
 // ── Category config ───────────────────────────────────────────────────────────
@@ -349,6 +358,17 @@ export default function SuppliersPage() {
   const [modal, setModal]           = useState(null)      // null | 'new' | supplier
   const [confirmDel, setConfirmDel] = useState(null)      // supplier id
   const [expanded, setExpanded]     = useState(null)      // supplier id
+  const [viewMode, setViewMode]     = useState(() => localStorage.getItem('suppliersView') || 'table')
+  const [sort, setSort]             = useState('fav_first')
+  const [sortOpen, setSortOpen]     = useState(false)
+
+  React.useEffect(() => {
+    const handler = (e) => { if (!e.target.closest('[data-sort-dropdown]')) setSortOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  React.useEffect(() => { localStorage.setItem('suppliersView', viewMode) }, [viewMode])
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -377,13 +397,19 @@ export default function SuppliersPage() {
         s.address?.toLowerCase().includes(q)
       )
     }
-    // Favorites first, then by name
     return list.sort((a, b) => {
-      if (a.favorite && !b.favorite) return -1
-      if (!a.favorite && b.favorite) return 1
-      return (a.name || '').localeCompare(b.name || '')
+      switch (sort) {
+        case 'name_az':     return (a.name || '').localeCompare(b.name || '')
+        case 'name_za':     return (b.name || '').localeCompare(a.name || '')
+        case 'rating_desc': return (b.rating || 0) - (a.rating || 0)
+        case 'rating_asc':  return (a.rating || 0) - (b.rating || 0)
+        default: // fav_first
+          if (a.favorite && !b.favorite) return -1
+          if (!a.favorite && b.favorite) return 1
+          return (a.name || '').localeCompare(b.name || '')
+      }
     })
-  }, [suppliers, filterCat, filterFav, search])
+  }, [suppliers, filterCat, filterFav, search, sort])
 
   const handleSave = (data) => {
     if (modal === 'new') addSupplier(data)
@@ -474,6 +500,49 @@ export default function SuppliersPage() {
             </FilterBtn>
           ))}
         </div>
+
+        {/* View + Sort */}
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex-shrink-0">
+          <button
+            onClick={() => setViewMode('table')}
+            title="Vista lista"
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+          >
+            <List size={14} />
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            title="Vista cuadrícula"
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+          >
+            <LayoutGrid size={14} />
+          </button>
+          <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+          <div className="relative" data-sort-dropdown>
+            <button
+              onClick={() => setSortOpen((o) => !o)}
+              className="flex items-center gap-1.5 pl-2 pr-2.5 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors whitespace-nowrap"
+            >
+              <ArrowUpDown size={14} className="text-slate-500 dark:text-slate-400" />
+              {SORT_OPTIONS_SUP.find((o) => o.value === sort)?.label}
+              <ChevronDown size={12} className={`text-slate-400 transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 mt-1.5 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                {SORT_OPTIONS_SUP.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSort(opt.value); setSortOpen(false) }}
+                    className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0
+                      ${sort === opt.value ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ── Empty state ── */}
@@ -499,8 +568,57 @@ export default function SuppliersPage() {
         </div>
       )}
 
+      {/* ── Grid view ── */}
+      {filtered.length > 0 && viewMode === 'grid' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((sup) => (
+            <div key={sup.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+              {/* Top */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {sup.favorite && <Star size={12} className="text-amber-400 flex-shrink-0" fill="currentColor" />}
+                    <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{sup.name}</p>
+                  </div>
+                  {sup.contactName && <p className="text-xs text-slate-400 mt-0.5">{sup.contactName}</p>}
+                </div>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 flex-shrink-0">
+                  {catLabel(sup.category)}
+                </span>
+              </div>
+              {/* Contact */}
+              <div className="space-y-1">
+                <ContactLink icon={Phone} value={sup.phone} href={sup.phone ? `tel:${sup.phone}` : null} />
+                <ContactLink icon={Mail}  value={sup.email} href={sup.email ? `mailto:${sup.email}` : null} />
+                <ContactLink icon={Globe} value={sup.website} href={sup.website ? (sup.website.startsWith('http') ? sup.website : `https://${sup.website}`) : null} />
+              </div>
+              {/* Rating + actions */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <StarRating rating={sup.rating} />
+                <div className="flex gap-1">
+                  {sup.phone && (
+                    <a href={`https://wa.me/${sup.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
+                      className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-400 hover:text-emerald-600 transition-colors">
+                      <MessageSquare size={13} />
+                    </a>
+                  )}
+                  <button onClick={() => setModal(sup)}
+                    className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-600 transition-colors">
+                    <Pencil size={13} />
+                  </button>
+                  <button onClick={() => setConfirmDel(sup.id)}
+                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors">
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* ── Table ── */}
-      {filtered.length > 0 && (
+      {filtered.length > 0 && viewMode === 'table' && (
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

@@ -3,7 +3,16 @@
  * CRUD completo: nombre, categoría, precio, duración estimada, descripción, activo/inactivo.
  */
 import React, { useState, useMemo } from 'react'
-import { Plus, Pencil, Trash2, Search, X, Wrench, Clock, DollarSign, Tag, ToggleLeft, ToggleRight, AlertCircle, Percent } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, X, Wrench, Clock, DollarSign, Tag, ToggleLeft, ToggleRight, AlertCircle, Percent, LayoutGrid, List, ArrowUpDown, ChevronDown } from 'lucide-react'
+
+const SORT_OPTIONS_SVC = [
+  { value: 'name_az',    label: 'Nombre A→Z' },
+  { value: 'name_za',    label: 'Nombre Z→A' },
+  { value: 'price_desc', label: 'Mayor precio' },
+  { value: 'price_asc',  label: 'Menor precio' },
+  { value: 'duration_desc', label: 'Más duración' },
+  { value: 'duration_asc',  label: 'Menos duración' },
+]
 import { useStore } from '../store/useStore'
 
 const CATEGORIES = [
@@ -283,6 +292,17 @@ export default function ServicesPage() {
   const [showInactive, setShowInactive] = useState(false)
   const [modal, setModal]         = useState(null) // null | 'new' | service object
   const [toDelete, setToDelete]   = useState(null)
+  const [viewMode, setViewMode]   = useState(() => localStorage.getItem('servicesView') || 'table')
+  const [sort, setSort]           = useState('name_az')
+  const [sortOpen, setSortOpen]   = useState(false)
+
+  React.useEffect(() => {
+    const handler = (e) => { if (!e.target.closest('[data-sort-dropdown]')) setSortOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  React.useEffect(() => { localStorage.setItem('servicesView', viewMode) }, [viewMode])
 
   const filtered = useMemo(() => {
     let list = services || []
@@ -297,8 +317,17 @@ export default function ServicesPage() {
           s.category?.toLowerCase().includes(q)
       )
     }
-    return list
-  }, [services, search, catFilter, showInactive])
+    return list.sort((a, b) => {
+      switch (sort) {
+        case 'name_za':       return (b.name || '').localeCompare(a.name || '')
+        case 'price_desc':    return (b.price || 0) - (a.price || 0)
+        case 'price_asc':     return (a.price || 0) - (b.price || 0)
+        case 'duration_desc': return (b.duration || 0) - (a.duration || 0)
+        case 'duration_asc':  return (a.duration || 0) - (b.duration || 0)
+        default:              return (a.name || '').localeCompare(b.name || '')
+      }
+    })
+  }, [services, search, catFilter, showInactive, sort])
 
   // KPIs
   const total    = (services || []).length
@@ -388,6 +417,49 @@ export default function ServicesPage() {
         >
           {showInactive ? 'Ocultar inactivos' : 'Mostrar inactivos'}
         </button>
+
+        {/* View + Sort */}
+        <div className="flex items-center gap-1.5 bg-slate-800 rounded-xl p-1 flex-shrink-0">
+          <button
+            onClick={() => setViewMode('table')}
+            title="Vista lista"
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}
+          >
+            <List size={14} />
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            title="Vista cuadrícula"
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}
+          >
+            <LayoutGrid size={14} />
+          </button>
+          <div className="w-px h-5 bg-slate-700 mx-0.5" />
+          <div className="relative" data-sort-dropdown>
+            <button
+              onClick={() => setSortOpen((o) => !o)}
+              className="flex items-center gap-1.5 pl-2 pr-2.5 py-2 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-700 transition-colors whitespace-nowrap"
+            >
+              <ArrowUpDown size={14} className="text-slate-400" />
+              {SORT_OPTIONS_SVC.find((o) => o.value === sort)?.label}
+              <ChevronDown size={12} className={`text-slate-400 transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 mt-1.5 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                {SORT_OPTIONS_SVC.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSort(opt.value); setSortOpen(false) }}
+                    className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors border-b border-slate-800 last:border-0
+                      ${sort === opt.value ? 'bg-indigo-900/20 text-indigo-400 font-medium' : 'text-slate-300 hover:bg-slate-800'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Categorías */}
@@ -407,8 +479,66 @@ export default function ServicesPage() {
         ))}
       </div>
 
-      {/* Tabla */}
-      {filtered.length === 0 ? (
+      {/* Grid */}
+      {filtered.length > 0 && viewMode === 'grid' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((svc) => (
+            <div key={svc.id} className="bg-slate-900 rounded-xl border border-slate-700/60 p-4 flex flex-col gap-3 hover:border-slate-600 transition-colors group">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-white text-sm truncate">{svc.name}</p>
+                  <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700/60 text-[10px] text-slate-300">
+                    <Tag size={9} />
+                    {svc.category}
+                  </span>
+                </div>
+                {svc.active !== false ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-green-900/30 border border-green-800/50 text-green-400 text-[10px] font-semibold flex-shrink-0">Activo</span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700/60 text-slate-500 text-[10px] font-semibold flex-shrink-0">Inactivo</span>
+                )}
+              </div>
+              {/* Price + Duration */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Precio</p>
+                  {svc.priceType === 'percent' ? (
+                    <span className="font-bold text-violet-400 text-sm flex items-center gap-0.5">
+                      <Percent size={11} />{svc.price != null ? `${svc.price}% rep.` : '—'}
+                    </span>
+                  ) : (
+                    <span className="font-bold text-emerald-400 text-sm">{formatPrice(svc)}</span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Duración</p>
+                  <span className="text-xs text-slate-300 flex items-center gap-1 justify-end">
+                    <Clock size={10} />{formatDuration(svc.duration)}
+                  </span>
+                </div>
+              </div>
+              {svc.description && (
+                <p className="text-xs text-slate-400 truncate border-t border-slate-800 pt-2">{svc.description}</p>
+              )}
+              {/* Actions */}
+              <div className="flex gap-2 pt-1 border-t border-slate-800 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => setModal(svc)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-indigo-400 hover:bg-indigo-900/20 transition-colors">
+                  <Pencil size={12} /> Editar
+                </button>
+                <button onClick={() => setToDelete(svc)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-900/20 transition-colors">
+                  <Trash2 size={12} /> Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mb-3">
             <Wrench size={22} className="text-slate-600" />
@@ -425,7 +555,10 @@ export default function ServicesPage() {
             </button>
           )}
         </div>
-      ) : (
+      )}
+
+      {/* Tabla */}
+      {filtered.length > 0 && viewMode === 'table' && (
         <div className="bg-slate-900 rounded-xl border border-slate-700/60 overflow-hidden">
           <table className="w-full text-sm">
             <thead>

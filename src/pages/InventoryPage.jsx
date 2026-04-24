@@ -14,8 +14,17 @@ import React, { useState, useMemo } from 'react'
 import {
   Package, Plus, Search, Pencil, Trash2, X, Check,
   ChevronUp, ChevronDown, AlertTriangle, Tag, Boxes,
-  Wrench, Smartphone, LayoutGrid, List,
+  Wrench, Smartphone, LayoutGrid, List, ArrowUpDown,
 } from 'lucide-react'
+
+const SORT_OPTIONS = [
+  { value: 'name_az',    label: 'Nombre A→Z' },
+  { value: 'name_za',    label: 'Nombre Z→A' },
+  { value: 'stock_desc', label: 'Mayor stock' },
+  { value: 'stock_asc',  label: 'Menor stock' },
+  { value: 'price_desc', label: 'Mayor precio' },
+  { value: 'price_asc',  label: 'Menor precio' },
+]
 import { useStore } from '../store/useStore'
 
 // ── Category config ───────────────────────────────────────────────────────────
@@ -239,7 +248,17 @@ export default function InventoryPage() {
   const [filterCat, setFilterCat] = useState('all')
   const [modal, setModal]         = useState(null)   // null | 'new' | item object
   const [confirmDel, setConfirmDel] = useState(null) // item id
-  const [viewMode, setViewMode]   = useState('table') // 'table' | 'grid'
+  const [viewMode, setViewMode]   = useState(() => localStorage.getItem('inventoryView') || 'table') // 'table' | 'grid'
+  const [sort, setSort]           = useState('name_az')
+  const [sortOpen, setSortOpen]   = useState(false)
+
+  React.useEffect(() => {
+    const handler = (e) => { if (!e.target.closest('[data-sort-dropdown]')) setSortOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  React.useEffect(() => { localStorage.setItem('inventoryView', viewMode) }, [viewMode])
 
   // ── Derived stats ──────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -250,7 +269,7 @@ export default function InventoryPage() {
     return { total, lowStock, outStock, totalValue }
   }, [inventory])
 
-  // ── Filtered list ──────────────────────────────────────────────────────────
+  // ── Filtered + sorted list ─────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let list = [...inventory]
     if (filterCat !== 'all') list = list.filter((i) => i.category === filterCat)
@@ -264,8 +283,17 @@ export default function InventoryPage() {
         i.notes?.toLowerCase().includes(q)
       )
     }
-    return list
-  }, [inventory, filterCat, search])
+    return list.sort((a, b) => {
+      switch (sort) {
+        case 'name_za':    return (b.name || '').localeCompare(a.name || '')
+        case 'stock_desc': return (b.stock || 0) - (a.stock || 0)
+        case 'stock_asc':  return (a.stock || 0) - (b.stock || 0)
+        case 'price_desc': return (b.price || 0) - (a.price || 0)
+        case 'price_asc':  return (a.price || 0) - (b.price || 0)
+        default:           return (a.name || '').localeCompare(b.name || '')
+      }
+    })
+  }, [inventory, filterCat, search, sort])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleSave = (data) => {
@@ -340,20 +368,47 @@ export default function InventoryPage() {
           ))}
         </div>
 
-        {/* View toggle */}
-        <div className="flex border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden text-sm">
+        {/* View + Sort */}
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex-shrink-0">
           <button
             onClick={() => setViewMode('table')}
-            className={`px-3 py-2 transition-colors ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+            title="Vista lista"
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
             <List size={14} />
           </button>
           <button
             onClick={() => setViewMode('grid')}
-            className={`px-3 py-2 transition-colors ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+            title="Vista cuadrícula"
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
             <LayoutGrid size={14} />
           </button>
+          <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+          <div className="relative" data-sort-dropdown>
+            <button
+              onClick={() => setSortOpen((o) => !o)}
+              className="flex items-center gap-1.5 pl-2 pr-2.5 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors whitespace-nowrap"
+            >
+              <ArrowUpDown size={14} className="text-slate-500 dark:text-slate-400" />
+              {SORT_OPTIONS.find((o) => o.value === sort)?.label}
+              <ChevronDown size={12} className={`text-slate-400 transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSort(opt.value); setSortOpen(false) }}
+                    className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0
+                      ${sort === opt.value ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
