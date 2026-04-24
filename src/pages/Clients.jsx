@@ -30,6 +30,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { PageLoader } from '../components/PageLoader'
 import { formatCurrency } from '../utils/constants'
 
 const SORT_OPTIONS = [
@@ -176,7 +177,7 @@ function ClientModal({ client, onSave, onClose, onDelete }) {
 }
 
 export default function Clients() {
-  const { clients, upsertClient, updateClient, deleteClient, orders, auth } = useStore()
+  const { clients, upsertClient, updateClient, deleteClient, orders, auth, dataLoading } = useStore()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(null) // null | 'new' | client object
@@ -287,6 +288,8 @@ export default function Clients() {
     deleteClient(id)
     setConfirmDelete(null)
   }
+
+  if (dataLoading) return <PageLoader rows={6} title="Cargando clientes..." />
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-5">

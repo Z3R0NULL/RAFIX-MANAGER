@@ -25,6 +25,7 @@ const SORT_OPTIONS_SUP = [
   { value: 'rating_asc',  label: 'Menor calificación' },
   { value: 'fav_first',   label: 'Favoritos primero' },
 ]
+import { PageLoader } from '../components/PageLoader'
 import { useStore } from '../store/useStore'
 
 // ── Category config ───────────────────────────────────────────────────────────
@@ -351,6 +352,7 @@ export default function SuppliersPage() {
   const addSupplier     = useStore((s) => s.addSupplier)
   const updateSupplier  = useStore((s) => s.updateSupplier)
   const deleteSupplier  = useStore((s) => s.deleteSupplier)
+  const dataLoading     = useStore((s) => s.dataLoading)
 
   const [search, setSearch]         = useState('')
   const [filterCat, setFilterCat]   = useState('all')
@@ -430,6 +432,8 @@ export default function SuppliersPage() {
     contado: 'Contado', '15dias': '15 días', '30dias': '30 días',
     '60dias': '60 días', consignacion: 'Consignación', otro: 'Otro',
   }
+
+  if (dataLoading) return <PageLoader rows={5} title="Cargando proveedores..." />
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">

@@ -18,6 +18,7 @@ import {
   Clock, Info, PieChart as PieIcon,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { PageLoader } from '../components/PageLoader'
 import { formatCurrency, formatDateShort, STATUS_CONFIG } from '../utils/constants'
 
 // ── Categorías de reparación ──────────────────────────────────────────────────
@@ -287,6 +288,7 @@ function BarChart({ data }) {
 
 export default function FinancePage() {
   const orders = useStore((s) => s.orders)
+  const dataLoading = useStore((s) => s.dataLoading)
   const [period, setPeriod] = useState('monthly')
 
   // ── Partición de órdenes ──────────────────────────────────────────────────
@@ -387,6 +389,8 @@ export default function FinancePage() {
       .sort((a, b) => b.income - a.income)
       .map((c) => ({ ...c, pct: totalProfit > 0 ? (c.income / totalProfit) * 100 : 0 }))
   }, [billed])
+
+  if (dataLoading) return <PageLoader rows={5} title="Cargando finanzas..." />
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">

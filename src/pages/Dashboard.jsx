@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
+import { PageLoader } from '../components/PageLoader'
 import { formatDate, formatCurrency, STATUS_CONFIG } from '../utils/constants'
 
 // ── Helpers de tiempo ────────────────────────────────────────────────────────
@@ -81,6 +82,10 @@ const ACTIVE_STATUSES = ['pending', 'diagnosing', 'waiting_approval', 'in_repair
 
 export default function Dashboard() {
   const orders = useStore((s) => s.orders)
+  const dataLoading = useStore((s) => s.dataLoading)
+
+  if (dataLoading) return <PageLoader rows={5} title="Cargando órdenes..." />
+
 
   const abandonedOrders = orders.filter((o) => o.status === 'abandoned')
 

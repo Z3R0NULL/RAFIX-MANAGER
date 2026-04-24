@@ -14,6 +14,7 @@ const SORT_OPTIONS_SVC = [
   { value: 'duration_asc',  label: 'Menos duración' },
 ]
 import { useStore } from '../store/useStore'
+import { PageLoader } from '../components/PageLoader'
 
 const CATEGORIES = [
   'Todas',
@@ -286,6 +287,7 @@ export default function ServicesPage() {
   const addService     = useStore((s) => s.addService)
   const updateService  = useStore((s) => s.updateService)
   const deleteService  = useStore((s) => s.deleteService)
+  const dataLoading    = useStore((s) => s.dataLoading)
 
   const [search, setSearch]       = useState('')
   const [catFilter, setCatFilter] = useState('Todas')
@@ -366,6 +368,8 @@ export default function ServicesPage() {
     const m = min % 60
     return m ? `${h}h ${m}m` : `${h}h`
   }
+
+  if (dataLoading) return <PageLoader rows={5} title="Cargando servicios..." />
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6">

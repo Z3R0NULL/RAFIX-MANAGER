@@ -26,6 +26,7 @@ const SORT_OPTIONS = [
   { value: 'price_asc',  label: 'Menor precio' },
 ]
 import { useStore } from '../store/useStore'
+import { PageLoader } from '../components/PageLoader'
 
 // ── Category config ───────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -243,6 +244,7 @@ export default function InventoryPage() {
   const addInventoryItem   = useStore((s) => s.addInventoryItem)
   const updateInventoryItem = useStore((s) => s.updateInventoryItem)
   const deleteInventoryItem = useStore((s) => s.deleteInventoryItem)
+  const dataLoading        = useStore((s) => s.dataLoading)
 
   const [search, setSearch]       = useState('')
   const [filterCat, setFilterCat] = useState('all')
@@ -309,6 +311,8 @@ export default function InventoryPage() {
     deleteInventoryItem(id)
     setConfirmDel(null)
   }
+
+  if (dataLoading) return <PageLoader rows={6} title="Cargando inventario..." />
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (

@@ -26,6 +26,7 @@ import {
 import { useStore } from '../store/useStore'
 import { useNavigate } from 'react-router-dom'
 import { StatusBadge } from '../components/StatusBadge'
+import { PageLoader } from '../components/PageLoader'
 import { formatDateShort, formatCurrency, STATUS_CONFIG, DEVICE_TYPES } from '../utils/constants'
 
 const SORT_OPTIONS = [
@@ -50,7 +51,7 @@ function sortOrders(orders, sort) {
 }
 
 export default function Orders() {
-  const { orders } = useStore()
+  const { orders, dataLoading } = useStore()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -107,6 +108,8 @@ export default function Orders() {
 
   const sorted = sortOrders(filtered, sort)
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label || 'Ordenar'
+
+  if (dataLoading) return <PageLoader rows={6} title="Cargando órdenes..." />
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-5">

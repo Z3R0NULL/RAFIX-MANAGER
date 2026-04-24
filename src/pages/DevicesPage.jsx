@@ -15,6 +15,7 @@ import {
   Loader2, AlertCircle,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { PageLoader } from '../components/PageLoader'
 import { DEVICE_TYPES, STATUS_CONFIG, formatCurrency } from '../utils/constants'
 
 // ── Modal genérico ───────────────────────────────────────────────────────────

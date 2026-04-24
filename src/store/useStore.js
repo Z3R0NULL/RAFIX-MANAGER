@@ -337,6 +337,7 @@ export const useStore = create(
       darkMode: true,
       auth: { isLoggedIn: false },
       _hydrated: false,
+      dataLoading: false,
       setHydrated: () => set({ _hydrated: true }),
 
       // ── Auth ───────────────────────────────────────────────────────
@@ -364,13 +365,15 @@ export const useStore = create(
                   new Date().toISOString(),
                 ],
               })
-              set({ auth: { isLoggedIn: true, username, role: userRow.role } })
+              set({ auth: { isLoggedIn: true, username, role: userRow.role }, dataLoading: true })
               const result = await fetchAllFromTurso({ username })
               if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], deviceCatalog: result.deviceCatalog || [] })
+              set({ dataLoading: false })
               return true
             }
           } catch (e) {
             console.warn('[Turso] login check failed:', e)
+            set({ dataLoading: false })
           }
         }
 
@@ -381,8 +384,10 @@ export const useStore = create(
 
       loadFromTurso: async () => {
         const { auth } = get()
+        set({ dataLoading: true })
         const result = await fetchAllFromTurso({ username: auth?.username })
         if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], deviceCatalog: result.deviceCatalog || [] })
+        set({ dataLoading: false })
       },
 
       // ── Inventory ──────────────────────────────────────────────────
