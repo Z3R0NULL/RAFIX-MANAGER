@@ -84,6 +84,7 @@ export const initialOrder = {
   finalPrice: '',
   repairCost: '',
   budgetStatus: 'pending',
+  budgetItems: [],
   workDone: '',
   status: 'pending',
   estimatedDelivery: '',

@@ -31,7 +31,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
-  ChevronDown, ChevronUp, Search, UserCheck, UserPlus, Camera, Pencil, X
+  ChevronDown, ChevronUp, Search, UserCheck, UserPlus, Camera, Pencil, X,
+  Plus, Trash2, Package, Wrench
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 import { useStore } from '../store/useStore'
@@ -152,6 +153,43 @@ const PHYS_SIM = [
   { value: 'damaged', label: 'Dañada',   cls: CLS.warn },
   { value: 'missing', label: 'Faltante', cls: CLS.bad  },
 ]
+
+// ── Input de moneda con separadores de miles automáticos ───────────────────
+// Guarda el valor numérico puro en el store (ej: 950000)
+// Muestra con puntos de miles mientras se escribe (ej: "950.000")
+function CurrencyInput({ value, onChange, placeholder = '0', className }) {
+  const format = (raw) => {
+    const digits = String(raw ?? '').replace(/\D/g, '')
+    if (!digits) return ''
+    return Number(digits).toLocaleString('es-AR', { maximumFractionDigits: 0 })
+  }
+
+  const [display, setDisplay] = useState(() => format(value))
+
+  // Sincroniza al montar con initialData
+  useEffect(() => {
+    setDisplay(format(value))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleChange = (e) => {
+    const raw = e.target.value.replace(/\D/g, '')
+    setDisplay(raw ? Number(raw).toLocaleString('es-AR', { maximumFractionDigits: 0 }) : '')
+    onChange(raw ? Number(raw) : '')
+  }
+
+  return (
+    <input
+      className={className}
+      type="text"
+      inputMode="numeric"
+      value={display}
+      onChange={handleChange}
+      placeholder={placeholder}
+      autoComplete="off"
+    />
+  )
+}
 
 // Separador de grupo dentro del checklist
 const CheckGroup = ({ title }) => (
@@ -300,10 +338,283 @@ function SelectedClientChip({ client, onEdit, onClear }) {
   )
 }
 
+// ── Editor de ítems de presupuesto ─────────────────────────────────────────
+function BudgetItemsEditor({ items = [], onChange, inventory = [], services = [] }) {
+  const [search, setSearch] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [type, setType] = useState('service') // 'service' | 'inventory' | 'custom'
+  const [customName, setCustomName] = useState('')
+  const [customQty, setCustomQty]   = useState(1)
+  const [customPrice, setCustomPrice] = useState('')
+  const searchRef = useRef(null)
+
+  // Merge services + inventory for search
+  const allSuggestions = [
+    ...services.map((s) => ({
+      id: s.id,
+      label: s.name,
+      price: s.priceType === 'percent' ? 0 : (Number(s.price) || 0),
+      priceDisplay: s.priceType === 'percent' ? `${s.price ?? '?'}% repuesto` : `$${Number(s.price || 0).toLocaleString('es-AR')}`,
+      isPercent: s.priceType === 'percent',
+      percentValue: s.priceType === 'percent' ? s.price : null,
+      type: 'service',
+    })),
+    ...inventory.map((i) => ({
+      id: i.id,
+      label: i.name,
+      price: Number(i.salePrice || i.price || 0),
+      priceDisplay: `$${Number(i.salePrice || i.price || 0).toLocaleString('es-AR')}`,
+      isPercent: false,
+      percentValue: null,
+      type: 'inventory',
+      stock: i.stock,
+    })),
+  ]
+
+  const filtered = search.length >= 1
+    ? allSuggestions.filter((s) => s.label?.toLowerCase().includes(search.toLowerCase())).slice(0, 8)
+    : []
+
+  useEffect(() => {
+    const handler = (e) => { if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const addItem = (suggestion) => {
+    const newItem = {
+      id: `BI-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      sourceId: suggestion.id,
+      type: suggestion.type,
+      name: suggestion.label,
+      qty: 1,
+      unitPrice: Number(suggestion.price) || 0,
+      isPercent: suggestion.isPercent || false,
+      percentValue: suggestion.isPercent ? suggestion.percentValue : null,
+    }
+    onChange([...items, newItem])
+    setSearch('')
+    setSearchOpen(false)
+  }
+
+  const addCustom = () => {
+    if (!customName.trim()) return
+    const newItem = {
+      id: `BI-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      sourceId: null,
+      type: 'custom',
+      name: customName.trim(),
+      qty: Number(customQty) || 1,
+      unitPrice: Number(customPrice) || 0,
+    }
+    onChange([...items, newItem])
+    setCustomName('')
+    setCustomQty(1)
+    setCustomPrice('')
+  }
+
+  const updateItem = (id, field, value) => {
+    onChange(items.map((it) => it.id === id ? { ...it, [field]: value } : it))
+  }
+
+  const removeItem = (id) => {
+    onChange(items.filter((it) => it.id !== id))
+  }
+
+  const total = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0)
+
+  return (
+    <div className="space-y-3">
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-medium">
+        {[
+          { id: 'service',   label: 'Servicios / Inventario' },
+          { id: 'custom',    label: 'Ítem personalizado'      },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setType(tab.id)}
+            className={`flex-1 py-1.5 rounded-md transition-colors ${type === tab.id ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Búsqueda de servicios/inventario */}
+      {type === 'service' && (
+        <div ref={searchRef} className="relative">
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              className="w-full pl-8 pr-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
+              placeholder="Buscar en servicios e inventario..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setSearchOpen(true) }}
+              onFocus={() => setSearchOpen(true)}
+              autoComplete="off"
+            />
+          </div>
+          {searchOpen && filtered.length > 0 && (
+            <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden max-h-56 overflow-y-auto">
+              {filtered.map((s) => (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); addItem(s) }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors border-b border-slate-100 dark:border-slate-700/50 last:border-0"
+                  >
+                    {s.type === 'service'
+                      ? <Wrench size={13} className="text-indigo-400 flex-shrink-0" />
+                      : <Package size={13} className="text-emerald-400 flex-shrink-0" />
+                    }
+                    <span className="flex-1 text-left truncate">{s.label}</span>
+                    <span className={`text-xs flex-shrink-0 ${s.isPercent ? 'text-violet-400' : 'text-slate-400'}`}>{s.priceDisplay}</span>
+                    {s.type === 'inventory' && s.stock !== undefined && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 ${s.stock > 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
+                        {s.stock > 0 ? `Stock: ${s.stock}` : 'Sin stock'}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {searchOpen && search.length >= 1 && filtered.length === 0 && (
+            <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl px-4 py-3 text-xs text-slate-400">
+              Sin resultados — usá «Ítem personalizado» para agregarlo manualmente.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Ítem personalizado */}
+      {type === 'custom' && (
+        <div className="grid grid-cols-12 gap-2">
+          <div className="col-span-12 sm:col-span-6">
+            <input
+              className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
+              placeholder="Descripción del ítem o servicio"
+              value={customName}
+              onChange={(e) => setCustomName(e.target.value)}
+            />
+          </div>
+          <div className="col-span-4 sm:col-span-2">
+            <input
+              className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition text-center"
+              type="number" min="1" step="1"
+              placeholder="Cant."
+              value={customQty}
+              onChange={(e) => setCustomQty(e.target.value)}
+            />
+          </div>
+          <div className="col-span-5 sm:col-span-3 relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+            <input
+              className="w-full pl-6 pr-2 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
+              type="number" min="0" step="1"
+              placeholder="Precio"
+              value={customPrice}
+              onChange={(e) => setCustomPrice(e.target.value)}
+            />
+          </div>
+          <div className="col-span-3 sm:col-span-1">
+            <button
+              type="button"
+              onClick={addCustom}
+              className="w-full h-full flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Lista de ítems */}
+      {items.length > 0 && (
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {items.map((it) => (
+              <div key={it.id} className="flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-slate-900/60">
+                <span className="flex-shrink-0">
+                  {it.type === 'service'   && <Wrench  size={12} className="text-indigo-400" />}
+                  {it.type === 'inventory' && <Package size={12} className="text-emerald-400" />}
+                  {it.type === 'custom'    && <DollarSign size={12} className="text-amber-400" />}
+                </span>
+                <span className="flex-1 text-sm text-slate-800 dark:text-slate-200 truncate min-w-0">
+                  {it.name}
+                </span>
+                {it.isPercent ? (
+                  <span className="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-semibold flex-shrink-0">
+                    {it.percentValue}% del repuesto
+                  </span>
+                ) : (
+                  <>
+                    <input
+                      type="number" min="1" step="1"
+                      value={it.qty}
+                      onChange={(e) => updateItem(it.id, 'qty', Number(e.target.value) || 1)}
+                      className="w-14 text-center text-xs px-1.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                    />
+                    <span className="text-xs text-slate-400">×</span>
+                    {it.type === 'inventory' ? (
+                      <span className="w-24 text-right text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
+                        ${Number(it.unitPrice).toLocaleString('es-AR')}
+                      </span>
+                    ) : (
+                      <div className="relative w-24 flex-shrink-0">
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                        <input
+                          type="number" min="0" step="1"
+                          value={it.unitPrice}
+                          onChange={(e) => updateItem(it.id, 'unitPrice', Number(e.target.value) || 0)}
+                          className="w-full pl-5 pr-1 py-1.5 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                        />
+                      </div>
+                    )}
+                    <span className="w-20 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 flex-shrink-0">
+                      ${((Number(it.qty) || 0) * (Number(it.unitPrice) || 0)).toLocaleString('es-AR')}
+                    </span>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeItem(it.id)}
+                  className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+          </div>
+          {/* Total */}
+          <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-700">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              Total ítems ({items.length})
+            </span>
+            <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">
+              ${total.toLocaleString('es-AR')}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {items.length === 0 && (
+        <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-3">
+          Sin ítems — buscá en servicios/inventario o agregá uno personalizado
+        </p>
+      )}
+    </div>
+  )
+}
+
 // ── Formulario principal ───────────────────────────────────────────────────
 export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel = 'Guardar Orden', isLoading }) {
   const clients = useStore((s) => s.clients)
   const deviceCatalog = useStore((s) => s.deviceCatalog)
+  const inventory = useStore((s) => s.inventory)
+  const services  = useStore((s) => s.services)
   // null = buscando / sin selección | { id, ... } = cliente seleccionado de la DB
   const [selectedClient, setSelectedClient] = useState(null)
   // true = campos de cliente en modo edición (solo lectura por defecto si hay cliente seleccionado)
@@ -368,6 +679,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     finalPrice: '',
     repairCost: '',
     budgetStatus: 'pending',
+    budgetItems: [],
     workDone: '',
     status: 'pending',
     statusNote: '',
@@ -846,6 +1158,18 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
               ))}
             </div>
           </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+              Ítems del presupuesto
+            </label>
+            <BudgetItemsEditor
+              items={form.budgetItems}
+              onChange={(items) => set('budgetItems', items)}
+              inventory={inventory}
+              services={services}
+            />
+          </div>
+
           <div className="col-span-2">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Trabajo realizado / Servicios prestados</label>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.workDone} onChange={(e) => set('workDone', e.target.value)} placeholder="Describir qué se hizo, piezas reemplazadas, etc." />

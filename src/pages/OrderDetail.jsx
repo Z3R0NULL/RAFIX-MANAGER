@@ -16,6 +16,7 @@ import {
   ArrowLeft, Edit3, Printer, ExternalLink, CheckCircle2, XCircle, MinusCircle,
   Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2,
   RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2, Mail, ChevronDown,
+  Package, Wrench,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useStore } from '../store/useStore'
@@ -632,6 +633,50 @@ export default function OrderDetail() {
                 <BudgetBadge status={order.budgetStatus} />
               </div>
             </div>
+
+            {/* Itemized budget list */}
+            {order.budgetItems?.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                  Ítems del presupuesto
+                </p>
+                <div className="rounded-lg border border-slate-100 dark:border-slate-800 overflow-hidden">
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {order.budgetItems.map((it) => (
+                      <div key={it.id} className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900/60">
+                        <span className="flex-shrink-0">
+                          {it.type === 'service'   && <Wrench   size={11} className="text-indigo-400" />}
+                          {it.type === 'inventory' && <Package  size={11} className="text-emerald-400" />}
+                          {it.type === 'custom'    && <DollarSign size={11} className="text-amber-400" />}
+                        </span>
+                        <span className="flex-1 text-xs text-slate-700 dark:text-slate-300 truncate">{it.name}</span>
+                        {it.isPercent ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-semibold flex-shrink-0">
+                            {it.percentValue}% del repuesto
+                          </span>
+                        ) : (
+                          <>
+                            <span className="text-xs text-slate-400 flex-shrink-0">{it.qty} ×</span>
+                            <span className="text-xs text-slate-500 flex-shrink-0">{formatCurrency(it.unitPrice)}</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex-shrink-0 w-16 text-right">
+                              {formatCurrency((Number(it.qty) || 0) * (Number(it.unitPrice) || 0))}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-center px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-700">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Total ({order.budgetItems.length} ítem{order.budgetItems.length !== 1 ? 's' : ''})
+                    </span>
+                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                      {formatCurrency(order.budgetItems.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Dates */}
