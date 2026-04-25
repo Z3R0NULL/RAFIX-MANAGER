@@ -32,6 +32,7 @@ import {
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
 import { formatCurrency } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 const SORT_OPTIONS = [
   { value: 'name_az',    label: 'Nombre A→Z' },
@@ -437,7 +438,7 @@ export default function Clients() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right hidden sm:table-cell text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                        {totalSpent > 0 ? formatCurrency(totalSpent) : '—'}
+                        {totalSpent > 0 ? fmt(totalSpent) : '—'}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
@@ -547,7 +548,7 @@ export default function Clients() {
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                       <CreditCard size={13} />
-                      {totalSpent > 0 ? formatCurrency(totalSpent) : '—'}
+                      {totalSpent > 0 ? fmt(totalSpent) : '—'}
                     </div>
                   </div>
                   {orderCount > 0 && (

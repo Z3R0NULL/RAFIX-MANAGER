@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { formatCurrency } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 const SALE_STATUSES = [
   { value: 'paid',      label: 'Pagado' },
@@ -406,7 +407,7 @@ export default function NewSale() {
                       <p className="text-xs text-slate-400">{item.category || ''}{item.sku ? ` · ${item.sku}` : ''} · Stock: {item.stock}</p>
                     </div>
                     <span className="text-sm font-semibold text-emerald-500 ml-4 flex-shrink-0">
-                      {formatCurrency(item.price)}
+                      {fmt(item.price)}
                     </span>
                   </button>
                 ))}
@@ -430,7 +431,7 @@ export default function NewSale() {
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{item.name}</p>
-                    <p className="text-xs text-slate-400">{formatCurrency(item.price)} c/u · stock: {item.stock}</p>
+                    <p className="text-xs text-slate-400">{fmt(item.price)} c/u · stock: {item.stock}</p>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
@@ -449,7 +450,7 @@ export default function NewSale() {
                     </button>
                   </div>
                   <span className="text-sm font-bold text-slate-800 dark:text-slate-200 w-24 text-right flex-shrink-0">
-                    {formatCurrency(item.price * item.qty)}
+                    {fmt(item.price * item.qty)}
                   </span>
                   <button
                     onClick={() => removeFromCart(item.id)}
@@ -463,7 +464,7 @@ export default function NewSale() {
               {/* Total */}
               <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Total</span>
-                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(total)}</span>
+                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{fmt(total)}</span>
               </div>
             </div>
           )}

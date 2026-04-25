@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { formatDate, formatCurrency } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 const SALE_STATUS_CONFIG = {
   paid:      { label: 'Pagado',    color: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',  dot: 'bg-green-500' },
@@ -212,16 +213,16 @@ export default function SaleDetail() {
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
           <p className="text-xs text-slate-400 mb-1">Total venta</p>
-          <p className="text-xl font-bold text-blue-500 dark:text-blue-400">{formatCurrency(total)}</p>
+          <p className="text-xl font-bold text-blue-500 dark:text-blue-400">{fmt(total)}</p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
           <p className="text-xs text-slate-400 mb-1">Costo</p>
-          <p className="text-xl font-bold text-slate-500 dark:text-slate-400">{formatCurrency(costos)}</p>
+          <p className="text-xl font-bold text-slate-500 dark:text-slate-400">{fmt(costos)}</p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
           <p className="text-xs text-slate-400 mb-1">Ganancia</p>
           <p className={`text-xl font-bold ${ganancia >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
-            {formatCurrency(ganancia)}
+            {fmt(ganancia)}
           </p>
         </div>
       </div>
@@ -244,13 +245,13 @@ export default function SaleDetail() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{item.name || '—'}</p>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {formatCurrency(item.price || 0)} c/u
+                    {fmt(item.price || 0)} c/u
                     {item.qty > 1 && <span className="text-slate-300 dark:text-slate-600 mx-1">×</span>}
                     {item.qty > 1 && <span>{item.qty}</span>}
                   </p>
                 </div>
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 flex-shrink-0">
-                  {formatCurrency((item.price || 0) * (item.qty || 1))}
+                  {fmt((item.price || 0) * (item.qty || 1))}
                 </span>
               </div>
             ))
@@ -261,7 +262,7 @@ export default function SaleDetail() {
         {(sale.items || []).length > 0 && (
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 rounded-b-xl">
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total</span>
-            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{formatCurrency(total)}</span>
+            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{fmt(total)}</span>
           </div>
         )}
       </section>

@@ -15,6 +15,7 @@ import {
   formatDate, formatDateShort, formatCurrency, STATUS_CONFIG,
   BUDGET_STATUS_CONFIG, DEVICE_TYPES,
 } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 function PhotoGallery({ photos, label }) {
   const [lightbox, setLightbox] = useState(null)
@@ -350,7 +351,7 @@ export default function TrackOrder() {
                       {order.finalPrice ? 'Precio final de reparación' : 'Precio estimado de reparación'}
                     </span>
                     <span className="text-xl font-bold text-amber-300">
-                      {formatCurrency(order.finalPrice || order.estimatedPrice)}
+                      {fmt(order.finalPrice || order.estimatedPrice)}
                     </span>
                   </div>
                 )}
@@ -482,7 +483,7 @@ export default function TrackOrder() {
                         {order.finalPrice ? 'Precio final' : 'Precio estimado'}
                       </p>
                       <p className={`text-sm font-semibold ${order.finalPrice ? 'text-indigo-400' : 'text-slate-300'}`}>
-                        {formatCurrency(order.finalPrice || order.estimatedPrice)}
+                        {fmt(order.finalPrice || order.estimatedPrice)}
                       </p>
                     </div>
                   </div>
@@ -689,11 +690,11 @@ export default function TrackOrder() {
                   <Tag size={15} className="text-slate-400" />
                   <h2 className="font-semibold text-white text-sm">Presupuesto</h2>
                 </div>
-                <InfoRow label="Precio estimado" value={order.estimatedPrice ? formatCurrency(order.estimatedPrice) : null} />
+                <InfoRow label="Precio estimado" value={order.estimatedPrice ? fmt(order.estimatedPrice) : null} />
                 {order.finalPrice && (
                   <div className="flex justify-between items-center pt-2 mt-1 border-t border-slate-800">
                     <span className="text-sm font-semibold text-slate-200">Precio final</span>
-                    <span className="text-base font-bold text-indigo-400">{formatCurrency(order.finalPrice)}</span>
+                    <span className="text-base font-bold text-indigo-400">{fmt(order.finalPrice)}</span>
                   </div>
                 )}
               </div>

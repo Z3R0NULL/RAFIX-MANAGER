@@ -356,6 +356,41 @@ export async function fetchAllFromTurso({ username } = {}) {
 
 // ── Store ────────────────────────────────────────────────────────────────────
 
+export const DEFAULT_SETTINGS = {
+  businessName: 'RAFIX',
+  businessLogo: null,        // base64 data URL
+  currency: 'ARS',
+  currencyLocale: 'es-AR',
+  language: 'es',
+  warrantyDays: 30,
+  warrantyPolicy: [
+    'El taller no se hace responsable por la pérdida de datos. El cliente debe realizar una copia de seguridad antes del servicio.',
+    'Los equipos no retirados después de 30 días generarán cargos de almacenamiento.',
+    'El presupuesto es válido por 7 días. Los precios pueden cambiar después de este período.',
+    'Los daños físicos o por líquido descubiertos durante la reparación pueden generar cargos adicionales.',
+    'Garantizamos nuestras reparaciones por 30 días bajo condiciones de uso normal.',
+    'El pago se realiza al momento de retirar el equipo.',
+  ],
+}
+
+export const CURRENCY_OPTIONS = [
+  { value: 'ARS', locale: 'es-AR', label: 'ARS — Peso Argentino' },
+  { value: 'USD', locale: 'en-US', label: 'USD — Dólar' },
+  { value: 'EUR', locale: 'es-ES', label: 'EUR — Euro' },
+  { value: 'MXN', locale: 'es-MX', label: 'MXN — Peso Mexicano' },
+  { value: 'CLP', locale: 'es-CL', label: 'CLP — Peso Chileno' },
+  { value: 'COP', locale: 'es-CO', label: 'COP — Peso Colombiano' },
+  { value: 'PEN', locale: 'es-PE', label: 'PEN — Sol Peruano' },
+  { value: 'BRL', locale: 'pt-BR', label: 'BRL — Real Brasileño' },
+  { value: 'GBP', locale: 'en-GB', label: 'GBP — Libra Esterlina' },
+]
+
+export const LANGUAGE_OPTIONS = [
+  { value: 'es', label: 'Español' },
+  { value: 'en', label: 'English' },
+  { value: 'pt', label: 'Português' },
+]
+
 export const useStore = create(
   persist(
     (set, get) => ({
@@ -370,9 +405,14 @@ export const useStore = create(
       loginLogs: [],
       darkMode: true,
       auth: { isLoggedIn: false },
+      settings: { ...DEFAULT_SETTINGS },
       _hydrated: false,
       dataLoading: false,
       setHydrated: () => set({ _hydrated: true }),
+
+      // ── Settings ───────────────────────────────────────────────────
+      updateSettings: (patch) =>
+        set((s) => ({ settings: { ...s.settings, ...patch } })),
 
       // ── Auth ───────────────────────────────────────────────────────
       login: async (username, password) => {
@@ -901,6 +941,7 @@ export const useStore = create(
       partialize: (state) => ({
         auth: state.auth,
         darkMode: state.darkMode,
+        settings: state.settings,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) state.setHydrated()

@@ -27,7 +27,8 @@ import { useStore } from '../store/useStore'
 import { useNavigate } from 'react-router-dom'
 import { StatusBadge } from '../components/StatusBadge'
 import { PageLoader } from '../components/PageLoader'
-import { formatDateShort, formatCurrency, STATUS_CONFIG, DEVICE_TYPES } from '../utils/constants'
+import { formatDateShort, STATUS_CONFIG, DEVICE_TYPES } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Más recientes' },
@@ -51,6 +52,7 @@ function sortOrders(orders, sort) {
 }
 
 export default function Orders() {
+  const fmt = useCurrency()
   const { orders, dataLoading } = useStore()
   const location = useLocation()
   const navigate = useNavigate()
@@ -335,7 +337,7 @@ export default function Orders() {
                       {formatDateShort(order.entryDate)}
                     </td>
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300 hidden lg:table-cell">
-                      {formatCurrency(order.finalPrice || order.estimatedPrice)}
+                      {fmt(order.finalPrice || order.estimatedPrice)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">
@@ -389,7 +391,7 @@ export default function Orders() {
               <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
                 <span className="text-xs text-slate-400">{formatDateShort(order.entryDate)}</span>
                 {(order.finalPrice || order.estimatedPrice)
-                  ? <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{formatCurrency(order.finalPrice || order.estimatedPrice)}</span>
+                  ? <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice || order.estimatedPrice)}</span>
                   : null}
               </div>
             </Link>

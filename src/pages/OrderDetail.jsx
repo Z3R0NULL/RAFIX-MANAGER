@@ -22,7 +22,8 @@ import QRCode from 'qrcode'
 import { useStore } from '../store/useStore'
 import { StatusBadge, BudgetBadge } from '../components/StatusBadge'
 import OrderForm from '../components/OrderForm'
-import { formatDate, formatDateShort, formatCurrency, DEVICE_TYPES, STATUS_CONFIG } from '../utils/constants'
+import { formatDate, formatDateShort, DEVICE_TYPES, STATUS_CONFIG } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 import { turso, isTursoConfigured } from '../lib/turso'
 import { generateInvoicePDF } from '../utils/pdfGenerator'
 import PatternInput from '../components/PatternInput'
@@ -135,9 +136,10 @@ const InfoRow = ({ label, value }) => (
 )
 
 export default function OrderDetail() {
+  const fmt = useCurrency()
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getOrder, updateOrder, deleteOrder, auth } = useStore()
+  const { getOrder, updateOrder, deleteOrder, auth, settings } = useStore()
   const [editing, setEditing] = useState(false)
   const [copied, setCopied] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -395,7 +397,7 @@ export default function OrderDetail() {
             Seguimiento
           </button>
           <button
-            onClick={() => generateInvoicePDF(order)}
+            onClick={() => generateInvoicePDF(order, settings)}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <Printer size={14} />
@@ -618,15 +620,15 @@ export default function OrderDetail() {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-slate-500">Estimated</span>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{formatCurrency(order.estimatedPrice)}</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.estimatedPrice)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-slate-500">Repair Cost</span>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{formatCurrency(order.repairCost)}</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.repairCost)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-t border-b border-slate-100 dark:border-slate-800">
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">Final Price</span>
-                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(order.finalPrice)}</span>
+                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-slate-500">Budget Status</span>
@@ -657,9 +659,9 @@ export default function OrderDetail() {
                         ) : (
                           <>
                             <span className="text-xs text-slate-400 flex-shrink-0">{it.qty} ×</span>
-                            <span className="text-xs text-slate-500 flex-shrink-0">{formatCurrency(it.unitPrice)}</span>
+                            <span className="text-xs text-slate-500 flex-shrink-0">{fmt(it.unitPrice)}</span>
                             <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex-shrink-0 w-16 text-right">
-                              {formatCurrency((Number(it.qty) || 0) * (Number(it.unitPrice) || 0))}
+                              {fmt((Number(it.qty) || 0) * (Number(it.unitPrice) || 0))}
                             </span>
                           </>
                         )}
@@ -671,7 +673,7 @@ export default function OrderDetail() {
                       Total ({order.budgetItems.length} ítem{order.budgetItems.length !== 1 ? 's' : ''})
                     </span>
                     <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                      {formatCurrency(order.budgetItems.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0))}
+                      {fmt(order.budgetItems.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0))}
                     </span>
                   </div>
                 </div>

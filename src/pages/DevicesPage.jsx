@@ -17,6 +17,7 @@ import {
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
 import { DEVICE_TYPES, STATUS_CONFIG, formatCurrency } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 // ── Modal genérico ───────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }) {

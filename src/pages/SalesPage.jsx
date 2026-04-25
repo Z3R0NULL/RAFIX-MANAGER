@@ -14,6 +14,7 @@ import {
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
 import { formatDateShort, formatCurrency } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 const SALE_STATUS_CONFIG = {
   paid:    { label: 'Pagado',   color: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',     dot: 'bg-green-500' },
@@ -127,11 +128,11 @@ export default function SalesPage() {
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pagadas</p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
-          <p className="text-2xl font-bold text-blue-500 dark:text-blue-400">{formatCurrency(ingresos)}</p>
+          <p className="text-2xl font-bold text-blue-500 dark:text-blue-400">{fmt(ingresos)}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ingresos totales</p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
-          <p className="text-2xl font-bold text-emerald-500">{formatCurrency(ganancia)}</p>
+          <p className="text-2xl font-bold text-emerald-500">{fmt(ganancia)}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ganancia neta</p>
         </div>
       </div>
@@ -281,7 +282,7 @@ export default function SalesPage() {
                       {formatDateShort(sale.createdAt)}
                     </td>
                     <td className="px-4 py-3 font-semibold text-blue-500 dark:text-blue-400 hidden lg:table-cell">
-                      {formatCurrency(sale.total)}
+                      {fmt(sale.total)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">
@@ -328,7 +329,7 @@ export default function SalesPage() {
               </p>
               <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
                 <span className="text-xs text-slate-400">{formatDateShort(sale.createdAt)}</span>
-                <span className="text-sm font-bold text-blue-500 dark:text-blue-400">{formatCurrency(sale.total)}</span>
+                <span className="text-sm font-bold text-blue-500 dark:text-blue-400">{fmt(sale.total)}</span>
               </div>
               <div className="flex items-center justify-end gap-1 pt-1 border-t border-slate-100 dark:border-slate-800">
                 <Link

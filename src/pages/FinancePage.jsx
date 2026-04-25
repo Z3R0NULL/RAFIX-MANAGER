@@ -19,7 +19,8 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
-import { formatCurrency, formatDateShort, STATUS_CONFIG } from '../utils/constants'
+import { formatDateShort, STATUS_CONFIG } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 // ── Categorías de reparación ──────────────────────────────────────────────────
 const REPAIR_CATEGORIES = [
@@ -123,7 +124,7 @@ function DonutChart({ segments, centerLabel, hovered, onHover }) {
 }
 
 // ── Sección dona con hover compartido ────────────────────────────────────────
-function DonutSection({ categoryData, formatCurrency, globalProfit }) {
+function DonutSection({ categoryData, fmt, globalProfit }) {
   const [hovered, setHovered] = useState(null)
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
@@ -137,7 +138,7 @@ function DonutSection({ categoryData, formatCurrency, globalProfit }) {
           <div className="w-full lg:w-64 flex-shrink-0">
             <DonutChart
               segments={categoryData}
-              centerLabel={formatCurrency(globalProfit)}
+              centerLabel={fmt(globalProfit)}
               hovered={hovered}
               onHover={setHovered}
             />
@@ -180,7 +181,7 @@ function DonutSection({ categoryData, formatCurrency, globalProfit }) {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                      {cat.income > 0 ? formatCurrency(cat.income) : '—'}
+                      {cat.income > 0 ? fmt(cat.income) : '—'}
                     </p>
                     <p className="text-[10px] font-medium" style={{ color: cat.color }}>
                       {cat.income > 0 ? `${cat.pct.toFixed(1)}%` : 'sin datos'}
@@ -259,9 +260,9 @@ function BarChart({ data }) {
             <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
               <div className="bg-slate-800 dark:bg-slate-700 text-white text-[10px] rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-xl">
                 <p className="font-semibold mb-0.5">{d.label}</p>
-                <p className="text-emerald-300">↑ {formatCurrency(d.income)}</p>
-                <p className="text-rose-300">↓ {formatCurrency(d.expense)}</p>
-                <p className="text-slate-300 border-t border-slate-600 mt-0.5 pt-0.5">= {formatCurrency(d.income - d.expense)}</p>
+                <p className="text-emerald-300">↑ {fmt(d.income)}</p>
+                <p className="text-rose-300">↓ {fmt(d.expense)}</p>
+                <p className="text-slate-300 border-t border-slate-600 mt-0.5 pt-0.5">= {fmt(d.income - d.expense)}</p>
               </div>
               <div className="w-2 h-2 bg-slate-800 dark:bg-slate-700 rotate-45 -mt-1" />
             </div>
@@ -287,6 +288,7 @@ function BarChart({ data }) {
 // ── main page ─────────────────────────────────────────────────────────────────
 
 export default function FinancePage() {
+  const fmt = useCurrency()
   const orders = useStore((s) => s.orders)
   const sales  = useStore((s) => s.sales)
   const dataLoading = useStore((s) => s.dataLoading)
@@ -462,7 +464,7 @@ export default function FinancePage() {
           Los ingresos incluyen órdenes con estado <strong>Entregado</strong> y ventas con estado <strong>Pagado</strong>.
           Órdenes canceladas, sin reparación o en proceso y ventas canceladas no se contabilizan.
           {global.pendingIncome > 0 && (
-            <> Hay <strong>{formatCurrency(global.pendingIncome)}</strong> en órdenes completadas sin entregar y ventas pendientes.</>
+            <> Hay <strong>{fmt(global.pendingIncome)}</strong> en órdenes completadas sin entregar y ventas pendientes.</>
           )}
         </span>
       </div>
@@ -471,7 +473,7 @@ export default function FinancePage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
           label="Ingresos realizados"
-          value={formatCurrency(global.income)}
+          value={fmt(global.income)}
           icon={TrendingUp}
           iconColor="text-emerald-500"
           bg="bg-emerald-50 dark:bg-emerald-900/20"
@@ -480,7 +482,7 @@ export default function FinancePage() {
         />
         <KpiCard
           label="Costos de reparación"
-          value={formatCurrency(global.expense)}
+          value={fmt(global.expense)}
           icon={TrendingDown}
           iconColor="text-rose-500"
           bg="bg-rose-50 dark:bg-rose-900/20"
@@ -490,7 +492,7 @@ export default function FinancePage() {
         />
         <KpiCard
           label="Ganancia neta"
-          value={formatCurrency(global.profit)}
+          value={fmt(global.profit)}
           icon={DollarSign}
           iconColor={global.profit >= 0 ? 'text-indigo-500' : 'text-red-500'}
           bg={global.profit >= 0 ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-red-50 dark:bg-red-900/20'}
@@ -517,7 +519,7 @@ export default function FinancePage() {
               </h2>
             </div>
             <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
-              {formatCurrency(global.pendingIncome)}
+              {fmt(global.pendingIncome)}
             </span>
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -539,7 +541,7 @@ export default function FinancePage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 ml-4 flex-shrink-0">
-                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{formatCurrency(o._income)}</p>
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{fmt(o._income)}</p>
                   <ChevronRight size={14} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
                 </div>
               </Link>
@@ -635,10 +637,10 @@ export default function FinancePage() {
                     <tr key={d.key} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-5 py-3 font-medium text-slate-700 dark:text-slate-300">{long}</td>
                       <td className="px-5 py-3 text-right text-slate-500">{d.orders.length}</td>
-                      <td className="px-5 py-3 text-right font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(d.income)}</td>
-                      <td className="px-5 py-3 text-right font-semibold text-rose-500 dark:text-rose-400">{formatCurrency(d.expense)}</td>
+                      <td className="px-5 py-3 text-right font-semibold text-emerald-600 dark:text-emerald-400">{fmt(d.income)}</td>
+                      <td className="px-5 py-3 text-right font-semibold text-rose-500 dark:text-rose-400">{fmt(d.expense)}</td>
                       <td className={`px-5 py-3 text-right font-bold ${profit >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-500'}`}>
-                        {formatCurrency(profit)}
+                        {fmt(profit)}
                       </td>
                       <td className="px-5 py-3 text-right">
                         <MarginBadge margin={margin} />
@@ -651,10 +653,10 @@ export default function FinancePage() {
                 <tr className="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                   <td className="px-5 py-3 font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wide">Total</td>
                   <td className="px-5 py-3 text-right font-semibold text-slate-700 dark:text-slate-300">{billed.length}</td>
-                  <td className="px-5 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(global.income)}</td>
-                  <td className="px-5 py-3 text-right font-bold text-rose-500 dark:text-rose-400">{formatCurrency(global.expense)}</td>
+                  <td className="px-5 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400">{fmt(global.income)}</td>
+                  <td className="px-5 py-3 text-right font-bold text-rose-500 dark:text-rose-400">{fmt(global.expense)}</td>
                   <td className={`px-5 py-3 text-right font-bold ${global.profit >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-500'}`}>
-                    {formatCurrency(global.profit)}
+                    {fmt(global.profit)}
                   </td>
                   <td className="px-5 py-3 text-right">
                     <MarginBadge margin={global.margin} bold />
@@ -668,7 +670,7 @@ export default function FinancePage() {
 
       {/* ── Ganancias por categoría (donut) ── */}
       {categoryData.length > 0 && (
-        <DonutSection categoryData={categoryData} formatCurrency={formatCurrency} globalProfit={global.profit} />
+        <DonutSection categoryData={categoryData} fmt={fmt} globalProfit={global.profit} />
       )}
 
       {/* ── Top orders by income ── */}
@@ -706,12 +708,12 @@ export default function FinancePage() {
                 <div className="flex items-center gap-4 ml-4 flex-shrink-0">
                   <div className="text-right hidden sm:block">
                     {o._expense > 0 && (
-                      <p className="text-xs text-rose-500">− {formatCurrency(o._expense)}</p>
+                      <p className="text-xs text-rose-500">− {fmt(o._expense)}</p>
                     )}
                     <p className="text-xs text-slate-400">{formatDateShort(o.deliveryDate || o.entryDate)}</p>
                   </div>
                   <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 min-w-[5rem] text-right">
-                    {formatCurrency(o._income)}
+                    {fmt(o._income)}
                   </p>
                   <ChevronRight size={14} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
                 </div>
@@ -752,7 +754,7 @@ function PeriodRow({ label, value, color, bold }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
-      <span className={`text-sm ${color} ${bold ? 'font-bold' : 'font-semibold'}`}>{formatCurrency(value)}</span>
+      <span className={`text-sm ${color} ${bold ? 'font-bold' : 'font-semibold'}`}>{fmt(value)}</span>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -13,8 +13,10 @@ import {
   Truck,
   ShoppingCart,
   Tag,
+  Settings,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import SettingsPanel from './SettingsPanel'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -29,9 +31,10 @@ const NAV_ITEMS = [
 ]
 
 export default function Sidebar({ onClose }) {
-  const { logout, auth } = useStore()
+  const { logout, auth, settings } = useStore()
   const navigate = useNavigate()
   const isSuperAdmin = auth?.role === 'superadmin'
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -53,14 +56,24 @@ export default function Sidebar({ onClose }) {
     }`
 
   return (
+    <>
+    <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     <div className="flex flex-col h-full bg-slate-900 border-r border-slate-700/60 w-64">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-700/60">
-        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
-          <Wrench size={15} className="text-white" />
-        </div>
+        {settings?.businessLogo ? (
+          <img
+            src={settings.businessLogo}
+            alt="logo"
+            className="w-8 h-8 rounded-lg object-contain flex-shrink-0 bg-slate-800 border border-slate-700"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
+            <Wrench size={15} className="text-white" />
+          </div>
+        )}
         <div>
-          <p className="font-bold text-white text-sm tracking-tight">RAFIX</p>
+          <p className="font-bold text-white text-sm tracking-tight">{settings?.businessName || 'RAFIX'}</p>
           <p className="text-[11px] text-slate-500 font-medium">Service Manager</p>
         </div>
       </div>
@@ -103,17 +116,26 @@ export default function Sidebar({ onClose }) {
 
       {/* Bottom */}
       <div className="px-3 py-4 border-t border-slate-700/60 space-y-1">
-        {/* User info card */}
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-800/60 mb-2">
-          <div className="w-7 h-7 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-indigo-400 uppercase">
-              {auth?.username?.[0] || 'U'}
-            </span>
+        {/* User info card + gear */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-800/60 flex-1 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-indigo-400 uppercase">
+                {auth?.username?.[0] || 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-200 truncate">{auth?.username || 'Admin'}</p>
+              <p className="text-[11px] text-slate-400 capitalize">{auth?.role || 'usuario'}</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-200 truncate">{auth?.username || 'Admin'}</p>
-            <p className="text-[11px] text-slate-400 capitalize">{auth?.role || 'usuario'}</p>
-          </div>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            title="Configuración"
+            className="p-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-indigo-400 transition-colors flex-shrink-0"
+          >
+            <Settings size={16} />
+          </button>
         </div>
 
         <button
@@ -125,5 +147,6 @@ export default function Sidebar({ onClose }) {
         </button>
       </div>
     </div>
+    </>
   )
 }

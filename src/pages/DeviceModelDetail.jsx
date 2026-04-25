@@ -17,6 +17,7 @@ import {
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
 import { DEVICE_TYPES, STATUS_CONFIG, formatDateShort, formatCurrency } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 export default function DeviceModelDetail() {
   const { slug } = useParams()
@@ -214,11 +215,11 @@ export default function DeviceModelDetail() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-xs text-slate-400 mb-0.5">Total facturado</p>
-                <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(stats.totalRevenue)}</p>
+                <p className="text-base font-bold text-slate-900 dark:text-white">{fmt(stats.totalRevenue)}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-400 mb-0.5">Promedio por orden</p>
-                <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(stats.avgRevenue)}</p>
+                <p className="text-base font-bold text-slate-900 dark:text-white">{fmt(stats.avgRevenue)}</p>
               </div>
             </div>
           </div>
@@ -360,7 +361,7 @@ function OrderRow({ order }) {
           <p className="text-xs text-slate-400">{formatDateShort(order.entryDate)}</p>
           {(order.finalPrice || order.estimatedPrice) && (
             <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">
-              {formatCurrency(order.finalPrice || order.estimatedPrice)}
+              {fmt(order.finalPrice || order.estimatedPrice)}
             </p>
           )}
         </div>

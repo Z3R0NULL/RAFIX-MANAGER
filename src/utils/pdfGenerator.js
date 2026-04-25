@@ -22,13 +22,42 @@
  */
 import jsPDF from 'jspdf'
 import QRCode from 'qrcode'
-import { STATUS_CONFIG, formatDate, formatDateShort, formatCurrency } from './constants'
+import { STATUS_CONFIG, formatDate, formatDateShort } from './constants'
+
+function formatCurrencyWith(val, currency, locale) {
+  if (!val && val !== 0) return '—'
+  const num = parseFloat(val)
+  if (isNaN(num)) return '—'
+  return new Intl.NumberFormat(locale || 'es-AR', {
+    style: 'currency',
+    currency: currency || 'ARS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num)
+}
 
 async function qrDataUrl(text) {
   return QRCode.toDataURL(text, { width: 160, margin: 1, color: { dark: '#1e2937', light: '#ffffff' } })
 }
 
-export async function generateInvoicePDF(order) {
+export async function generateInvoicePDF(order, settings = {}) {
+  const businessName = settings.businessName || 'RAFIX'
+  const businessLogo = settings.businessLogo || null
+  const currency     = settings.currency     || 'ARS'
+  const currencyLocale = settings.currencyLocale || 'es-AR'
+  const warrantyPolicy = Array.isArray(settings.warrantyPolicy) && settings.warrantyPolicy.length > 0
+    ? settings.warrantyPolicy
+    : [
+        'El taller no se hace responsable por la pérdida de datos. El cliente debe realizar una copia de seguridad antes del servicio.',
+        'Los equipos no retirados después de 30 días generarán cargos de almacenamiento.',
+        'El presupuesto es válido por 7 días. Los precios pueden cambiar después de este período.',
+        'Los daños físicos o por líquido descubiertos durante la reparación pueden generar cargos adicionales.',
+        'Garantizamos nuestras reparaciones por 30 días bajo condiciones de uso normal.',
+        'El pago se realiza al momento de retirar el equipo.',
+      ]
+
+  const fmt = (val) => formatCurrencyWith(val, currency, currencyLocale)
+
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const pageW = 210
   const pageH = 297
@@ -49,16 +78,25 @@ export async function generateInvoicePDF(order) {
   doc.setFillColor(...indigo)
   doc.rect(0, 0, pageW, 38, 'F')
 
+  // Logo or fallback text
+  let logoEndX = margin
+  if (businessLogo) {
+    try {
+      doc.addImage(businessLogo, margin, 6, 26, 26)
+      logoEndX = margin + 30
+    } catch (_) { logoEndX = margin }
+  }
+
   // Shop name
   doc.setFont(font, 'bold')
   doc.setFontSize(18)
   doc.setTextColor(255, 255, 255)
-  doc.text('RepairPro', margin, 16)
+  doc.text(businessName, logoEndX, 16)
 
   doc.setFont(font, 'normal')
   doc.setFontSize(9)
   doc.setTextColor(196, 199, 255)
-  doc.text('Service Order Manager', margin, 22)
+  doc.text('Service Order Manager', logoEndX, 22)
 
   // Order number (right)
   doc.setFont(font, 'bold')
@@ -179,9 +217,9 @@ export async function generateInvoicePDF(order) {
   // Pricing
   y = sectionTitle('Pricing Summary', y)
   const pricingRows = [
-    ['Estimated Price', formatCurrency(order.estimatedPrice)],
-    ['Repair Cost', formatCurrency(order.repairCost)],
-    ['Final Price', formatCurrency(order.finalPrice)],
+    ['Estimated Price', fmt(order.estimatedPrice)],
+    ['Repair Cost', fmt(order.repairCost)],
+    ['Final Price', fmt(order.finalPrice)],
     ['Budget Status', order.budgetStatus?.toUpperCase() || 'PENDING'],
   ]
   pricingRows.forEach(([label, value], i) => {
@@ -202,7 +240,7 @@ export async function generateInvoicePDF(order) {
   doc.setTextColor(255, 255, 255)
   doc.text('TOTAL:', pageW - margin - 56, y + 5)
   doc.setFontSize(12)
-  doc.text(formatCurrency(order.finalPrice || order.estimatedPrice), pageW - margin - 4, y + 5.5, { align: 'right' })
+  doc.text(fmt(order.finalPrice || order.estimatedPrice), pageW - margin - 4, y + 5.5, { align: 'right' })
   y += 20
 
   // Terms & Conditions
@@ -210,20 +248,13 @@ export async function generateInvoicePDF(order) {
     doc.addPage()
     y = margin
   }
-  y = sectionTitle('Terms & Conditions', y)
-  const terms = [
-    '1. The repair shop is not responsible for data loss. Customers should back up their data before service.',
-    '2. Uncollected devices after 30 days will incur a storage fee.',
-    '3. The quote is valid for 7 days. Prices may change after this period.',
-    '4. Physical damage or liquid damage discovered during repair may incur additional charges.',
-    '5. We guarantee our repairs for 30 days under normal use conditions.',
-    '6. Payment is due upon device collection.',
-  ]
+  y = sectionTitle('Términos & Condiciones', y)
   doc.setFont(font, 'normal')
   doc.setFontSize(7)
   doc.setTextColor(...mid)
-  terms.forEach((t) => {
-    const lines = doc.splitTextToSize(t, pageW - margin * 2 - 4)
+  warrantyPolicy.forEach((t, i) => {
+    const text = `${i + 1}. ${t}`
+    const lines = doc.splitTextToSize(text, pageW - margin * 2 - 4)
     doc.text(lines, margin + 2, y)
     y += lines.length * 3.5 + 1.5
   })
@@ -253,7 +284,7 @@ export async function generateInvoicePDF(order) {
   doc.setFont(font, 'normal')
   doc.setFontSize(7)
   doc.setTextColor(...mid)
-  doc.text('RepairPro — Service Order Management', margin, y + 5)
+  doc.text(`${businessName} — Service Order Management`, margin, y + 5)
   doc.text(`Generado: ${formatDate(new Date().toISOString())}`, pageW - margin, y + 5, { align: 'right' })
 
   doc.save(`${order.orderNumber || 'order'}-invoice.pdf`)

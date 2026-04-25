@@ -21,6 +21,7 @@ import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured, initDb } from '../lib/turso'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatDate, formatCurrency, STATUS_CONFIG } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 async function fetchAllOrders() {
   if (!isTursoConfigured) return []
@@ -95,7 +96,7 @@ function UserSection({ username, orders }) {
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       {order.orderNumber} · {order.deviceBrand} {order.deviceModel}
-                      {order.finalPrice ? ` · ${formatCurrency(order.finalPrice)}` : ''}
+                      {order.finalPrice ? ` · ${fmt(order.finalPrice)}` : ''}
                     </p>
                     <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(order.entryDate)}</p>
                   </div>

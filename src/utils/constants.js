@@ -213,15 +213,26 @@ export const formatDateShort = (iso) => {
   })
 }
 
-export const formatCurrency = (val) => {
+// formatCurrency uses dynamic currency/locale when provided,
+// falling back to ARS/es-AR for backwards compatibility.
+export const formatCurrency = (val, currency = 'ARS', locale = 'es-AR') => {
   if (!val && val !== 0) return '—'
   const num = parseFloat(val)
   if (isNaN(num)) return '—'
-  return new Intl.NumberFormat('es-AR', {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'ARS',
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(num)
+}
+
+// Hook-friendly wrapper — reads settings from the store snapshot.
+// Usage: import { useCurrency } from '../utils/constants'
+// const fmt = useCurrency(); fmt(15000)
+export function makeCurrencyFormatter(settings) {
+  const currency = settings?.currency || 'ARS'
+  const locale   = settings?.currencyLocale || 'es-AR'
+  return (val) => formatCurrency(val, currency, locale)
 }
 

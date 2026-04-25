@@ -15,6 +15,7 @@ import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
 import { PageLoader } from '../components/PageLoader'
 import { formatDateShort, formatCurrency } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 export default function SearchPage() {
   const orders = useStore((s) => s.orders)
@@ -76,7 +77,7 @@ export default function SearchPage() {
                     </div>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">{order.customerName || '—'}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      {order.deviceBrand} {order.deviceModel} · {formatDateShort(order.entryDate)} · {formatCurrency(order.finalPrice || order.estimatedPrice)}
+                      {order.deviceBrand} {order.deviceModel} · {formatDateShort(order.entryDate)} · {fmt(order.finalPrice || order.estimatedPrice)}
                     </p>
                   </div>
                   <div className="flex gap-2 ml-4">

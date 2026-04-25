@@ -25,7 +25,8 @@ import {
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
 import { PageLoader } from '../components/PageLoader'
-import { formatDate, formatCurrency, STATUS_CONFIG } from '../utils/constants'
+import { formatDate, STATUS_CONFIG } from '../utils/constants'
+import { useCurrency } from '../utils/useCurrency'
 
 // ── Helpers de tiempo ────────────────────────────────────────────────────────
 function getDeliveryStatus(estimatedDelivery) {
@@ -81,6 +82,7 @@ function getDeliveryStatus(estimatedDelivery) {
 const ACTIVE_STATUSES = ['pending', 'diagnosing', 'waiting_approval', 'in_repair', 'completed', 'irreparable']
 
 export default function Dashboard() {
+  const fmt = useCurrency()
   const orders = useStore((s) => s.orders)
   const dataLoading = useStore((s) => s.dataLoading)
 
