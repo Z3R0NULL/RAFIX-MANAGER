@@ -90,6 +90,9 @@ export default function Orders() {
   }, [])
 
   const filtered = orders.filter((o) => {
+    // Excluir ventas que pudieran haberse colado (id SAL- o saleNumber VTA-)
+    if (o.id?.startsWith('SAL-') || o.saleNumber) return false
+
     if (clientFilter.phone) return o.customerPhone === clientFilter.phone
     if (clientFilter.dni) return o.customerDni === clientFilter.dni
     if (clientFilter.email) return o.customerEmail === clientFilter.email
@@ -117,7 +120,7 @@ export default function Orders() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Orders</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{orders.length} total orders</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{orders.filter(o => !o.id?.startsWith('SAL-') && !o.saleNumber).length} total orders</p>
         </div>
         <Link
           to="/orders/new"

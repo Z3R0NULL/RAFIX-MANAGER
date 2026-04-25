@@ -30,6 +30,7 @@ import SuppliersPage from './pages/SuppliersPage'
 import ServicesPage from './pages/ServicesPage'
 import SalesPage from './pages/SalesPage'
 import NewSale from './pages/NewSale'
+import SaleDetail from './pages/SaleDetail'
 
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
@@ -159,6 +160,16 @@ export default function App() {
               <PrivateRoute>
                 <Layout>
                   <NewSale />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sales/:id"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <SaleDetail />
                 </Layout>
               </PrivateRoute>
             }

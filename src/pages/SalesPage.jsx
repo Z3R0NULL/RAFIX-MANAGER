@@ -127,11 +127,11 @@ export default function SalesPage() {
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pagadas</p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
-          <p className="text-2xl font-bold text-emerald-500">{formatCurrency(ingresos)}</p>
+          <p className="text-2xl font-bold text-blue-500 dark:text-blue-400">{formatCurrency(ingresos)}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ingresos totales</p>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
-          <p className="text-2xl font-bold text-emerald-400">{formatCurrency(ganancia)}</p>
+          <p className="text-2xl font-bold text-emerald-500">{formatCurrency(ganancia)}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ganancia neta</p>
         </div>
       </div>
@@ -280,11 +280,18 @@ export default function SalesPage() {
                     <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 hidden md:table-cell">
                       {formatDateShort(sale.createdAt)}
                     </td>
-                    <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200 hidden lg:table-cell">
+                    <td className="px-4 py-3 font-semibold text-blue-500 dark:text-blue-400 hidden lg:table-cell">
                       {formatCurrency(sale.total)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">
+                        <Link
+                          to={`/sales/${sale.id}`}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                          title="Ver detalle"
+                        >
+                          <Eye size={15} />
+                        </Link>
                         <button
                           onClick={() => setDeleteConfirm(sale)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -306,7 +313,7 @@ export default function SalesPage() {
           {sorted.map((sale) => (
             <div
               key={sale.id}
-              className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4 flex flex-col gap-3"
+              className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4 flex flex-col gap-3 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all"
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="font-mono text-xs text-slate-500 dark:text-slate-400 font-medium">{sale.saleNumber}</span>
@@ -321,14 +328,24 @@ export default function SalesPage() {
               </p>
               <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
                 <span className="text-xs text-slate-400">{formatDateShort(sale.createdAt)}</span>
-                <span className="text-sm font-bold text-emerald-500">{formatCurrency(sale.total)}</span>
+                <span className="text-sm font-bold text-blue-500 dark:text-blue-400">{formatCurrency(sale.total)}</span>
               </div>
-              <button
-                onClick={() => setDeleteConfirm(sale)}
-                className="flex items-center gap-1.5 justify-center text-xs text-red-400 hover:text-red-500 transition-colors"
-              >
-                <Trash2 size={13} /> Eliminar
-              </button>
+              <div className="flex items-center justify-end gap-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                <Link
+                  to={`/sales/${sale.id}`}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                  title="Ver detalle"
+                >
+                  <Eye size={15} />
+                </Link>
+                <button
+                  onClick={() => setDeleteConfirm(sale)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  title="Eliminar venta"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
