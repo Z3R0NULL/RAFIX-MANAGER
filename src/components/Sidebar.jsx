@@ -132,11 +132,10 @@ export default function Sidebar({ onClose }) {
               <p className="text-[11px] text-slate-400 capitalize">{auth?.role || 'usuario'}</p>
             </div>
           </div>
-          <div className="w-px self-stretch bg-slate-700/60" />
           <button
             onClick={() => setSettingsOpen(true)}
             title="Configuración"
-            className="px-3 self-stretch text-slate-400 hover:bg-slate-700 hover:text-indigo-400 transition-colors flex-shrink-0 flex items-center"
+            className="p-2 mr-1 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-indigo-400 transition-colors flex-shrink-0 flex items-center"
           >
             <Settings size={15} />
           </button>

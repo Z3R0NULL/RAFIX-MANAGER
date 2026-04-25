@@ -434,7 +434,14 @@ export default function FinancePage() {
   const { billedOrders, pendingOrders } = useMemo(() => {
     const billed = [], pending = []
     for (const o of orders) {
-      const row = { ...o, _income: n(o.finalPrice) || n(o.estimatedPrice), _expense: n(o.repairCost), _type: 'order' }
+      // Órdenes de garantía: el cliente no paga → ingreso $0, el costo lo absorbe el técnico
+      const warrantyExpense = o.isWarranty ? (n(o.finalPrice) || n(o.estimatedPrice)) + n(o.repairCost) : 0
+      const row = {
+        ...o,
+        _income:  o.isWarranty ? 0 : (n(o.finalPrice) || n(o.estimatedPrice)),
+        _expense: o.isWarranty ? warrantyExpense : n(o.repairCost),
+        _type: 'order',
+      }
       if (isDelivered(o)) billed.push(row)
       else if (isCompleted(o)) pending.push(row)
     }

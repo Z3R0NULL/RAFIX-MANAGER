@@ -779,14 +779,16 @@ export const useStore = create(
         const normDni   = (data.dni   || '').trim()
         const normPhone = (data.phone || '').trim()
         const normEmail = (data.email || '').trim().toLowerCase()
-        // Match by any unique identifier (dni, phone, or email) within this user's clients
+        const normName  = (data.name  || '').trim().toLowerCase()
+        // Match by any unique identifier (dni, phone, email, or name as fallback)
         const existing = clients.find(
           (c) =>
             c.createdBy === currentUser &&
             (
-              (normDni   && (c.dni   || '').trim()                  === normDni)   ||
-              (normPhone && (c.phone || '').trim()                  === normPhone) ||
-              (normEmail && (c.email || '').trim().toLowerCase()    === normEmail)
+              (normDni   && (c.dni   || '').trim()               === normDni)   ||
+              (normPhone && (c.phone || '').trim()               === normPhone) ||
+              (normEmail && (c.email || '').trim().toLowerCase() === normEmail) ||
+              (normName  && (c.name  || '').trim().toLowerCase() === normName)
             )
         )
         if (existing) {

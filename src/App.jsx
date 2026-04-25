@@ -49,15 +49,27 @@ function AppWithDarkMode({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
   const _hydrated = useStore((s) => s._hydrated)
   const loadFromTurso = useStore((s) => s.loadFromTurso)
+  // Track whether the initial hydration has already triggered a load,
+  // so we don't re-load on every isLoggedIn change (e.g. right after login,
+  // which already loads data internally and would cause duplicates).
+  const didInitialLoad = React.useRef(false)
 
   useEffect(() => {
     document.documentElement.classList.add('dark')
   }, [])
 
-  // Wait for Zustand to rehydrate from localStorage before loading,
-  // so auth.username/role are available when fetchAllFromTurso is called.
+  // Only load from Turso once, when Zustand finishes rehydrating from
+  // localStorage with an active session (i.e. page refresh scenario).
+  // The login() action handles its own data fetch, so we must not call
+  // loadFromTurso() again right after login or duplicates will appear.
   useEffect(() => {
-    if (_hydrated && isLoggedIn) loadFromTurso()
+    if (_hydrated && isLoggedIn && !didInitialLoad.current) {
+      didInitialLoad.current = true
+      loadFromTurso()
+    }
+    if (!isLoggedIn) {
+      didInitialLoad.current = false
+    }
   }, [_hydrated, isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return children

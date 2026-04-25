@@ -9,7 +9,7 @@ import {
   PlusCircle, ArrowRight, CalendarClock, PackageX,
   Users, Package, ShoppingCart, Truck, Settings2,
   TrendingUp, TrendingDown, AlertCircle, BarChart3,
-  Boxes, Star,
+  Boxes, Star, Tag,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
@@ -285,8 +285,8 @@ export default function Dashboard() {
       {/* ── Sección principal 3 columnas ────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 
-        {/* Órdenes recientes */}
-        <SectionCard title="Órdenes recientes" icon={ClipboardList} iconColor="text-indigo-500" to="/orders">
+        {/* Reparaciones recientes */}
+        <SectionCard title="Reparaciones recientes" icon={Wrench} iconColor="text-indigo-500" to="/orders">
           {recentOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 text-slate-400 gap-2">
               <ClipboardList size={28} className="opacity-30" />
@@ -417,7 +417,7 @@ export default function Dashboard() {
 
         {/* Servicios + Proveedores */}
         <div className="flex flex-col gap-4">
-          <SectionCard title="Servicios" icon={Settings2} iconColor="text-orange-500" to="/services">
+          <SectionCard title="Servicios" icon={Tag} iconColor="text-orange-500" to="/services">
             <div className="space-y-0 divide-y divide-slate-100 dark:border-slate-800">
               <KpiRow label="Total servicios" value={svcStats.total} />
               <KpiRow label="Activos" value={svcStats.active} color="text-emerald-500" />

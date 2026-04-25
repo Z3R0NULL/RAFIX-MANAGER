@@ -680,6 +680,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     repairCost: '',
     budgetStatus: 'pending',
     budgetItems: [],
+    isWarranty: false,
     workDone: '',
     status: 'pending',
     statusNote: '',
@@ -1188,6 +1189,39 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
               ))}
             </div>
           </div>
+          <div className="col-span-2">
+            <button
+              type="button"
+              onClick={() => set('isWarranty', !form.isWarranty)}
+              className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg border-2 transition-all ${
+                form.isWarranty
+                  ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                  : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded flex items-center justify-center border-2 flex-shrink-0 transition-all ${
+                form.isWarranty
+                  ? 'border-amber-500 bg-amber-500'
+                  : 'border-slate-600 bg-transparent'
+              }`}>
+                {form.isWarranty && (
+                  <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-semibold">Garantía</span>
+                <p className="text-xs opacity-70 mt-0.5">Marcar si esta orden es un trabajo bajo garantía</p>
+              </div>
+              {form.isWarranty && (
+                <span className="ml-auto text-xs font-bold px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  GARANTÍA
+                </span>
+              )}
+            </button>
+          </div>
+
           <div className="col-span-2">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
               Ítems del presupuesto
