@@ -11,11 +11,10 @@ import React, { useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, Smartphone, Hash, BarChart2, TrendingUp,
-  CheckCircle2, XCircle, Clock, Wrench, ChevronRight,
-  DollarSign, Calendar, AlertTriangle,
+  CheckCircle2, XCircle, Wrench, ChevronRight,
+  DollarSign, AlertTriangle,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
-import { StatusBadge } from '../components/StatusBadge'
 import { DEVICE_TYPES, STATUS_CONFIG, formatDateShort } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 

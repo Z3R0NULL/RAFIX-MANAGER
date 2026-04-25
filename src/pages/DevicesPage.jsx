@@ -11,12 +11,12 @@ import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Smartphone, ChevronRight, Search, TrendingUp, Clock, CheckCircle2,
-  Wrench, BookOpen, Plus, Pencil, Trash2, X, ChevronDown, ChevronRight as CR,
+  Wrench, BookOpen, Plus, Pencil, Trash2, X, ChevronDown,
   Loader2, AlertCircle,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
-import { DEVICE_TYPES, STATUS_CONFIG } from '../utils/constants'
+import { DEVICE_TYPES } from '../utils/constants'
 
 // ── Modal genérico ───────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }) {

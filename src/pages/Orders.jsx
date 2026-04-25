@@ -9,7 +9,7 @@
  *  - Botón para crear nueva orden.
  */
 import React, { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   PlusCircle,
   Search,
@@ -24,7 +24,6 @@ import {
   User,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
-import { useNavigate } from 'react-router-dom'
 import { StatusBadge } from '../components/StatusBadge'
 import { PageLoader } from '../components/PageLoader'
 import { formatDateShort, STATUS_CONFIG, DEVICE_TYPES } from '../utils/constants'

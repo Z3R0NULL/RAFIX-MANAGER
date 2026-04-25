@@ -25,7 +25,7 @@ import {
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
 import { PageLoader } from '../components/PageLoader'
-import { formatDate, STATUS_CONFIG } from '../utils/constants'
+import { STATUS_CONFIG } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 // ── Helpers de tiempo ────────────────────────────────────────────────────────

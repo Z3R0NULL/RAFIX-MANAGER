@@ -13,11 +13,9 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ClipboardList, Clock, Wrench, CheckCircle, AlertTriangle,
-  TrendingUp, Users, ArrowRight, RefreshCw, ChevronDown, ChevronRight,
+  ClipboardList, Clock, Wrench, CheckCircle, AlertTriangle, Users, ArrowRight, RefreshCw, ChevronDown, ChevronRight,
   User,
 } from 'lucide-react'
-import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured, initDb } from '../lib/turso'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatDate, STATUS_CONFIG } from '../utils/constants'

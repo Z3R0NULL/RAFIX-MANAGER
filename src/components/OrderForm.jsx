@@ -31,7 +31,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
-  ChevronDown, ChevronUp, Search, UserCheck, UserPlus, Camera, Pencil, X,
+  ChevronDown, ChevronUp, Search, UserCheck, Camera, Pencil, X,
   Plus, Trash2, Package, Wrench
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'

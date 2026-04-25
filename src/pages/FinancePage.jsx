@@ -15,11 +15,11 @@ import { Link } from 'react-router-dom'
 import {
   TrendingUp, TrendingDown, DollarSign, Percent,
   Calendar, ChevronRight, ArrowUpRight, ArrowDownRight,
-  Clock, Info, PieChart as PieIcon,
+  Clock, Info,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
-import { formatDateShort, STATUS_CONFIG } from '../utils/constants'
+import { formatDateShort } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 // ── Categorías de reparación ──────────────────────────────────────────────────

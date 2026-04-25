@@ -5,8 +5,7 @@ import {
   AlertCircle, RefreshCw, Smartphone, CheckCircle2,
   XCircle, Info, Calendar, Tag, ShieldCheck, ThumbsUp, ThumbsDown,
   Camera, ZoomIn, X, ChevronLeft, ChevronRight, Package, ClipboardList,
-  Wifi, Bluetooth, Mic, Speaker, Fingerprint, Zap, MapPin, RotateCcw,
-  Monitor, Layers, Grid3x3, Droplets,
+  Droplets,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured } from '../lib/turso'
