@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
-import { formatDateShort, formatCurrency } from '../utils/constants'
+import { formatDateShort } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 const SALE_STATUS_CONFIG = {
@@ -53,6 +53,7 @@ function sortSales(sales, sort) {
 
 export default function SalesPage() {
   const { sales, dataLoading, deleteSale } = useStore()
+  const fmt = useCurrency()
 
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatusFilter] = useState('')

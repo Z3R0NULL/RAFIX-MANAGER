@@ -14,12 +14,13 @@ import { Search, ExternalLink } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
 import { PageLoader } from '../components/PageLoader'
-import { formatDateShort, formatCurrency } from '../utils/constants'
+import { formatDateShort } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 export default function SearchPage() {
   const orders = useStore((s) => s.orders)
   const dataLoading = useStore((s) => s.dataLoading)
+  const fmt = useCurrency()
   const [q, setQ] = useState('')
 
   if (dataLoading) return <PageLoader rows={4} title="Cargando búsqueda..." />

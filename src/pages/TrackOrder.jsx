@@ -12,7 +12,7 @@ import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured } from '../lib/turso'
 import { StatusBadge } from '../components/StatusBadge'
 import {
-  formatDate, formatDateShort, formatCurrency, STATUS_CONFIG,
+  formatDate, formatDateShort, STATUS_CONFIG,
   BUDGET_STATUS_CONFIG, DEVICE_TYPES,
 } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
@@ -128,6 +128,7 @@ function CheckItem({ label, value }) {
 export default function TrackOrder() {
   const { orderNumber: paramOrderNumber } = useParams()
   const { getOrderByNumber } = useStore()
+  const fmt = useCurrency()
   const navigate = useNavigate()
 
   const [query, setQuery] = useState(paramOrderNumber || '')

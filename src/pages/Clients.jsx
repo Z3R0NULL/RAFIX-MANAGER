@@ -31,7 +31,6 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
-import { formatCurrency } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 const SORT_OPTIONS = [
@@ -180,6 +179,7 @@ function ClientModal({ client, onSave, onClose, onDelete }) {
 export default function Clients() {
   const { clients, upsertClient, updateClient, deleteClient, orders, auth, dataLoading } = useStore()
   const navigate = useNavigate()
+  const fmt = useCurrency()
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(null) // null | 'new' | client object
   const [confirmDelete, setConfirmDelete] = useState(null)

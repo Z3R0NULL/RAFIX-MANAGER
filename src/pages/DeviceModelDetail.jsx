@@ -16,13 +16,14 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
-import { DEVICE_TYPES, STATUS_CONFIG, formatDateShort, formatCurrency } from '../utils/constants'
+import { DEVICE_TYPES, STATUS_CONFIG, formatDateShort } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 export default function DeviceModelDetail() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const orders = useStore((s) => s.orders)
+  const fmt = useCurrency()
 
   const decoded = decodeURIComponent(slug || '')
   const [brand, model] = decoded.split('__')

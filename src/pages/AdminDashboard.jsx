@@ -20,7 +20,7 @@ import {
 import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured, initDb } from '../lib/turso'
 import { StatusBadge } from '../components/StatusBadge'
-import { formatDate, formatCurrency, STATUS_CONFIG } from '../utils/constants'
+import { formatDate, STATUS_CONFIG } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 async function fetchAllOrders() {
@@ -125,6 +125,7 @@ function UserSection({ username, orders }) {
 }
 
 export default function AdminDashboard() {
+  const fmt = useCurrency()
   const [allOrders, setAllOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)

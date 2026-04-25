@@ -13,7 +13,7 @@ import {
   Check,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
-import { formatDate, formatCurrency } from '../utils/constants'
+import { formatDate } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 const SALE_STATUS_CONFIG = {
@@ -122,6 +122,7 @@ export default function SaleDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { sales, deleteSale, updateSale } = useStore()
+  const fmt = useCurrency()
 
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [editing, setEditing] = useState(false)

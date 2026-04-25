@@ -26,6 +26,7 @@ const SORT_OPTIONS = [
   { value: 'price_asc',  label: 'Menor precio' },
 ]
 import { useStore } from '../store/useStore'
+import { useCurrency } from '../utils/useCurrency'
 import { PageLoader } from '../components/PageLoader'
 
 // ── Category config ───────────────────────────────────────────────────────────
@@ -63,12 +64,6 @@ const BLANK = {
   notes: '',
 }
 
-// ── formatCurrency helper ─────────────────────────────────────────────────────
-const fmt = (v) => {
-  const n = parseFloat(v)
-  if (isNaN(n)) return '—'
-  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
-}
 
 // ── ModalField ────────────────────────────────────────────────────────────────
 function ModalField({ label, name, type = 'text', placeholder, value, onChange, error }) {
@@ -288,6 +283,7 @@ function StockAdjuster({ item }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function InventoryPage() {
+  const fmt = useCurrency()
   const inventory          = useStore((s) => s.inventory)
   const addInventoryItem   = useStore((s) => s.addInventoryItem)
   const updateInventoryItem = useStore((s) => s.updateInventoryItem)

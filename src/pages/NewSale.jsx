@@ -15,7 +15,6 @@ import {
   X,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
-import { formatCurrency } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 const SALE_STATUSES = [
@@ -27,6 +26,7 @@ const SALE_STATUSES = [
 export default function NewSale() {
   const navigate = useNavigate()
   const { inventory, clients, searchClients, createSale } = useStore()
+  const fmt = useCurrency()
 
   // Customer
   const [customerName,    setCustomerName]    = useState('')

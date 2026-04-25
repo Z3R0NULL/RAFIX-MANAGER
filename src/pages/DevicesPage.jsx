@@ -16,8 +16,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
-import { DEVICE_TYPES, STATUS_CONFIG, formatCurrency } from '../utils/constants'
-import { useCurrency } from '../utils/useCurrency'
+import { DEVICE_TYPES, STATUS_CONFIG } from '../utils/constants'
 
 // ── Modal genérico ───────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }) {

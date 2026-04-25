@@ -69,6 +69,7 @@ export default function Login() {
                 />
                 <button
                   type="button"
+                  tabIndex={-1}
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
                 >
