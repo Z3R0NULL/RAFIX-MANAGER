@@ -1,0 +1,43 @@
+
+> app@1.0.0 dev
+> vite --host 0.0.0.0 --port 3000
+
+
+  VITE v8.0.8  ready in 298 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: http://172.20.0.44:3000/
+5:21:54 PM [vite] (client) hmr update /src/pages/InventoryPage.jsx, /src/index.css
+5:21:59 PM [vite] (client) hmr update /src/pages/ServicesPage.jsx, /src/index.css
+5:22:04 PM [vite] (client) hmr update /src/pages/SuppliersPage.jsx, /src/index.css
+5:22:11 PM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
+5:26:09 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
+5:27:00 PM [vite] (client) [Unhandled error] ReferenceError: PieIcon is not defined
+ > DonutSection src/pages/FinancePage.jsx:132:9
+    130 |      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-h...
+    131 |        <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+    132 |          <PieIcon size={14} className="text-indigo-500" />
+        |           ^
+    133 |          <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Ganancias netas por categoría</h2>
+    134 |        </div>
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+ > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+
+5:27:00 PM [vite] (client) [console.warn] An error occurred in the <DonutSection> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+5:31:04 PM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
+5:33:28 PM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
+5:34:11 PM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
+5:34:23 PM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
+5:42:40 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
+5:44:15 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx

@@ -137,7 +137,7 @@ function ItemModal({ item, onClose, onSave }) {
         {/* Body */}
         <div className="px-6 py-5 space-y-4">
           {/* Name */}
-          <ModalField label="Nombre *" placeholder="Ej: Módulo Samsung A32" value={form.name} onChange={(e) => set('name', e.target.value)} error={errors.name} />
+          <ModalField label={<>Nombre <span className="text-red-400">*</span></>} placeholder="Ej: Módulo Samsung A32" value={form.name} onChange={(e) => set('name', e.target.value)} error={errors.name} />
 
           {/* Category */}
           <div>

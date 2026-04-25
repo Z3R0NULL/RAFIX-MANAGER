@@ -92,7 +92,7 @@ function ServiceModal({ service, onClose, onSave }) {
           {/* Nombre */}
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">
-              Nombre del servicio *
+              Nombre del servicio <span className="text-red-400">*</span>
             </label>
             <input
               className="input-std"

@@ -968,7 +968,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-              Problema reportado por el cliente
+              Problema reportado por el cliente <span className="text-red-400">*</span>
             </label>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.reportedIssue} onChange={(e) => set('reportedIssue', e.target.value)} placeholder="¿Qué le pasa al dispositivo según el cliente?" required />
           </div>

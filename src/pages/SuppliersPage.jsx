@@ -233,7 +233,7 @@ function SupplierModal({ supplier, onClose, onSave }) {
 
           {/* Name + Favorite */}
           <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nombre del proveedor *</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Nombre del proveedor <span className="text-red-400">*</span></label>
             <div className="flex gap-2">
               <input
                 type="text"
