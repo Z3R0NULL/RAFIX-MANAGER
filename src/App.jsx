@@ -28,6 +28,8 @@ import Clients from './pages/Clients'
 import InventoryPage from './pages/InventoryPage'
 import SuppliersPage from './pages/SuppliersPage'
 import ServicesPage from './pages/ServicesPage'
+import SalesPage from './pages/SalesPage'
+import NewSale from './pages/NewSale'
 
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
@@ -137,6 +139,26 @@ export default function App() {
               <PrivateRoute>
                 <Layout>
                   <DeviceModelDetail />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sales"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <SalesPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sales/new"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <NewSale />
                 </Layout>
               </PrivateRoute>
             }

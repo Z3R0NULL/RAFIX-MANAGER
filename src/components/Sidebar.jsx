@@ -12,12 +12,14 @@ import {
   BarChart2,
   Package,
   Truck,
+  ShoppingCart,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/orders', label: 'Ordenes', icon: ClipboardList, end: true },
+  { to: '/sales', label: 'Ventas', icon: ShoppingCart, end: true },
   { to: '/clients', label: 'Clientes', icon: Users },
   { to: '/devices', label: 'Dispositivos', icon: Smartphone },
   { to: '/finance', label: 'Finanzas', icon: BarChart2 },

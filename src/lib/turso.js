@@ -101,6 +101,13 @@ export async function initDb() {
       data TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`,
+    `CREATE TABLE IF NOT EXISTS sales (
+      id TEXT PRIMARY KEY,
+      sale_number TEXT NOT NULL,
+      created_by TEXT NOT NULL DEFAULT 'admin',
+      data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
   ], 'write')
 
   // Migrate existing tables — safe to run every time (errors = column already exists)

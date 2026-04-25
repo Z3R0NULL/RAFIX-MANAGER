@@ -224,6 +224,33 @@ async function deleteServiceFromTurso(id) {
   }
 }
 
+async function syncSaleToTurso(sale) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({
+      sql: `INSERT INTO sales (id, sale_number, created_by, data, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              sale_number = excluded.sale_number,
+              created_by  = excluded.created_by,
+              data        = excluded.data,
+              updated_at  = excluded.updated_at`,
+      args: [sale.id, sale.saleNumber, sale.createdBy || 'admin', JSON.stringify(sale), new Date().toISOString()],
+    })
+  } catch (e) {
+    console.warn('[Turso] sale sync failed:', e)
+  }
+}
+
+async function deleteSaleFromTurso(id) {
+  if (!isTursoConfigured) return
+  try {
+    await turso.execute({ sql: 'DELETE FROM sales WHERE id = ?', args: [id] })
+  } catch (e) {
+    console.warn('[Turso] sale delete failed:', e)
+  }
+}
+
 async function deleteOrderFromTurso(id) {
   if (!isTursoConfigured) return
   try {
@@ -303,18 +330,24 @@ export async function fetchAllFromTurso({ username } = {}) {
       args: [username],
     })
 
+    const salesRes = await turso.execute({
+      sql: 'SELECT data FROM sales WHERE created_by = ? ORDER BY updated_at DESC',
+      args: [username],
+    })
+
     const orders    = ordersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const clients   = clientsRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const inventory = inventoryRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const suppliers = suppliersRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const services  = servicesRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
+    const sales     = salesRes.rows.map((r) => JSON.parse(r.data)).filter(Boolean)
     const deviceCatalog = catalogRes.rows.map((r) => ({
       id: r.id, category: r.category, brand: r.brand, model: r.model,
       createdBy: r.created_by, createdAt: r.created_at, updatedAt: r.updated_at,
     }))
 
     // Datos cargados correctamente desde Turso
-    return { orders, clients, inventory, suppliers, deviceCatalog, services }
+    return { orders, clients, inventory, suppliers, deviceCatalog, services, sales }
   } catch (e) {
     console.warn('[Turso] fetchAll failed:', e)
     return null
@@ -331,6 +364,7 @@ export const useStore = create(
       inventory: [],
       suppliers: [],
       services: [],
+      sales: [],
       deviceCatalog: [],
       appUsers: [],
       loginLogs: [],
@@ -367,7 +401,7 @@ export const useStore = create(
               })
               set({ auth: { isLoggedIn: true, username, role: userRow.role }, dataLoading: true })
               const result = await fetchAllFromTurso({ username })
-              if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], deviceCatalog: result.deviceCatalog || [] })
+              if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
               set({ dataLoading: false })
               return true
             }
@@ -380,13 +414,13 @@ export const useStore = create(
         return false
       },
 
-      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [], services: [], deviceCatalog: [] }),
+      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [], services: [], sales: [], deviceCatalog: [] }),
 
       loadFromTurso: async () => {
         const { auth } = get()
         set({ dataLoading: true })
         const result = await fetchAllFromTurso({ username: auth?.username })
-        if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], deviceCatalog: result.deviceCatalog || [] })
+        if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
         set({ dataLoading: false })
       },
 
@@ -811,6 +845,45 @@ export const useStore = create(
 
       getOrder: (id) => get().orders.find((o) => o.id === id),
       getOrderByNumber: (num) => get().orders.find((o) => o.orderNumber === num),
+
+      // ── Sales ──────────────────────────────────────────────────────
+      createSale: (data) => {
+        const { auth, inventory } = get()
+        const username = auth?.username || 'admin'
+
+        // Deduct stock for each item sold
+        const updatedInventory = inventory.map((item) => {
+          const soldItem = (data.items || []).find((i) => i.id === item.id)
+          if (!soldItem) return item
+          const newStock = Math.max(0, (item.stock || 0) - soldItem.qty)
+          const next = { ...item, stock: newStock, updatedAt: new Date().toISOString() }
+          syncInventoryItemToTurso(next, username)
+          return next
+        })
+        set({ inventory: updatedInventory })
+
+        const prefix = 'VTA'
+        const ts = Date.now().toString().slice(-6)
+        const rand = Math.floor(Math.random() * 100).toString().padStart(2, '0')
+        const saleNumber = `${prefix}-${ts}${rand}`
+
+        const sale = {
+          ...data,
+          id: `SAL-${Date.now()}`,
+          saleNumber,
+          createdBy: username,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        set((s) => ({ sales: [sale, ...s.sales] }))
+        syncSaleToTurso(sale)
+        return sale
+      },
+
+      deleteSale: (id) => {
+        set((s) => ({ sales: s.sales.filter((s2) => s2.id !== id) }))
+        deleteSaleFromTurso(id)
+      },
     }),
     {
       name: 'repairpro-store',
