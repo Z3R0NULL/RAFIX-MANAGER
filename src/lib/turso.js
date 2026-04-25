@@ -108,6 +108,11 @@ export async function initDb() {
       data TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`,
+    `CREATE TABLE IF NOT EXISTS user_settings (
+      username TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
   ], 'write')
 
   // Migrate existing tables — safe to run every time (errors = column already exists)

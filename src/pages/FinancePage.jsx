@@ -245,7 +245,7 @@ function formatPeriodLabel(key, period) {
 const PERIOD_LABELS = { daily: 'Diario', monthly: 'Mensual', annual: 'Anual' }
 
 // ── bar chart (pure CSS) ──────────────────────────────────────────────────────
-function BarChart({ data }) {
+function BarChart({ data, fmt }) {
   if (!data.length) return null
   const safeMax = Math.max(...data.map((d) => Math.max(d.income, d.expense)), 1)
 
@@ -572,7 +572,7 @@ export default function FinancePage() {
               Sin órdenes entregadas aún
             </div>
           ) : (
-            <BarChart data={chartData} />
+            <BarChart data={chartData} fmt={fmt} />
           )}
         </div>
 
@@ -584,8 +584,8 @@ export default function FinancePage() {
           </h2>
           {currentPeriod ? (
             <div className="space-y-3">
-              <PeriodRow label="Ingresos"     value={currentPeriod.income}  color="text-emerald-600 dark:text-emerald-400" />
-              <PeriodRow label="Costos"       value={currentPeriod.expense} color="text-rose-600 dark:text-rose-400" />
+              <PeriodRow label="Ingresos"     value={currentPeriod.income}  color="text-emerald-600 dark:text-emerald-400" fmt={fmt} />
+              <PeriodRow label="Costos"       value={currentPeriod.expense} color="text-rose-600 dark:text-rose-400" fmt={fmt} />
               <div className="border-t border-slate-100 dark:border-slate-800 pt-3">
                 <PeriodRow
                   label="Ganancia"
@@ -594,6 +594,7 @@ export default function FinancePage() {
                     ? 'text-indigo-600 dark:text-indigo-400'
                     : 'text-red-600 dark:text-red-400'}
                   bold
+                  fmt={fmt}
                 />
               </div>
               <p className="text-xs text-slate-400">
@@ -750,7 +751,7 @@ function KpiCard({ label, value, icon: Icon, iconColor, bg, delta, deltaInverted
   )
 }
 
-function PeriodRow({ label, value, color, bold }) {
+function PeriodRow({ label, value, color, bold, fmt }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>

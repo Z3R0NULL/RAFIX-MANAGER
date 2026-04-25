@@ -18,7 +18,7 @@ import {
   GripVertical,
   Check,
 } from 'lucide-react'
-import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS } from '../store/useStore'
+import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '../store/useStore'
 
 export default function SettingsPanel({ open, onClose }) {
   const { settings, updateSettings } = useStore()
@@ -26,13 +26,15 @@ export default function SettingsPanel({ open, onClose }) {
   const [saved, setSaved] = useState(false)
   const logoRef = useRef()
 
-  // Sync when panel re-opens
+  // Sync only when panel opens (not on every settings change while open)
   useEffect(() => {
     if (open) {
-      setLocal(settings)
+      // Merge with defaults to handle missing fields from old localStorage data
+      setLocal({ ...DEFAULT_SETTINGS, ...settings })
       setSaved(false)
     }
-  }, [open, settings])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   const patch = (key, value) => setLocal((prev) => ({ ...prev, [key]: value }))
 
@@ -59,7 +61,10 @@ export default function SettingsPanel({ open, onClose }) {
   const handleSave = () => {
     updateSettings(local)
     setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    setTimeout(() => {
+      setSaved(false)
+      onClose()
+    }, 1200)
   }
 
   if (!open) return null

@@ -60,7 +60,10 @@ export default function Sidebar({ onClose }) {
     <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     <div className="flex flex-col h-full bg-slate-900 border-r border-slate-700/60 w-64">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-700/60">
+      <button
+        onClick={() => navigate('/')}
+        className="flex items-center gap-3 px-5 py-5 border-b border-slate-700/60 hover:bg-slate-800/50 transition-colors text-left w-full"
+      >
         {settings?.businessLogo ? (
           <img
             src={settings.businessLogo}
@@ -76,7 +79,7 @@ export default function Sidebar({ onClose }) {
           <p className="font-bold text-white text-sm tracking-tight">{settings?.businessName || 'RAFIX'}</p>
           <p className="text-[11px] text-slate-500 font-medium">Service Manager</p>
         </div>
-      </div>
+      </button>
 
       {/* Main Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto scrollbar-thin">

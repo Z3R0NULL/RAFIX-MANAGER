@@ -24,9 +24,19 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   server: {
+    host: '0.0.0.0',
+    port: 3000,
     historyApiFallback: true,
+    headers: {
+      'X-Frame-Options': 'ALLOWALL',
+      'Content-Security-Policy': "frame-ancestors *",
+    },
   },
   preview: {
     historyApiFallback: true,
+    headers: {
+      'X-Frame-Options': 'ALLOWALL',
+      'Content-Security-Policy': "frame-ancestors *",
+    },
   },
 })

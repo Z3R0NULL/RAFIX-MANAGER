@@ -260,6 +260,36 @@ async function deleteOrderFromTurso(id) {
   }
 }
 
+async function syncSettingsToTurso(username, settings) {
+  if (!isTursoConfigured || !username) return
+  try {
+    await turso.execute({
+      sql: `INSERT INTO user_settings (username, data, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(username) DO UPDATE SET
+              data       = excluded.data,
+              updated_at = excluded.updated_at`,
+      args: [username, JSON.stringify(settings), new Date().toISOString()],
+    })
+  } catch (e) {
+    console.warn('[Turso] settings sync failed:', e)
+  }
+}
+
+async function fetchSettingsFromTurso(username) {
+  if (!isTursoConfigured || !username) return null
+  try {
+    const res = await turso.execute({
+      sql: 'SELECT data FROM user_settings WHERE username = ? LIMIT 1',
+      args: [username],
+    })
+    if (res.rows[0]) return JSON.parse(res.rows[0].data)
+  } catch (e) {
+    console.warn('[Turso] settings fetch failed:', e)
+  }
+  return null
+}
+
 async function syncClientToTurso(client) {
   if (!isTursoConfigured) return
   try {
@@ -411,8 +441,14 @@ export const useStore = create(
       setHydrated: () => set({ _hydrated: true }),
 
       // ── Settings ───────────────────────────────────────────────────
-      updateSettings: (patch) =>
-        set((s) => ({ settings: { ...s.settings, ...patch } })),
+      updateSettings: (patch) => {
+        const { auth } = get()
+        set((s) => {
+          const next = { ...s.settings, ...patch }
+          syncSettingsToTurso(auth?.username, next)
+          return { settings: next }
+        })
+      },
 
       // ── Auth ───────────────────────────────────────────────────────
       login: async (username, password) => {
@@ -440,8 +476,12 @@ export const useStore = create(
                 ],
               })
               set({ auth: { isLoggedIn: true, username, role: userRow.role }, dataLoading: true })
-              const result = await fetchAllFromTurso({ username })
+              const [result, remoteSettings] = await Promise.all([
+                fetchAllFromTurso({ username }),
+                fetchSettingsFromTurso(username),
+              ])
               if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
+              if (remoteSettings) set((s) => ({ settings: { ...DEFAULT_SETTINGS, ...remoteSettings } }))
               set({ dataLoading: false })
               return true
             }
@@ -459,8 +499,12 @@ export const useStore = create(
       loadFromTurso: async () => {
         const { auth } = get()
         set({ dataLoading: true })
-        const result = await fetchAllFromTurso({ username: auth?.username })
+        const [result, remoteSettings] = await Promise.all([
+          fetchAllFromTurso({ username: auth?.username }),
+          fetchSettingsFromTurso(auth?.username),
+        ])
         if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
+        if (remoteSettings) set((s) => ({ settings: { ...DEFAULT_SETTINGS, ...remoteSettings } }))
         set({ dataLoading: false })
       },
 
