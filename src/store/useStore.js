@@ -880,6 +880,17 @@ export const useStore = create(
         return sale
       },
 
+      updateSale: (id, data) => {
+        set((s) => ({
+          sales: s.sales.map((sale) => {
+            if (sale.id !== id) return sale
+            const updated = { ...sale, ...data, id: sale.id, createdBy: sale.createdBy, createdAt: sale.createdAt, updatedAt: new Date().toISOString() }
+            syncSaleToTurso(updated)
+            return updated
+          }),
+        }))
+      },
+
       deleteSale: (id) => {
         set((s) => ({ sales: s.sales.filter((s2) => s2.id !== id) }))
         deleteSaleFromTurso(id)

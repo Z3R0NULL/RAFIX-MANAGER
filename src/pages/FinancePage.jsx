@@ -288,32 +288,66 @@ function BarChart({ data }) {
 
 export default function FinancePage() {
   const orders = useStore((s) => s.orders)
+  const sales  = useStore((s) => s.sales)
   const dataLoading = useStore((s) => s.dataLoading)
   const [period, setPeriod] = useState('monthly')
 
   // ── Partición de órdenes ──────────────────────────────────────────────────
-  // Contabilizadas: solo las ENTREGADAS (status = 'delivered')
-  // Pendientes:     completadas pero aún no entregadas
+  // Contabilizadas: órdenes ENTREGADAS + ventas PAGADAS
+  // Pendientes:     órdenes completadas aún no entregadas + ventas pendientes
   const { billed, pending: pendingOrders } = useMemo(() => {
     const billed  = []
     const pending = []
+
     for (const o of orders) {
       if (isDelivered(o)) {
         billed.push({
           ...o,
           _income:  n(o.finalPrice) || n(o.estimatedPrice),
           _expense: n(o.repairCost),
+          _type: 'order',
         })
       } else if (isCompleted(o)) {
         pending.push({
           ...o,
           _income:  n(o.finalPrice) || n(o.estimatedPrice),
           _expense: n(o.repairCost),
+          _type: 'order',
         })
       }
     }
+
+    for (const s of sales) {
+      const income  = n(s.total) || (s.items || []).reduce((a, i) => a + n(i.price) * (i.qty || 1), 0)
+      const expense = (s.items || []).reduce((a, i) => a + n(i.cost) * (i.qty || 1), 0)
+      if (s.status === 'paid') {
+        billed.push({
+          ...s,
+          _income:  income,
+          _expense: expense,
+          _type: 'sale',
+          // normalizar campos para compatibilidad con funciones de período
+          deliveryDate: s.createdAt,
+          entryDate:    s.createdAt,
+          orderNumber:  s.saleNumber,
+          customerName: s.customerName || '',
+        })
+      } else if (s.status === 'pending') {
+        pending.push({
+          ...s,
+          _income:  income,
+          _expense: expense,
+          _type: 'sale',
+          deliveryDate: s.createdAt,
+          entryDate:    s.createdAt,
+          orderNumber:  s.saleNumber,
+          customerName: s.customerName || '',
+        })
+      }
+    }
+
     return { billed, pending }
-  }, [orders])
+  }, [orders, sales])
 
   // ── Global summary (solo billed) ──────────────────────────────────────────
   const global = useMemo(() => {
@@ -400,7 +434,7 @@ export default function FinancePage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Finanzas</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Solo órdenes <span className="font-medium text-purple-600 dark:text-purple-400">entregadas</span> al cliente
+            Órdenes <span className="font-medium text-purple-600 dark:text-purple-400">entregadas</span> + ventas <span className="font-medium text-emerald-600 dark:text-emerald-400">pagadas</span>
           </p>
         </div>
         {/* Period selector */}
@@ -425,10 +459,10 @@ export default function FinancePage() {
       <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 text-xs text-indigo-700 dark:text-indigo-300">
         <Info size={14} className="flex-shrink-0 mt-0.5" />
         <span>
-          Los ingresos y gastos se calculan <strong>únicamente</strong> sobre órdenes con estado{' '}
-          <strong>Entregado</strong>. Órdenes canceladas, sin reparación o en proceso no se contabilizan.
+          Los ingresos incluyen órdenes con estado <strong>Entregado</strong> y ventas con estado <strong>Pagado</strong>.
+          Órdenes canceladas, sin reparación o en proceso y ventas canceladas no se contabilizan.
           {global.pendingIncome > 0 && (
-            <> Hay <strong>{formatCurrency(global.pendingIncome)}</strong> en órdenes completadas aún no entregadas.</>
+            <> Hay <strong>{formatCurrency(global.pendingIncome)}</strong> en órdenes completadas sin entregar y ventas pendientes.</>
           )}
         </span>
       </div>
@@ -442,7 +476,7 @@ export default function FinancePage() {
           iconColor="text-emerald-500"
           bg="bg-emerald-50 dark:bg-emerald-900/20"
           delta={pctDelta(currentPeriod, prevPeriod, 'income')}
-          subtitle={`${billed.length} órdenes entregadas`}
+          subtitle={`${billed.filter(b => b._type === 'order').length} órdenes · ${billed.filter(b => b._type === 'sale').length} ventas`}
         />
         <KpiCard
           label="Costos de reparación"
@@ -479,7 +513,7 @@ export default function FinancePage() {
             <div className="flex items-center gap-2">
               <Clock size={14} className="text-amber-500" />
               <h2 className="font-semibold text-amber-800 dark:text-amber-300 text-sm">
-                Ingreso pendiente — completadas sin entregar
+                Ingreso pendiente — sin cobrar
               </h2>
             </div>
             <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
@@ -490,13 +524,18 @@ export default function FinancePage() {
             {pendingOrders.slice(0, 5).map((o) => (
               <Link
                 key={o.id}
-                to={`/orders/${o.id}`}
+                to={o._type === 'sale' ? `/sales/${o.id}` : `/orders/${o.id}`}
                 className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
               >
                 <div className="min-w-0 flex-1">
-                  <span className="text-xs font-mono text-slate-400">{o.orderNumber}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono text-slate-400">{o.orderNumber}</span>
+                    {o._type === 'sale' && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 font-medium">Venta</span>
+                    )}
+                  </div>
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                    {o.customerName || '—'} · {o.deviceBrand} {o.deviceModel}
+                    {o.customerName || '—'}{o._type === 'order' && o.deviceBrand ? ` · ${o.deviceBrand} ${o.deviceModel}` : ''}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 ml-4 flex-shrink-0">
@@ -636,25 +675,32 @@ export default function FinancePage() {
       {topOrders.length > 0 && (
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
           <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Top órdenes por ingreso</h2>
+            <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Top ingresos</h2>
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {topOrders.map((o) => (
               <Link
                 key={o.id}
-                to={`/orders/${o.id}`}
+                to={o._type === 'sale' ? `/sales/${o.id}` : `/orders/${o.id}`}
                 className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-xs font-mono text-slate-400">{o.orderNumber}</span>
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1" />
-                      Entregado
-                    </span>
+                    {o._type === 'sale' ? (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1" />
+                        Venta
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1" />
+                        Entregado
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                    {o.customerName || '—'} · {o.deviceBrand} {o.deviceModel}
+                    {o.customerName || '—'}{o._type === 'order' && o.deviceBrand ? ` · ${o.deviceBrand} ${o.deviceModel}` : ''}
                   </p>
                 </div>
                 <div className="flex items-center gap-4 ml-4 flex-shrink-0">
