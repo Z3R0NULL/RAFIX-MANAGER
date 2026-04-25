@@ -3,17 +3,124 @@
 > vite --host 0.0.0.0 --port 3000
 
 
-  VITE v8.0.8  ready in 297 ms
+  VITE v8.0.8  ready in 306 ms
 
   ➜  Local:   http://localhost:3000/
-  ➜  Network: http://172.20.0.34:3000/
-7:01:30 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
-7:01:48 PM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/TrackOrder.jsx, /src/pages/OrderDetail.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/Clients.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/InventoryPage.jsx, /src/pages/SuppliersPage.jsx, /src/pages/ServicesPage.jsx, /src/pages/SalesPage.jsx, /src/pages/NewSale.jsx, /src/pages/SaleDetail.jsx and 5 more
-7:04:39 PM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-7:04:49 PM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-7:08:22 PM [vite] (client) hmr update /src/pages/FinancePage.jsx, /src/index.css
-7:25:01 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
-7:27:15 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
-7:29:10 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
-7:29:15 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
-7:31:05 PM [vite] (client) hmr update /src/index.css, /src/components/SettingsPanel.jsx
+  ➜  Network: http://172.20.0.33:3000/
+10:12:20 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:12:29 PM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/OrderDetail.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/Clients.jsx, /src/pages/InventoryPage.jsx, /src/pages/SuppliersPage.jsx, /src/pages/ServicesPage.jsx, /src/pages/SalesPage.jsx, /src/pages/SaleDetail.jsx, /src/pages/NewSale.jsx and 5 more
+10:12:37 PM [vite] (client) page reload src/main.jsx
+10:14:34 PM [vite] (client) [Unhandled error] Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+ > finishRenderingHooks node_modules/react-dom/cjs/react-dom-client.development.js:7717:14
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7684:6
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+ > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+ > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:6
+
+10:14:34 PM [vite] (client) [console.warn] An error occurred in the <Dashboard> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+10:14:37 PM [vite] (client) [console.warn] [Turso] fetchAll failed: TypeError: Failed to fetch
+    at #flush (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3802:14)
+    at #flushPipeline (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3790:14)
+    at #flushQueue (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3785:23)
+    at https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3751:42
+10:14:40 PM [vite] (client) [Unhandled error] Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+ > finishRenderingHooks node_modules/react-dom/cjs/react-dom-client.development.js:7717:14
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7684:6
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+ > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+ > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:6
+
+10:14:40 PM [vite] (client) [console.warn] An error occurred in the <Dashboard> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+10:17:04 PM [vite] (client) page reload index.html
+10:17:09 PM [vite] (client) page reload index.html
+10:17:21 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:19:47 PM [vite] (client) [Unhandled error] Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+ > finishRenderingHooks node_modules/react-dom/cjs/react-dom-client.development.js:7717:14
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7684:6
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+ > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+ > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:6
+
+10:19:47 PM [vite] (client) [console.warn] An error occurred in the <Dashboard> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+10:20:24 PM [vite] (client) [Unhandled error] Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
+ > finishRenderingHooks node_modules/react-dom/cjs/react-dom-client.development.js:7717:14
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7684:6
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+ > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+ > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:6
+
+10:20:24 PM [vite] (client) [console.warn] An error occurred in the <Dashboard> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+10:23:09 PM [vite] (client) page reload src/store/useStore.js
+10:23:36 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
+10:23:54 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
+10:24:10 PM [vite] (client) page reload src/store/useStore.js
+10:25:58 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+10:26:05 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+10:26:12 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+10:30:19 PM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
+10:30:26 PM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
+10:30:33 PM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
+10:30:51 PM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
+10:40:32 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:40:38 PM [vite] (client) page reload index.html
+10:40:39 PM [vite] (client) [console.warn] [Turso] settings fetch failed: TypeError: Failed to fetch
+    at #flush (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3802:14)
+    at #flushPipeline (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3790:14)
+    at #flushQueue (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3785:23)
+    at https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3751:42
+10:40:39 PM [vite] (client) [console.warn] [Turso] fetchAll failed: TypeError: Failed to fetch
+    at #flush (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3802:14)
+    at #flushPipeline (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3790:14)
+    at #flushQueue (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3785:23)
+    at https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3751:42
+10:42:28 PM [vite] (client) page reload index.html
+10:42:30 PM [vite] (client) page reload index.html
+10:42:58 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
+10:43:01 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
+10:43:35 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
+10:43:37 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
+10:43:41 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
+10:43:45 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
+10:44:18 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+10:45:36 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:45:40 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:45:51 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:46:42 PM [vite] (client) page reload index.html
+10:46:45 PM [vite] (client) page reload index.html
+10:46:55 PM [vite] (client) [console.warn] [Turso] fetchAll failed: TypeError: Failed to fetch

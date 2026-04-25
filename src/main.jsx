@@ -9,6 +9,17 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+import { useStore } from './store/useStore.js'
+
+// Safety timeout: if Zustand never fires onRehydrateStorage (blocked localStorage,
+// browser extension interference, etc.) force _hydrated after 2 s so the app
+// never gets stuck on a blank/gray screen.
+setTimeout(() => {
+  if (!useStore.getState()._hydrated) {
+    console.warn('[store] hydration timeout — forcing _hydrated')
+    useStore.setState({ _hydrated: true })
+  }
+}, 2000)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

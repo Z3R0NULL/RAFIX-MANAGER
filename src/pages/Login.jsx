@@ -32,7 +32,7 @@ export default function Login() {
           <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center mb-4 shadow-lg shadow-indigo-600/20">
             <Wrench size={26} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Rafix Manager</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">RaFix Manager</h1>
           <p className="text-sm text-slate-400 mt-1">Ingresá con tu cuenta</p>
         </div>
 
@@ -106,7 +106,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-xs text-slate-600 mt-5">
-          Rafix Service Manager · Acceso restringido
+          RaFix Manager · Acceso restringido
         </p>
       </div>
     </div>

@@ -13,6 +13,7 @@ import {
   UserCheck,
   Pencil,
   X,
+  Hash,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { useCurrency } from '../utils/useCurrency'
@@ -130,12 +131,13 @@ export default function NewSale() {
         return prev.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i)
       }
       return [...prev, {
-        id:    item.id,
-        name:  item.name,
-        price: item.price  || 0,
-        cost:  item.cost   || 0,
-        stock: item.stock  || 0,
-        qty:   1,
+        id:         item.id,
+        name:       item.name,
+        price:      item.price  || 0,
+        cost:       item.cost   || 0,
+        stock:      item.stock  || 0,
+        qty:        1,
+        identifier: '',
       }]
     })
     setProductQuery('')
@@ -155,6 +157,10 @@ export default function NewSale() {
 
   function removeFromCart(id) {
     setCartItems((prev) => prev.filter((i) => i.id !== id))
+  }
+
+  function setIdentifier(id, value) {
+    setCartItems((prev) => prev.map((i) => i.id === id ? { ...i, identifier: value } : i))
   }
 
   const total = cartItems.reduce((a, i) => a + i.price * i.qty, 0)
@@ -427,37 +433,51 @@ export default function NewSale() {
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60"
+                  className="rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 overflow-hidden"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{item.name}</p>
-                    <p className="text-xs text-slate-400">{fmt(item.price)} c/u · stock: {item.stock}</p>
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {/* Product row */}
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{item.name}</p>
+                      <p className="text-xs text-slate-400">{fmt(item.price)} c/u · stock: {item.stock}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button
+                        onClick={() => changeQty(item.id, -1)}
+                        className="w-6 h-6 rounded-md flex items-center justify-center bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors text-slate-600 dark:text-slate-300"
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="w-6 text-center text-sm font-semibold text-slate-900 dark:text-white">{item.qty}</span>
+                      <button
+                        onClick={() => changeQty(item.id, 1)}
+                        disabled={item.qty >= item.stock}
+                        className="w-6 h-6 rounded-md flex items-center justify-center bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 w-24 text-right flex-shrink-0">
+                      {fmt(item.price * item.qty)}
+                    </span>
                     <button
-                      onClick={() => changeQty(item.id, -1)}
-                      className="w-6 h-6 rounded-md flex items-center justify-center bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors text-slate-600 dark:text-slate-300"
+                      onClick={() => removeFromCart(item.id)}
+                      className="p-1 rounded text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
                     >
-                      <Minus size={12} />
-                    </button>
-                    <span className="w-6 text-center text-sm font-semibold text-slate-900 dark:text-white">{item.qty}</span>
-                    <button
-                      onClick={() => changeQty(item.id, 1)}
-                      disabled={item.qty >= item.stock}
-                      className="w-6 h-6 rounded-md flex items-center justify-center bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <Plus size={12} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
-                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200 w-24 text-right flex-shrink-0">
-                    {fmt(item.price * item.qty)}
-                  </span>
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="p-1 rounded text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {/* Identifier row */}
+                  <div className="flex items-center gap-2 px-3 pb-3">
+                    <Hash size={12} className="text-slate-400 flex-shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="Identificador opcional (serial, IMEI, ID...)"
+                      value={item.identifier}
+                      onChange={(e) => setIdentifier(item.id, e.target.value)}
+                      className="flex-1 px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500/40 focus:border-emerald-400 transition"
+                    />
+                  </div>
                 </div>
               ))}
 

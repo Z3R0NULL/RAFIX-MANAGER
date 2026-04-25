@@ -32,14 +32,32 @@ import SalesPage from './pages/SalesPage'
 import NewSale from './pages/NewSale'
 import SaleDetail from './pages/SaleDetail'
 
+function AppLoader() {
+  return (
+    <div style={{ background: '#020617', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <svg style={{ width: 32, height: 32, animation: 'spin 1s linear infinite' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+        <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="#6366f1" strokeWidth="4" />
+        <path style={{ opacity: 0.85 }} fill="#6366f1" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+    </div>
+  )
+}
+
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
+  const _hydrated = useStore((s) => s._hydrated)
+  // Wait for Zustand to rehydrate from localStorage before redirecting.
+  // Without this, slow devices redirect to /login before auth state is restored.
+  if (!_hydrated) return <AppLoader />
   if (!isLoggedIn) return <Navigate to="/login" replace />
   return children
 }
 
 function SuperAdminRoute({ children }) {
   const auth = useStore((s) => s.auth)
+  const _hydrated = useStore((s) => s._hydrated)
+  if (!_hydrated) return <AppLoader />
   if (!auth.isLoggedIn) return <Navigate to="/login" replace />
   if (auth.role !== 'superadmin') return <Navigate to="/" replace />
   return children
@@ -49,6 +67,7 @@ function AppWithDarkMode({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
   const _hydrated = useStore((s) => s._hydrated)
   const loadFromTurso = useStore((s) => s.loadFromTurso)
+  const businessName = useStore((s) => s.settings.businessName)
   // Track whether the initial hydration has already triggered a load,
   // so we don't re-load on every isLoggedIn change (e.g. right after login,
   // which already loads data internally and would cause duplicates).
@@ -57,6 +76,11 @@ function AppWithDarkMode({ children }) {
   useEffect(() => {
     document.documentElement.classList.add('dark')
   }, [])
+
+  useEffect(() => {
+    const name = businessName?.trim() || 'RaFix'
+    document.title = `${name} — RaFix Manager`
+  }, [businessName])
 
   // Only load from Turso once, when Zustand finishes rehydrating from
   // localStorage with an active session (i.e. page refresh scenario).

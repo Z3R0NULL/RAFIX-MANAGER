@@ -476,13 +476,16 @@ export const useStore = create(
                 ],
               })
               set({ auth: { isLoggedIn: true, username, role: userRow.role }, dataLoading: true })
-              const [result, remoteSettings] = await Promise.all([
-                fetchAllFromTurso({ username }),
-                fetchSettingsFromTurso(username),
-              ])
-              if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
-              if (remoteSettings) set((s) => ({ settings: { ...DEFAULT_SETTINGS, ...remoteSettings } }))
-              set({ dataLoading: false })
+              try {
+                const [result, remoteSettings] = await Promise.all([
+                  fetchAllFromTurso({ username }),
+                  fetchSettingsFromTurso(username),
+                ])
+                if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
+                if (remoteSettings) set((s) => ({ settings: { ...DEFAULT_SETTINGS, ...remoteSettings } }))
+              } finally {
+                set({ dataLoading: false })
+              }
               return true
             }
           } catch (e) {
@@ -499,13 +502,27 @@ export const useStore = create(
       loadFromTurso: async () => {
         const { auth } = get()
         set({ dataLoading: true })
-        const [result, remoteSettings] = await Promise.all([
-          fetchAllFromTurso({ username: auth?.username }),
-          fetchSettingsFromTurso(auth?.username),
-        ])
-        if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
-        if (remoteSettings) set((s) => ({ settings: { ...DEFAULT_SETTINGS, ...remoteSettings } }))
-        set({ dataLoading: false })
+        // Safety: always stop the loading spinner after 10 s max,
+        // even if Turso is unreachable (common on slow mobile connections).
+        const timeout = setTimeout(() => {
+          if (get().dataLoading) {
+            console.warn('[store] loadFromTurso timeout — forcing dataLoading=false')
+            set({ dataLoading: false })
+          }
+        }, 10000)
+        try {
+          const [result, remoteSettings] = await Promise.all([
+            fetchAllFromTurso({ username: auth?.username }),
+            fetchSettingsFromTurso(auth?.username),
+          ])
+          if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
+          if (remoteSettings) set((s) => ({ settings: { ...DEFAULT_SETTINGS, ...remoteSettings } }))
+        } catch (e) {
+          console.warn('[store] loadFromTurso failed:', e)
+        } finally {
+          clearTimeout(timeout)
+          set({ dataLoading: false })
+        }
       },
 
       // ── Inventory ──────────────────────────────────────────────────
@@ -989,7 +1006,14 @@ export const useStore = create(
         darkMode: state.darkMode,
         settings: state.settings,
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          // Hydration failed (e.g. corrupted localStorage). Force hydrated so
+          // the app doesn't hang on a gray screen — user will just be logged out.
+          console.warn('[store] rehydration error, resetting auth:', error)
+          useStore.setState({ _hydrated: true, auth: { isLoggedIn: false } })
+          return
+        }
         if (state) state.setHydrated()
       },
     }

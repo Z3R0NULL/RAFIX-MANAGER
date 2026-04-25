@@ -117,7 +117,9 @@ export default function Dashboard() {
   const services  = useStore((s) => s.services)
   const dataLoading = useStore((s) => s.dataLoading)
 
-  if (dataLoading) return <PageLoader rows={6} title="Cargando dashboard..." />
+  // Don't block the whole screen — show data (or zeros) right away
+  // and display a subtle top bar while syncing with Turso.
+
 
   // ── Órdenes ──────────────────────────────────────────────────────────────
   const orderStats = useMemo(() => {
@@ -217,6 +219,12 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {dataLoading && (
+        <div className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-slate-800 overflow-hidden">
+          <div className="h-full bg-indigo-500 animate-pulse" style={{ width: '60%', animation: 'dash 1.5s ease-in-out infinite' }} />
+          <style>{`@keyframes dash{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}`}</style>
+        </div>
+      )}
 
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">

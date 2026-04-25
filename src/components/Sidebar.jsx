@@ -41,6 +41,11 @@ export default function Sidebar({ onClose }) {
     navigate('/login')
   }
 
+  const handleLogoClick = () => {
+    navigate('/')
+    onClose?.()
+  }
+
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
       isActive
@@ -61,7 +66,7 @@ export default function Sidebar({ onClose }) {
     <div className="flex flex-col h-full bg-slate-900 border-r border-slate-700/60 w-64">
       {/* Logo */}
       <button
-        onClick={() => navigate('/')}
+        onClick={handleLogoClick}
         className="flex items-center gap-3 px-5 py-5 border-b border-slate-700/60 hover:bg-slate-800/50 transition-colors text-left w-full"
       >
         {settings?.businessLogo ? (
@@ -77,7 +82,7 @@ export default function Sidebar({ onClose }) {
         )}
         <div>
           <p className="font-bold text-white text-sm tracking-tight">{settings?.businessName || 'RAFIX'}</p>
-          <p className="text-[11px] text-slate-500 font-medium">Service Manager</p>
+          <p className="text-[11px] text-slate-500 font-medium">RaFix Manager</p>
         </div>
       </button>
 
@@ -133,7 +138,7 @@ export default function Sidebar({ onClose }) {
             </div>
           </div>
           <button
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => { setSettingsOpen(true); onClose?.() }}
             title="Configuración"
             className="p-2 mr-1 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-indigo-400 transition-colors flex-shrink-0 flex items-center"
           >
