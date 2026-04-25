@@ -128,10 +128,10 @@ const TriIcon = ({ val }) => {
   return <MinusCircle size={15} className="text-slate-300 dark:text-slate-600" />
 }
 
-const InfoRow = ({ label, value }) => (
-  <div className="flex flex-col sm:flex-row sm:items-start gap-0.5 sm:gap-4 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-    <span className="text-xs text-slate-400 dark:text-slate-500 sm:w-36 flex-shrink-0">{label}</span>
-    <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">{value || '—'}</span>
+const InfoRow = ({ label, value, compact }) => (
+  <div className={`flex items-center gap-3 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0 ${compact ? '' : 'sm:gap-4'}`}>
+    <span className={`text-xs text-slate-400 dark:text-slate-500 flex-shrink-0 ${compact ? 'w-24' : 'w-28 sm:w-36'}`}>{label}</span>
+    <span className={`font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap ${compact ? 'text-xs' : 'text-sm'}`}>{value || '—'}</span>
   </div>
 )
 
@@ -687,9 +687,18 @@ export default function OrderDetail() {
               <Clock size={14} className="text-indigo-500" />
               <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Dates</h2>
             </div>
-            <InfoRow label="Fecha de ingreso" value={formatDate(order.entryDate)} />
-            <InfoRow label="Entrega estimada" value={order.estimatedDelivery ? formatDateShort(order.estimatedDelivery) : '—'} />
-            <InfoRow label="Fecha de entrega real" value={formatDate(order.deliveryDate)} />
+            <div className="grid grid-cols-1 divide-y divide-slate-100 dark:divide-slate-800">
+              {[
+                { label: 'Fecha de ingreso',      value: formatDate(order.entryDate) },
+                { label: 'Entrega estimada',       value: order.estimatedDelivery ? formatDateShort(order.estimatedDelivery) : '—' },
+                { label: 'Fecha de entrega real',  value: formatDate(order.deliveryDate) },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-center justify-between gap-2 py-2.5">
+                  <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{label}</span>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">{value}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Work Done */}
@@ -717,7 +726,7 @@ export default function OrderDetail() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{cfg.label}</span>
-                          <span className="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0">{formatDateShort(entry.timestamp)}</span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0">{formatDate(entry.timestamp)}</span>
                         </div>
                         {entry.note && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{entry.note}</p>

@@ -62,6 +62,11 @@ export const STATUS_CONFIG = {
     color: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400',
     dot: 'bg-zinc-400',
   },
+  cancelled: {
+    label: 'Cancelado',
+    color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+    dot: 'bg-rose-500',
+  },
 }
 
 // Ruta canónica implícita para cada estado final
@@ -73,17 +78,27 @@ export const STATUS_PATHS = {
   in_repair:        ['pending', 'diagnosing', 'waiting_approval', 'in_repair'],
   completed:        ['pending', 'diagnosing', 'waiting_approval', 'in_repair', 'completed'],
   irreparable:      ['pending', 'diagnosing', 'irreparable'],
-  // delivered y abandoned heredan la ruta según si la orden pasó por completed o irreparable
+  // delivered, abandoned y cancelled heredan la ruta según si la orden pasó por completed o irreparable
   delivered:        null,
   abandoned:        null,
+  cancelled:        null,
 }
 
-// Rutas canónicas para delivered y abandoned según el camino previo de la orden
+// Rutas canónicas para delivered, abandoned y cancelled según el camino previo de la orden
 const PATH_VIA_COMPLETED = ['pending', 'diagnosing', 'waiting_approval', 'in_repair', 'completed']
 const PATH_VIA_IRREPARABLE = ['pending', 'diagnosing', 'irreparable']
 
 function getTerminalPath(existingHistory, terminalStatus) {
   const history = existingHistory || []
+
+  // Para "cancelled": reconstruir el camino real recorrido hasta el momento
+  if (terminalStatus === 'cancelled') {
+    const knownOrder = ['pending', 'diagnosing', 'waiting_approval', 'in_repair', 'completed', 'irreparable', 'abandoned']
+    const traversed = knownOrder.filter((s) => history.some((e) => e.status === s))
+    const base = traversed.length ? traversed : ['pending']
+    return [...base, 'cancelled']
+  }
+
   const viaIrrep = history.some((e) => e.status === 'irreparable')
   const base = viaIrrep ? PATH_VIA_IRREPARABLE : PATH_VIA_COMPLETED
 
@@ -102,7 +117,7 @@ export function buildStatusHistory(existingHistory, newStatus, note = '') {
   const now = new Date().toISOString()
 
   const path =
-    newStatus === 'delivered' || newStatus === 'abandoned'
+    newStatus === 'delivered' || newStatus === 'abandoned' || newStatus === 'cancelled'
       ? getTerminalPath(existingHistory, newStatus)
       : STATUS_PATHS[newStatus]
 
@@ -119,6 +134,7 @@ export function buildStatusHistory(existingHistory, newStatus, note = '') {
 
 // Valida si una orden puede pasar al nuevo estado.
 // Solo bloquea delivered/abandoned si no hubo completed ni irreparable antes.
+// Cancelled bloquea si la orden ya fue entregada o ya estaba cancelada.
 export function canTransitionTo(order, newStatus) {
   if (newStatus === 'delivered' || newStatus === 'abandoned') {
     const history = order.statusHistory || []
@@ -128,6 +144,15 @@ export function canTransitionTo(order, newStatus) {
         ok: false,
         reason: 'La orden debe estar en "Completado" o "Sin reparación" antes de marcarla como Entregada o Abandonada.',
       }
+    }
+  }
+  if (newStatus === 'cancelled') {
+    const current = order.status
+    if (current === 'delivered') {
+      return { ok: false, reason: 'No se puede cancelar una orden que ya fue entregada.' }
+    }
+    if (current === 'cancelled') {
+      return { ok: false, reason: 'La orden ya está cancelada.' }
     }
   }
   return { ok: true }
@@ -196,11 +221,12 @@ export const formatDate = (iso) => {
   if (!d) return '—'
   return d.toLocaleDateString('es-AR', {
     year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-  })
+    hour12: false,
+  }).replace(',', '')
 }
 
 export const formatDateShort = (iso) => {
@@ -208,8 +234,8 @@ export const formatDateShort = (iso) => {
   if (!d) return '—'
   return d.toLocaleDateString('es-AR', {
     year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   })
 }
 

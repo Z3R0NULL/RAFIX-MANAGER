@@ -911,7 +911,7 @@ export const useStore = create(
                 data.status,
                 data.statusNote || ''
               )
-              if (data.status === 'delivered') {
+              if (data.status === 'delivered' || data.status === 'cancelled') {
                 updated.deliveryDate = new Date().toISOString()
               }
             }
