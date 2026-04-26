@@ -492,7 +492,7 @@ export default function SuppliersPage() {
   const [modal, setModal]           = useState(null)
   const [confirmDel, setConfirmDel] = useState(null)
   const [expanded, setExpanded]     = useState(null)
-  const [viewMode, setViewMode]     = useState(() => localStorage.getItem('suppliersView') || (window.innerWidth < 768 ? 'grid' : 'table'))
+  const [viewMode, setViewMode]     = useState(() => localStorage.getItem('suppliersView') || 'grid')
   const [sort, setSort]             = useState('fav_first')
   const [sortOpen, setSortOpen]     = useState(false)
 
@@ -612,7 +612,7 @@ export default function SuppliersPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por nombre, contacto, tag…"
+              placeholder="Buscar"
               className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 transition-colors"
             />
             {search && (

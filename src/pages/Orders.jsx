@@ -64,7 +64,7 @@ export default function Orders() {
   const [clientFilter, setClientFilter] = useState(() => getClientFilter(location.search))
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [view, setView] = useState(() => localStorage.getItem('ordersView') || (window.innerWidth < 768 ? 'grid' : 'list'))
+  const [view, setView] = useState(() => localStorage.getItem('ordersView') || 'grid')
   const [sort, setSort] = useState('newest')
   const [sortOpen, setSortOpen] = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)
@@ -116,15 +116,14 @@ export default function Orders() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Orders</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{orders.filter(o => !o.id?.startsWith('SAL-') && !o.saleNumber).length} total orders</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Reparaciones</h1>
         </div>
         <Link
           to="/orders/new"
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
         >
           <PlusCircle size={16} />
-          New Order
+          Nueva Reparacion
         </Link>
       </div>
 
@@ -150,7 +149,7 @@ export default function Orders() {
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by name, order #, device..."
+              placeholder="Buscar"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
@@ -268,12 +267,12 @@ export default function Orders() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="thead-row">
-                  <th className="th-std">Order #</th>
-                  <th className="th-std">Customer</th>
-                  <th className="th-std hidden sm:table-cell">Device</th>
-                  <th className="th-std">Status</th>
-                  <th className="th-std hidden md:table-cell">Entry</th>
-                  <th className="th-std hidden lg:table-cell">Price</th>
+                  <th className="th-std">ID #</th>
+                  <th className="th-std">Cliente</th>
+                  <th className="th-std hidden sm:table-cell">Dispositivo</th>
+                  <th className="th-std">Estado</th>
+                  <th className="th-std hidden md:table-cell">Ingreso</th>
+                  <th className="th-std hidden lg:table-cell">Precio</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>

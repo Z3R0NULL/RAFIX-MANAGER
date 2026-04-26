@@ -322,7 +322,7 @@ export default function ServicesPage() {
   const [showInactive, setShowInactive] = useState(false)
   const [modal, setModal]         = useState(null) // null | 'new' | service object
   const [toDelete, setToDelete]   = useState(null)
-  const [viewMode, setViewMode]   = useState(() => localStorage.getItem('servicesView') || (window.innerWidth < 768 ? 'grid' : 'table'))
+  const [viewMode, setViewMode]   = useState(() => localStorage.getItem('servicesView') || 'grid')
   const [sort, setSort]           = useState('name_az')
   const [sortOpen, setSortOpen]   = useState(false)
 
@@ -429,7 +429,7 @@ export default function ServicesPage() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
             className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30 transition-colors"
-            placeholder="Buscar servicio..."
+            placeholder="Buscar"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

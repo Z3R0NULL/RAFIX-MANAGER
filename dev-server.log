@@ -1,9 +1,144 @@
+$ vite --host 0.0.0.0 --port 3000
 
-> app@1.0.0 dev
-> vite --host 0.0.0.0 --port 3000
-
-
-  VITE v8.0.8  ready in 261 ms
+  VITE v8.0.8  ready in 258 ms
 
   ➜  Local:   http://localhost:3000/
-  ➜  Network: http://172.20.0.29:3000/
+  ➜  Network: http://172.20.0.20:3000/
+10:56:51 PM [vite] (client) [console.warn] [Orchids Browser Logs] projectId not provided. Logs will not be captured.
+10:59:04 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+10:59:04 PM [vite] (client) hmr update /src/pages/InventoryPage.jsx, /src/index.css
+10:59:04 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+10:59:04 PM [vite] (client) hmr update /src/pages/ServicesPage.jsx, /src/index.css
+10:59:04 PM [vite] (client) hmr update /src/pages/SuppliersPage.jsx, /src/index.css
+11:02:45 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:02:51 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:02:56 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:03:01 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:03:03 PM [vite] (client) [Unhandled error] ReferenceError: deleteConfirm is not defined
+ > SalesPage src/pages/SalesPage.jsx:341:7
+    339 |  
+    340 |        {/* Delete confirm modal */}
+    341 |        {deleteConfirm && (
+        |         ^
+    342 |          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    343 |            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 ma...
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+ > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+
+11:03:03 PM [vite] (client) [console.warn] An error occurred in the <SalesPage> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+11:03:10 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:03:27 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:03:33 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:05:25 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:05:36 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:07:47 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:07:54 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:08:12 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:08:21 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:08:26 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:08:39 PM [vite] (client) [Unhandled error] ReferenceError: CR is not defined
+ > src/pages/DevicesPage.jsx:242:23
+    240 |                    {expanded
+    241 |                      ? <ChevronDown size={15} className="text-slate-400 flex-shrink-0" />
+    242 |                      : <CR size={15} className="text-slate-400 flex-shrink-0" />
+        |                         ^
+    243 |                    }
+    244 |                  </button>
+ > CatalogTab src/pages/DevicesPage.jsx:218:35
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+
+11:08:39 PM [vite] (client) [console.warn] An error occurred in the <CatalogTab> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+11:12:11 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:14:10 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:14:18 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:15:48 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:17:42 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:19:02 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:19:05 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:19:09 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:19:15 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:20:11 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:20:16 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:21:15 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:21:22 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:22:24 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:22:40 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:22:42 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:31:52 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:32:25 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:32:30 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:33:03 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:33:20 PM [vite] (client) hmr update /src/pages/DevicesPage.jsx, /src/index.css
+11:33:40 PM [vite] (client) hmr update /src/pages/ServicesPage.jsx, /src/index.css
+11:34:00 PM [vite] (client) hmr update /src/pages/SuppliersPage.jsx, /src/index.css
+11:34:28 PM [vite] (client) hmr update /src/pages/InventoryPage.jsx, /src/index.css
+11:38:21 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:38:27 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:38:31 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:38:36 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:38:42 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:38:48 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:39:20 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:39:28 PM [vite] (client) hmr update /src/pages/Orders.jsx, /src/index.css
+11:39:58 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:40:18 PM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+11:42:50 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:42:52 PM [vite] (client) [Unhandled error] ReferenceError: Wrench is not defined
+ > src/pages/Clients.jsx:517:23
+    515 |                    <div className="space-y-1">
+    516 |                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+    517 |                        <Wrench size={13} />
+        |                         ^
+    518 |                        {orderCount} order{orderCount !== 1 ? 's' : ''}
+    519 |                      </div>
+ > Clients src/pages/Clients.jsx:452:20
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+
+11:42:52 PM [vite] (client) [console.warn] An error occurred in the <Clients> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+11:42:53 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:43:25 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:43:34 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:44:42 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:44:44 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:44:48 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:44:55 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:44:57 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:45:00 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:45:03 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:45:11 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:48:30 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:48:35 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:48:42 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:48:53 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
+11:49:01 PM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
