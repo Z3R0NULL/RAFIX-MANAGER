@@ -26,7 +26,7 @@ import {
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
 import { PageLoader } from '../components/PageLoader'
-import { formatDateShort, STATUS_CONFIG, DEVICE_TYPES } from '../utils/constants'
+import { formatDateShort, STATUS_CONFIG } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 const SORT_OPTIONS = [
@@ -64,12 +64,10 @@ export default function Orders() {
   const [clientFilter, setClientFilter] = useState(() => getClientFilter(location.search))
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [deviceFilter, setDeviceFilter] = useState('')
   const [view, setView] = useState(() => localStorage.getItem('ordersView') || 'list')
   const [sort, setSort] = useState('newest')
   const [sortOpen, setSortOpen] = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)
-  const [deviceOpen, setDeviceOpen] = useState(false)
 
   useEffect(() => {
     setClientFilter(getClientFilter(location.search))
@@ -84,7 +82,6 @@ export default function Orders() {
     const handler = (e) => {
       if (!e.target.closest('[data-sort-dropdown]')) setSortOpen(false)
       if (!e.target.closest('[data-status-dropdown]')) setStatusOpen(false)
-      if (!e.target.closest('[data-device-dropdown]')) setDeviceOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
@@ -106,8 +103,7 @@ export default function Orders() {
       o.deviceBrand?.toLowerCase().includes(q) ||
       o.deviceModel?.toLowerCase().includes(q)
     const matchStatus = !statusFilter || o.status === statusFilter
-    const matchDevice = !deviceFilter || o.deviceType === deviceFilter
-    return matchSearch && matchStatus && matchDevice
+    return matchSearch && matchStatus
   })
 
   const sorted = sortOrders(filtered, sort)
@@ -149,7 +145,7 @@ export default function Orders() {
 
       {/* Filters + view controls */}
       {!clientFilter.phone && !clientFilter.dni && !clientFilter.email && (
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3">
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -160,8 +156,9 @@ export default function Orders() {
               className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
             />
           </div>
+          <div className="flex flex-row items-center gap-2">
           {/* Status dropdown */}
-          <div className="relative" data-status-dropdown>
+          <div className="relative flex-shrink-0" data-status-dropdown>
             <button
               onClick={() => setStatusOpen((o) => !o)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm transition-colors whitespace-nowrap
@@ -196,40 +193,6 @@ export default function Orders() {
           </div>
 
           {/* Device dropdown */}
-          <div className="relative" data-device-dropdown>
-            <button
-              onClick={() => setDeviceOpen((o) => !o)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm transition-colors whitespace-nowrap
-                ${deviceFilter
-                  ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-            >
-              {deviceFilter ? DEVICE_TYPES.find((d) => d.value === deviceFilter)?.label : 'Dispositivo'}
-              <ChevronDown size={13} className={`transition-transform ${deviceOpen ? 'rotate-180' : ''} ${deviceFilter ? 'text-indigo-400' : 'text-slate-400'}`} />
-            </button>
-            {deviceOpen && (
-              <div className="absolute left-0 mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
-                <button
-                  onClick={() => { setDeviceFilter(''); setDeviceOpen(false) }}
-                  className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors border-b border-slate-100 dark:border-slate-800
-                    ${!deviceFilter ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                >
-                  Todos los dispositivos
-                </button>
-                {DEVICE_TYPES.map((d) => (
-                  <button
-                    key={d.value}
-                    onClick={() => { setDeviceFilter(d.value); setDeviceOpen(false) }}
-                    className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0
-                      ${deviceFilter === d.value ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                  >
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* View + Sort pill group */}
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 ml-auto flex-shrink-0">
             {/* Grid icon */}
@@ -250,7 +213,7 @@ export default function Orders() {
             </button>
 
             {/* Divider */}
-            <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+            <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5"></div>
 
             {/* Sort dropdown */}
             <div className="relative" data-sort-dropdown>
@@ -280,6 +243,7 @@ export default function Orders() {
               )}
             </div>
           </div>
+          </div>
         </div>
       )}
 
@@ -289,9 +253,9 @@ export default function Orders() {
           <ClipboardList size={36} className="mb-3 opacity-40" />
           <p className="font-medium text-slate-500 dark:text-slate-400">No orders found</p>
           <p className="text-sm mt-1">
-            {search || statusFilter || deviceFilter ? 'Try adjusting your filters' : 'Create your first order to get started'}
+            {search || statusFilter ? 'Try adjusting your filters' : 'Create your first order to get started'}
           </p>
-          {!search && !statusFilter && !deviceFilter && (
+          {!search && !statusFilter && (
             <Link to="/orders/new" className="mt-4 text-sm text-indigo-600 hover:underline">
               Create order
             </Link>

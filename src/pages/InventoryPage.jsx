@@ -363,8 +363,8 @@ export default function InventoryPage() {
     <div className="p-6 max-w-6xl mx-auto space-y-6">
 
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+      <div className="flex flex-row items-center justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Inventario</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
             Módulos, herramientas, celulares y más
@@ -372,7 +372,7 @@ export default function InventoryPage() {
         </div>
         <button
           onClick={() => setModal('new')}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} />
           Agregar ítem

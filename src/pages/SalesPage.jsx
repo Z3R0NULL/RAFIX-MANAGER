@@ -139,7 +139,7 @@ export default function SalesPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col gap-3">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -151,8 +151,9 @@ export default function SalesPage() {
           />
         </div>
 
+        <div className="flex flex-row items-center gap-2">
         {/* Status filter */}
-        <div className="relative" data-status-dd>
+        <div className="relative flex-shrink-0" data-status-dd>
           <button
             onClick={() => setStatusOpen((o) => !o)}
             className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm transition-colors whitespace-nowrap
@@ -226,6 +227,7 @@ export default function SalesPage() {
             )}
           </div>
         </div>
+        </div>{/* end inner filter row */}
       </div>
 
       {/* Empty state */}
