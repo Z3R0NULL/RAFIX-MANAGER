@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -16,7 +16,6 @@ import {
   Settings,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
-import SettingsPanel from './SettingsPanel'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -30,11 +29,10 @@ const NAV_ITEMS = [
   { to: '/finance', label: 'Finanzas', icon: BarChart2 },
 ]
 
-export default function Sidebar({ onClose }) {
+export default function Sidebar({ onClose, onOpenSettings }) {
   const { logout, auth, settings } = useStore()
   const navigate = useNavigate()
   const isSuperAdmin = auth?.role === 'superadmin'
-  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -61,8 +59,6 @@ export default function Sidebar({ onClose }) {
     }`
 
   return (
-    <>
-    <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     <div className="flex flex-col h-full bg-slate-900 border-r border-slate-700/60 w-64">
       {/* Logo */}
       <button
@@ -138,7 +134,7 @@ export default function Sidebar({ onClose }) {
             </div>
           </div>
           <button
-            onClick={() => { setSettingsOpen(true); onClose?.() }}
+            onClick={() => onOpenSettings?.()}
             title="Configuración"
             className="p-2 mr-1 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-indigo-400 transition-colors flex-shrink-0 flex items-center"
           >
@@ -155,6 +151,5 @@ export default function Sidebar({ onClose }) {
         </button>
       </div>
     </div>
-    </>
   )
 }

@@ -44,7 +44,7 @@ function StatCard({ label, value, icon: Icon, color, bg }) {
   )
 }
 
-function UserSection({ username, orders }) {
+function UserSection({ username, orders, fmt }) {
   const [open, setOpen] = useState(true)
   const recent = orders.slice(0, 5)
   const inRepair = orders.filter((o) => o.status === 'in_repair').length
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
             {Object.entries(ordersByUser)
               .sort(([, a], [, b]) => b.length - a.length)
               .map(([username, orders]) => (
-                <UserSection key={username} username={username} orders={orders} />
+                <UserSection key={username} username={username} orders={orders} fmt={fmt} />
               ))}
           </div>
         )}

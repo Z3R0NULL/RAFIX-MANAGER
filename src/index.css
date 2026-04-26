@@ -11,12 +11,54 @@
  */
 @import "tailwindcss";
 
+/* Tailwind v4: activate dark: variant via .dark class (not prefers-color-scheme) */
+@variant dark (&:where(.dark, .dark *));
+
 * {
   font-family: 'Inter', sans-serif;
 }
 
 @layer base {
   :root {
+    color-scheme: dark;
+  }
+
+  /* iOS Safari: force dark background on the document root so the
+     overscroll "rubber-band" area never shows white. */
+  html, body {
+    background-color: #020617;
+    overscroll-behavior: none;
+  }
+
+  /* iOS Safari resets: remove system-default light appearance from all
+     interactive elements so dark: Tailwind classes take full effect. */
+  input,
+  textarea,
+  select,
+  button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* iOS Safari auto-zooms any input with font-size < 16px.
+     Force 16px on all inputs/selects/textareas to prevent that zoom.
+     This only affects mobile (iOS ignores the zoom when font-size >= 16px). */
+  @media screen and (-webkit-min-device-pixel-ratio: 0) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Prevent iOS from auto-styling date/time/number inputs light */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="number"],
+  input[type="search"] {
     color-scheme: dark;
   }
 }

@@ -3,16 +3,81 @@
 > vite --host 0.0.0.0 --port 3000
 
 
-  VITE v8.0.8  ready in 306 ms
+  VITE v8.0.8  ready in 301 ms
 
   ➜  Local:   http://localhost:3000/
-  ➜  Network: http://172.20.0.33:3000/
-10:12:20 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
-10:12:29 PM [vite] (client) hmr update /src/App.jsx, /src/pages/Login.jsx, /src/pages/Dashboard.jsx, /src/pages/OrderDetail.jsx, /src/pages/Orders.jsx, /src/pages/NewOrder.jsx, /src/pages/TrackOrder.jsx, /src/pages/SearchPage.jsx, /src/pages/DevicesPage.jsx, /src/pages/DeviceModelDetail.jsx, /src/pages/FinancePage.jsx, /src/pages/AdminPanel.jsx, /src/pages/Clients.jsx, /src/pages/InventoryPage.jsx, /src/pages/SuppliersPage.jsx, /src/pages/ServicesPage.jsx, /src/pages/SalesPage.jsx, /src/pages/SaleDetail.jsx, /src/pages/NewSale.jsx and 5 more
-10:12:37 PM [vite] (client) page reload src/main.jsx
-10:14:34 PM [vite] (client) [Unhandled error] Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
- > finishRenderingHooks node_modules/react-dom/cjs/react-dom-client.development.js:7717:14
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7684:6
+  ➜  Network: http://172.20.0.3:3000/
+3:20:11 PM [vite] (client) [console.warn] [Orchids Browser Logs] projectId not provided. Logs will not be captured.
+3:24:40 PM [vite] (client) page reload index.html
+3:24:50 PM [vite] (client) [console.warn] [Orchids Browser Logs] projectId not provided. Logs will not be captured.
+3:24:54 PM [vite] (client) page reload src/main.jsx
+3:25:09 PM [vite] (client) hmr update /src/index.css
+3:25:09 PM [vite] (client) [console.warn] [Orchids Browser Logs] projectId not provided. Logs will not be captured.
+3:25:19 PM [vite] (client) hmr update /src/components/Layout.jsx, /src/index.css
+3:36:45 PM [vite] (client) hmr update /src/index.css
+3:39:46 PM [vite] (client) hmr update /src/index.css
+3:40:00 PM [vite] (client) [console.warn] [store] loadFromTurso timeout — forcing dataLoading=false
+3:40:17 PM [vite] (client) [console.warn] [store] loadFromTurso timeout — forcing dataLoading=false
+3:41:10 PM [vite] (client) [console.warn] [store] loadFromTurso timeout — forcing dataLoading=false
+3:41:43 PM [vite] (client) [Unhandled error] ReferenceError: fmt is not defined
+ > src/pages/AdminDashboard.jsx:97:42
+    95 |                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+    96 |                        {order.orderNumber} · {order.deviceBrand} {order.deviceModel}
+    97 |                        {order.finalPrice ? ` · ${fmt(order.finalPrice)}` : ''}
+       |                                            ^
+    98 |                      </p>
+    99 |                      <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(order.entryDate)}</p>
+ > UserSection src/pages/AdminDashboard.jsx:85:22
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+
+3:41:43 PM [vite] (client) [console.warn] An error occurred in the <UserSection> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+3:43:08 PM [vite] (client) hmr update /src/pages/AdminDashboard.jsx, /src/index.css
+3:43:12 PM [vite] (client) [Unhandled error] TypeError: fmt is not a function
+ > src/pages/AdminDashboard.jsx:97:48
+    95 |                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+    96 |                        {order.orderNumber} · {order.deviceBrand} {order.deviceModel}
+    97 |                        {order.finalPrice ? ` · ${fmt(order.finalPrice)}` : ''}
+       |                                                  ^
+    98 |                      </p>
+    99 |                      <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(order.entryDate)}</p>
+ > UserSection src/pages/AdminDashboard.jsx:85:22
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
+
+3:43:12 PM [vite] (client) [console.warn] An error occurred in the <UserSection> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+3:43:14 PM [vite] (client) hmr update /src/pages/AdminDashboard.jsx, /src/index.css
+3:45:02 PM [vite] (client) hmr update /src/index.css, /src/components/SettingsPanel.jsx
+3:45:30 PM [vite] (client) hmr update /src/components/Layout.jsx, /src/index.css
+3:45:38 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+3:45:39 PM [vite] (client) [Unhandled error] ReferenceError: useState is not defined
+ > Sidebar src/components/Sidebar.jsx:36:42
+    34 |    const navigate = useNavigate()
+    35 |    const isSuperAdmin = auth?.role === 'superadmin'
+    36 |    const [settingsOpen, setSettingsOpen] = useState(false)
+       |                                            ^
+    37 |  
+    38 |    const handleLogout = () => {
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
  > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
  > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
  > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
@@ -20,21 +85,23 @@
  > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
  > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
  > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
- > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:6
 
-10:14:34 PM [vite] (client) [console.warn] An error occurred in the <Dashboard> component.
+3:45:39 PM [vite] (client) [console.warn] An error occurred in the <Sidebar> component.
 
 Consider adding an error boundary to your tree to customize error handling behavior.
 Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
 
-10:14:37 PM [vite] (client) [console.warn] [Turso] fetchAll failed: TypeError: Failed to fetch
-    at #flush (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3802:14)
-    at #flushPipeline (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3790:14)
-    at #flushQueue (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3785:23)
-    at https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3751:42
-10:14:40 PM [vite] (client) [Unhandled error] Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
- > finishRenderingHooks node_modules/react-dom/cjs/react-dom-client.development.js:7717:14
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7684:6
+3:45:44 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+3:45:45 PM [vite] (client) [Unhandled error] ReferenceError: SettingsPanel is not defined
+ > Sidebar src/components/Sidebar.jsx:63:5
+    61 |    return (
+    62 |      <>
+    63 |      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+       |       ^
+    64 |      <div className="flex flex-col h-full bg-slate-900 border-r border-slate-700/60 w-64">
+    65 |        {/* Logo */}
+ > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
  > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
  > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
  > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
@@ -42,85 +109,166 @@ Visit https://react.dev/link/error-boundaries to learn more about error boundari
  > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
  > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
  > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
- > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:6
 
-10:14:40 PM [vite] (client) [console.warn] An error occurred in the <Dashboard> component.
-
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
-
-10:17:04 PM [vite] (client) page reload index.html
-10:17:09 PM [vite] (client) page reload index.html
-10:17:21 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
-10:19:47 PM [vite] (client) [Unhandled error] Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
- > finishRenderingHooks node_modules/react-dom/cjs/react-dom-client.development.js:7717:14
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7684:6
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
- > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:6
-
-10:19:47 PM [vite] (client) [console.warn] An error occurred in the <Dashboard> component.
+3:45:45 PM [vite] (client) [console.warn] An error occurred in the <Sidebar> component.
 
 Consider adding an error boundary to your tree to customize error handling behavior.
 Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
 
-10:20:24 PM [vite] (client) [Unhandled error] Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.
- > finishRenderingHooks node_modules/react-dom/cjs/react-dom-client.development.js:7717:14
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7684:6
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
- > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:6
+3:45:50 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+3:45:50 PM [vite] Internal server error: Transform failed with 1 error:
 
-10:20:24 PM [vite] (client) [console.warn] An error occurred in the <Dashboard> component.
+[31m[PARSE_ERROR] Error:[0m Unterminated regular expression
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/Sidebar.jsx:154:6 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m154 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m<[0m/>
+ [38;5;240m    │[0m      ─┬─  
+ [38;5;240m    │[0m       ╰─── 
+[38;5;246m─────╯[0m
 
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+  Plugin: vite:oxc
+  File: /home/user/app/src/components/Sidebar.jsx
+      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
+      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
+      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
+      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
+      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
+3:45:50 PM [vite] Internal server error: Transform failed with 1 error:
 
-10:23:09 PM [vite] (client) page reload src/store/useStore.js
-10:23:36 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
-10:23:54 PM [vite] (client) hmr update /src/pages/Dashboard.jsx, /src/index.css
-10:24:10 PM [vite] (client) page reload src/store/useStore.js
-10:25:58 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
-10:26:05 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
-10:26:12 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
-10:30:19 PM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
-10:30:26 PM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
-10:30:33 PM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
-10:30:51 PM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
-10:40:32 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
-10:40:38 PM [vite] (client) page reload index.html
-10:40:39 PM [vite] (client) [console.warn] [Turso] settings fetch failed: TypeError: Failed to fetch
-    at #flush (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3802:14)
-    at #flushPipeline (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3790:14)
-    at #flushQueue (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3785:23)
-    at https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3751:42
-10:40:39 PM [vite] (client) [console.warn] [Turso] fetchAll failed: TypeError: Failed to fetch
-    at #flush (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3802:14)
-    at #flushPipeline (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3790:14)
-    at #flushQueue (https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3785:23)
-    at https://3000-42771cc0-f15c-4210-ac73-7d4b64ef35b7.orchids.cloud/node_modules/.vite/deps/@libsql_client_web.js?v=a5778bb2:3751:42
-10:42:28 PM [vite] (client) page reload index.html
-10:42:30 PM [vite] (client) page reload index.html
-10:42:58 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
-10:43:01 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
-10:43:35 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
-10:43:37 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
-10:43:41 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
-10:43:45 PM [vite] (client) hmr update /src/pages/Login.jsx, /src/index.css
-10:44:18 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
-10:45:36 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
-10:45:40 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
-10:45:51 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
-10:46:42 PM [vite] (client) page reload index.html
-10:46:45 PM [vite] (client) page reload index.html
-10:46:55 PM [vite] (client) [console.warn] [Turso] fetchAll failed: TypeError: Failed to fetch
+[31m[PARSE_ERROR] Error:[0m Unterminated regular expression
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/Sidebar.jsx:154:6 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m154 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m<[0m/>
+ [38;5;240m    │[0m      ─┬─  
+ [38;5;240m    │[0m       ╰─── 
+[38;5;246m─────╯[0m
+
+  Plugin: vite:oxc
+  File: /home/user/app/src/components/Sidebar.jsx
+      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
+      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
+      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
+      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
+      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
+3:45:50 PM [vite] Internal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] Error:[0m Unterminated regular expression
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/Sidebar.jsx:154:6 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m154 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m<[0m/>
+ [38;5;240m    │[0m      ─┬─  
+ [38;5;240m    │[0m       ╰─── 
+[38;5;246m─────╯[0m
+
+  Plugin: vite:oxc
+  File: /home/user/app/src/components/Sidebar.jsx
+      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
+      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
+      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
+      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
+      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
+3:45:51 PM [vite] (client) [console.error] [vite] Failed to reload /src/components/Sidebar.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+3:45:51 PM [vite] (client) [console.error] [vite] Failed to reload /src/components/Sidebar.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+3:45:51 PM [vite] (client) [console.error] [vite] Failed to reload /src/components/Sidebar.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+3:45:51 PM [vite] (client) [Unhandled rejection] TypeError: Cannot read properties of undefined (reading 'nodeName')
+ > h ../../../@vite/client:593:7
+ > createTemplate ../../../@vite/client:746:4
+ > new ErrorOverlay ../../../@vite/client:772:25
+ > createErrorOverlay ../../../@vite/client:1010:29
+ > handleMessage ../../../@vite/client:995:24
+
+3:45:51 PM [vite] (client) [Unhandled rejection] TypeError: Cannot read properties of undefined (reading 'nodeName')
+ > h ../../../@vite/client:593:7
+ > createTemplate ../../../@vite/client:746:4
+ > new ErrorOverlay ../../../@vite/client:772:25
+ > createErrorOverlay ../../../@vite/client:1010:29
+ > handleMessage ../../../@vite/client:995:24
+
+3:45:51 PM [vite] (client) [Unhandled rejection] TypeError: Cannot read properties of undefined (reading 'nodeName')
+ > h ../../../@vite/client:593:7
+ > createTemplate ../../../@vite/client:746:4
+ > new ErrorOverlay ../../../@vite/client:772:25
+ > createErrorOverlay ../../../@vite/client:1010:29
+ > handleMessage ../../../@vite/client:995:24
+
+3:45:55 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+3:45:56 PM [vite] Internal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] Error:[0m Unterminated regular expression
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/Sidebar.jsx:154:6 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m154 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m<[0m/>
+ [38;5;240m    │[0m      ─┬─  
+ [38;5;240m    │[0m       ╰─── 
+[38;5;246m─────╯[0m
+
+  Plugin: vite:oxc
+  File: /home/user/app/src/components/Sidebar.jsx
+      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
+      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
+      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
+      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
+      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
+3:45:56 PM [vite] Internal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] Error:[0m Unterminated regular expression
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/Sidebar.jsx:154:6 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m154 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m<[0m/>
+ [38;5;240m    │[0m      ─┬─  
+ [38;5;240m    │[0m       ╰─── 
+[38;5;246m─────╯[0m
+
+  Plugin: vite:oxc
+  File: /home/user/app/src/components/Sidebar.jsx
+      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
+      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
+      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
+      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
+      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
+3:45:56 PM [vite] Internal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] Error:[0m Unterminated regular expression
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/Sidebar.jsx:154:6 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m154 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m<[0m/>
+ [38;5;240m    │[0m      ─┬─  
+ [38;5;240m    │[0m       ╰─── 
+[38;5;246m─────╯[0m
+
+  Plugin: vite:oxc
+  File: /home/user/app/src/components/Sidebar.jsx
+      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
+      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
+      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
+      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
+      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
+3:45:56 PM [vite] (client) [console.error] [vite] Failed to reload /src/components/Sidebar.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+3:45:56 PM [vite] (client) [console.error] [vite] Failed to reload /src/components/Sidebar.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+3:45:56 PM [vite] (client) [console.error] [vite] Failed to reload /src/components/Sidebar.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+3:45:56 PM [vite] (client) [Unhandled rejection] TypeError: Cannot read properties of undefined (reading 'nodeName')
+ > h ../../../@vite/client:593:7
+ > createTemplate ../../../@vite/client:746:4
+ > new ErrorOverlay ../../../@vite/client:772:25
+ > createErrorOverlay ../../../@vite/client:1010:29
+ > handleMessage ../../../@vite/client:995:24
+
+3:45:56 PM [vite] (client) [Unhandled rejection] TypeError: Cannot read properties of undefined (reading 'nodeName')
+ > h ../../../@vite/client:593:7
+ > createTemplate ../../../@vite/client:746:4
+ > new ErrorOverlay ../../../@vite/client:772:25
+ > createErrorOverlay ../../../@vite/client:1010:29
+ > handleMessage ../../../@vite/client:995:24
+
+3:45:56 PM [vite] (client) [Unhandled rejection] TypeError: Cannot read properties of undefined (reading 'nodeName')
+ > h ../../../@vite/client:593:7
+ > createTemplate ../../../@vite/client:746:4
+ > new ErrorOverlay ../../../@vite/client:772:25
+ > createErrorOverlay ../../../@vite/client:1010:29
+ > handleMessage ../../../@vite/client:995:24
+
+3:46:06 PM [vite] (client) hmr update /src/index.css, /src/components/Sidebar.jsx
+3:48:23 PM [vite] (client) [console.warn] [Orchids Browser Logs] projectId not provided. Logs will not be captured.
+3:49:32 PM [vite] (client) hmr update /src/components/Layout.jsx, /src/index.css
+3:49:38 PM [vite] (client) hmr update /src/components/Layout.jsx, /src/index.css
+3:52:47 PM [vite] (client) [console.warn] [store] loadFromTurso timeout — forcing dataLoading=false

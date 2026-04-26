@@ -9,6 +9,10 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+
+// Force dark class before React renders anything — prevents iOS Safari
+// from flashing light-mode backgrounds during the JS hydration window.
+document.documentElement.classList.add('dark')
 import { useStore } from './store/useStore.js'
 
 // Safety timeout: if Zustand never fires onRehydrateStorage (blocked localStorage,

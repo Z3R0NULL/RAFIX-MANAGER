@@ -23,7 +23,7 @@ import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '
 
 export default function SettingsPanel({ open, onClose }) {
   const { settings, updateSettings } = useStore()
-  const [local, setLocal] = useState(settings)
+  const [local, setLocal] = useState({ ...DEFAULT_SETTINGS, ...settings })
   const [saved, setSaved] = useState(false)
   const logoRef = useRef()
 

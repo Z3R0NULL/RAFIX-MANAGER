@@ -1,15 +1,22 @@
 import React, { useState } from 'react'
 import { Menu } from 'lucide-react'
 import Sidebar from './Sidebar'
+import SettingsPanel from './SettingsPanel'
+import { useStore } from '../store/useStore'
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const businessName = useStore((s) => s.settings?.businessName || 'RAFIX')
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">
+      {/* Settings panel — mounted at root level so z-index is never clipped */}
+      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-shrink-0">
-        <Sidebar />
+        <Sidebar onOpenSettings={() => setSettingsOpen(true)} />
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -20,7 +27,10 @@ export default function Layout({ children }) {
             onClick={() => setSidebarOpen(false)}
           />
           <aside className="relative z-50 flex-shrink-0">
-            <Sidebar onClose={() => setSidebarOpen(false)} />
+            <Sidebar
+              onClose={() => setSidebarOpen(false)}
+              onOpenSettings={() => { setSidebarOpen(false); setSettingsOpen(true) }}
+            />
           </aside>
         </div>
       )}
@@ -35,11 +45,11 @@ export default function Layout({ children }) {
           >
             <Menu size={20} />
           </button>
-          <span className="font-semibold text-white text-sm">RAFIX</span>
+          <span className="font-semibold text-white text-sm">{businessName}</span>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto scrollbar-thin">
+        <main className="flex-1 overflow-y-auto scrollbar-thin bg-slate-950">
           {children}
         </main>
       </div>
