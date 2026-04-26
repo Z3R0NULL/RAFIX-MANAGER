@@ -492,7 +492,7 @@ export default function SuppliersPage() {
   const [modal, setModal]           = useState(null)
   const [confirmDel, setConfirmDel] = useState(null)
   const [expanded, setExpanded]     = useState(null)
-  const [viewMode, setViewMode]     = useState(() => localStorage.getItem('suppliersView') || 'table')
+  const [viewMode, setViewMode]     = useState(() => localStorage.getItem('suppliersView') || (window.innerWidth < 768 ? 'grid' : 'table'))
   const [sort, setSort]             = useState('fav_first')
   const [sortOpen, setSortOpen]     = useState(false)
 
@@ -636,13 +636,13 @@ export default function SuppliersPage() {
 
           {/* View + Sort */}
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex-shrink-0">
-            <button onClick={() => setViewMode('table')} title="Vista lista"
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
-              <List size={14} />
-            </button>
             <button onClick={() => setViewMode('grid')} title="Vista cuadrícula"
               className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
               <LayoutGrid size={14} />
+            </button>
+            <button onClick={() => setViewMode('table')} title="Vista lista"
+              className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
+              <List size={14} />
             </button>
             <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
             <div className="relative" data-sort-dropdown>

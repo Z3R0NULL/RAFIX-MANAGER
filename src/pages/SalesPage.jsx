@@ -57,7 +57,7 @@ export default function SalesPage() {
 
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [view, setView]             = useState(() => localStorage.getItem('salesView') || 'list')
+  const [view, setView]             = useState(() => localStorage.getItem('salesView') || (window.innerWidth < 768 ? 'grid' : 'list'))
   const [sort, setSort]             = useState('newest')
   const [sortOpen, setSortOpen]     = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)

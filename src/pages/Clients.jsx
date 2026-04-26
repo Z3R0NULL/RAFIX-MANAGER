@@ -183,7 +183,7 @@ export default function Clients() {
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(null) // null | 'new' | client object
   const [confirmDelete, setConfirmDelete] = useState(null)
-  const [view, setView] = useState(() => localStorage.getItem('clientsView') || 'grid')
+  const [view, setView] = useState(() => localStorage.getItem('clientsView') || (window.innerWidth < 768 ? 'grid' : 'grid'))
   const [sort, setSort] = useState('name_az')
   const [sortOpen, setSortOpen] = useState(false)
 

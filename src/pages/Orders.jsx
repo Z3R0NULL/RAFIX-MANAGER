@@ -64,7 +64,7 @@ export default function Orders() {
   const [clientFilter, setClientFilter] = useState(() => getClientFilter(location.search))
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [view, setView] = useState(() => localStorage.getItem('ordersView') || 'list')
+  const [view, setView] = useState(() => localStorage.getItem('ordersView') || (window.innerWidth < 768 ? 'grid' : 'list'))
   const [sort, setSort] = useState('newest')
   const [sortOpen, setSortOpen] = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)

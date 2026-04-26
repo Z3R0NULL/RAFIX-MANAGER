@@ -322,7 +322,7 @@ export default function ServicesPage() {
   const [showInactive, setShowInactive] = useState(false)
   const [modal, setModal]         = useState(null) // null | 'new' | service object
   const [toDelete, setToDelete]   = useState(null)
-  const [viewMode, setViewMode]   = useState(() => localStorage.getItem('servicesView') || 'table')
+  const [viewMode, setViewMode]   = useState(() => localStorage.getItem('servicesView') || (window.innerWidth < 768 ? 'grid' : 'table'))
   const [sort, setSort]           = useState('name_az')
   const [sortOpen, setSortOpen]   = useState(false)
 
@@ -453,18 +453,18 @@ export default function ServicesPage() {
         {/* View + Sort */}
         <div className="flex items-center gap-1.5 bg-slate-800 rounded-xl p-1 flex-shrink-0">
           <button
-            onClick={() => setViewMode('table')}
-            title="Vista lista"
-            className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}
-          >
-            <List size={14} />
-          </button>
-          <button
             onClick={() => setViewMode('grid')}
             title="Vista cuadrícula"
             className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}
           >
             <LayoutGrid size={14} />
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            title="Vista lista"
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-300'}`}
+          >
+            <List size={14} />
           </button>
           <div className="w-px h-5 bg-slate-700 mx-0.5" />
           <div className="relative" data-sort-dropdown>
@@ -554,7 +554,7 @@ export default function ServicesPage() {
                 <p className="text-xs text-slate-400 truncate border-t border-slate-800 pt-2">{svc.description}</p>
               )}
               {/* Actions */}
-              <div className="flex gap-2 pt-1 border-t border-slate-800 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex gap-2 pt-1 border-t border-slate-800">
                 <button onClick={() => setModal(svc)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-indigo-400 hover:bg-indigo-900/20 transition-colors">
                   <Pencil size={12} /> Editar
@@ -649,7 +649,7 @@ export default function ServicesPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
+                    <div className="flex items-center gap-1 justify-end">
                       <button
                         onClick={() => setModal(svc)}
                         className="p-1.5 rounded-md text-slate-400 hover:text-indigo-400 hover:bg-indigo-900/20 transition-colors"

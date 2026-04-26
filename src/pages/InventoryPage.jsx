@@ -294,7 +294,7 @@ export default function InventoryPage() {
   const [filterCat, setFilterCat] = useState('all')
   const [modal, setModal]         = useState(null)   // null | 'new' | item object
   const [confirmDel, setConfirmDel] = useState(null) // item id
-  const [viewMode, setViewMode]   = useState(() => localStorage.getItem('inventoryView') || 'table') // 'table' | 'grid'
+  const [viewMode, setViewMode]   = useState(() => localStorage.getItem('inventoryView') || (window.innerWidth < 768 ? 'grid' : 'table')) // 'table' | 'grid'
   const [sort, setSort]           = useState('name_az')
   const [sortOpen, setSortOpen]   = useState(false)
 
@@ -419,18 +419,18 @@ export default function InventoryPage() {
         {/* View + Sort */}
         <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex-shrink-0">
           <button
-            onClick={() => setViewMode('table')}
-            title="Vista lista"
-            className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-          >
-            <List size={14} />
-          </button>
-          <button
             onClick={() => setViewMode('grid')}
             title="Vista cuadrícula"
             className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
             <LayoutGrid size={14} />
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            title="Vista lista"
+            className={`p-2 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+          >
+            <List size={14} />
           </button>
           <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
           <div className="relative" data-sort-dropdown>
