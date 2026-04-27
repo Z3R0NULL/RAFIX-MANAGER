@@ -535,6 +535,16 @@ export default function Clients() {
             const saleCount = getSaleCount(client)
             const totalSpent = getTotalSpent(client)
             const clientStatus = getClientStatus(client)
+            const AVATAR_COLORS = [
+              'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300',
+              'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300',
+              'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300',
+              'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300',
+              'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300',
+              'bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300',
+            ]
+            const avatarColor = AVATAR_COLORS[(client.name?.charCodeAt(0) || 0) % AVATAR_COLORS.length]
+            const initials = (client.name || '?').trim().split(/\s+/).slice(0, 2).map((w) => w[0].toUpperCase()).join('')
             return (
               <div
                 key={client.id}
@@ -542,22 +552,28 @@ export default function Clients() {
               >
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-slate-900 dark:text-white truncate">{client.name || '—'}</p>
-                      {clientStatus && (
-                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-medium ${clientStatus.bg} ${clientStatus.text}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${clientStatus.dot}`} />
-                          {clientStatus.label}
-                        </span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Avatar */}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 ${avatarColor}`}>
+                      {initials}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-slate-900 dark:text-white truncate">{client.name || '—'}</p>
+                        {clientStatus && (
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-medium ${clientStatus.bg} ${clientStatus.text}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${clientStatus.dot}`} />
+                            {clientStatus.label}
+                          </span>
+                        )}
+                      </div>
+                      {client.dni && (
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <CreditCard size={12} className="text-slate-400 flex-shrink-0" />
+                          <span className="text-xs text-slate-500 dark:text-slate-400">{client.dni}</span>
+                        </div>
                       )}
                     </div>
-                    {client.dni && (
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <CreditCard size={12} className="text-slate-400 flex-shrink-0" />
-                        <span className="text-xs text-slate-500 dark:text-slate-400">{client.dni}</span>
-                      </div>
-                    )}
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button

@@ -20,7 +20,7 @@ export default function NewOrder() {
 
   const handleSubmit = (data) => {
     const order = createOrder(data)
-    navigate(`/orders/${order.id}`)
+    navigate(`/orders/${order.id}`, { replace: true })
   }
 
   return (

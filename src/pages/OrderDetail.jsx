@@ -14,7 +14,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, Edit3, Printer, ExternalLink, CheckCircle2, XCircle, MinusCircle,
-  Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2,
+  Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2, CheckSquare,
   RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2, Mail, ChevronDown,
   Package, Wrench,
 } from 'lucide-react'
@@ -500,7 +500,7 @@ export default function OrderDetail() {
             </div>
             <InfoRow label="Nombre completo" value={order.customerName} />
             <InfoRow label="DNI" value={order.customerDni} />
-            <InfoRow label="Teléfono (WhatsApp)" value={order.customerPhone} />
+            <InfoRow label="Teléfono" value={order.customerPhone} />
             <InfoRow label="Email" value={order.customerEmail} />
             <InfoRow label="Dirección" value={order.customerAddress} />
           </div>
@@ -509,13 +509,12 @@ export default function OrderDetail() {
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
             <div className="flex items-center gap-2 mb-4">
               <Smartphone size={14} className="text-indigo-500" />
-              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Device</h2>
+              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Dispositivo</h2>
             </div>
-            <InfoRow label="Type" value={deviceTypeLabel} />
-            <InfoRow label="Brand" value={order.deviceBrand} />
-            <InfoRow label="Model" value={order.deviceModel} />
-            <InfoRow label="Serial / IMEI" value={order.deviceSerial} />
-            <InfoRow label="Associated Email" value={order.deviceEmail} />
+            <InfoRow label="Tipo" value={deviceTypeLabel} />
+            <InfoRow label="Marca" value={order.deviceBrand} />
+            <InfoRow label="Modelo" value={order.deviceModel} />
+            <InfoRow label="ID" value={order.deviceSerial} />
             <div className="py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
               <span className="text-xs text-slate-400 dark:text-slate-500 block mb-1.5">Accessories</span>
               {order.accessories?.length > 0 ? (
@@ -536,10 +535,10 @@ export default function OrderDetail() {
               <Shield size={14} className="text-indigo-500" />
               <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Seguridad</h2>
             </div>
-            <InfoRow label="Contraseña / PIN" value={order.devicePassword} />
+            <InfoRow label="Contraseña" value={order.devicePassword} />
             {order.devicePattern?.length > 0 && (
-              <div className="py-2.5 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-xs text-slate-400 dark:text-slate-500 block mb-2">Patrón de desbloqueo</span>
+              <div className="py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                <span className="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0 w-28">Patrón</span>
                 <PatternInput value={order.devicePattern} readOnly />
               </div>
             )}
@@ -550,7 +549,7 @@ export default function OrderDetail() {
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
             <div className="flex items-center gap-2 mb-4">
               <Activity size={14} className="text-indigo-500" />
-              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Diagnosis</h2>
+              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Diagnostico</h2>
             </div>
             <div className="space-y-3">
               <div>
@@ -590,7 +589,10 @@ export default function OrderDetail() {
 
           {/* Technical Checklist */}
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
-            <h2 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Technical Checklist</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <CheckSquare size={14} className="text-indigo-500" />
+              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Chequeo Técnico</h2>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
                 { key: 'powersOn', label: 'Powers On' },
@@ -613,57 +615,13 @@ export default function OrderDetail() {
         <div className="space-y-5">
           {/* Budget */}
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <DollarSign size={14} className="text-indigo-500" />
-                <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Budget</h2>
+                <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Presupuesto</h2>
               </div>
               <BudgetBadge status={order.budgetStatus} />
             </div>
-            {/* Itemized budget list */}
-            {order.budgetItems?.length > 0 && (
-              <div className="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
-                  Ítems del presupuesto
-                </p>
-                <div className="rounded-lg border border-slate-100 dark:border-slate-800 overflow-hidden">
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {order.budgetItems.map((it) => (
-                      <div key={it.id} className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900/60">
-                        <span className="flex-shrink-0">
-                          {it.type === 'service'   && <Wrench   size={11} className="text-indigo-400" />}
-                          {it.type === 'inventory' && <Package  size={11} className="text-emerald-400" />}
-                          {it.type === 'custom'    && <DollarSign size={11} className="text-amber-400" />}
-                        </span>
-                        <span className="flex-1 text-xs text-slate-700 dark:text-slate-300 truncate">{it.name}</span>
-                        {it.isPercent ? (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-semibold flex-shrink-0">
-                            {it.percentValue}% del repuesto
-                          </span>
-                        ) : (
-                          <>
-                            <span className="text-xs text-slate-400 flex-shrink-0">{it.qty} ×</span>
-                            <span className="text-xs text-slate-500 flex-shrink-0">{fmt(it.unitPrice)}</span>
-                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex-shrink-0 w-16 text-right">
-                              {fmt((Number(it.qty) || 0) * (Number(it.unitPrice) || 0))}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-center px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-700">
-                    <span className="text-xs text-slate-500 font-medium">
-                      Total ({order.budgetItems.length} ítem{order.budgetItems.length !== 1 ? 's' : ''})
-                    </span>
-                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                      {fmt(order.budgetItems.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0))}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
             <div className="space-y-3">
               {/* Precio final — protagonista */}
               <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -696,8 +654,8 @@ export default function OrderDetail() {
                 return (
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-500">Ganancia</span>
-                    <span className={`text-sm font-bold ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
-                      {isPositive ? '+' : ''}{fmt(profit)}
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      {fmt(profit)}
                     </span>
                   </div>
                 )
@@ -710,7 +668,7 @@ export default function OrderDetail() {
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
             <div className="flex items-center gap-2 mb-4">
               <Clock size={14} className="text-indigo-500" />
-              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Dates</h2>
+              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Fechas</h2>
             </div>
             <div className="grid grid-cols-1 divide-y divide-slate-100 dark:divide-slate-800">
               {[
@@ -727,19 +685,63 @@ export default function OrderDetail() {
           </div>
 
           {/* Work Done */}
-          {order.workDone && (
+          {(order.workDone || order.budgetItems?.length > 0) && (
             <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
               <div className="flex items-center gap-2 mb-3">
                 <FileText size={14} className="text-indigo-500" />
-                <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Work Performed</h2>
+                <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Trabajo realizado</h2>
               </div>
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.workDone}</p>
+              {order.workDone && (
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed mb-4">{order.workDone}</p>
+              )}
+              {order.budgetItems?.length > 0 && (
+                <div className={order.workDone ? 'border-t border-slate-100 dark:border-slate-800 pt-4' : ''}>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                    Items de la reparacion
+                  </p>
+                  <div className="rounded-lg border border-slate-100 dark:border-slate-800 overflow-hidden">
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {order.budgetItems.map((it) => (
+                        <div key={it.id} className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900/60">
+                          <span className="flex-shrink-0">
+                            {it.type === 'service'   && <Wrench   size={11} className="text-indigo-400" />}
+                            {it.type === 'inventory' && <Package  size={11} className="text-emerald-400" />}
+                            {it.type === 'custom'    && <DollarSign size={11} className="text-amber-400" />}
+                          </span>
+                          <span className="flex-1 text-xs text-slate-700 dark:text-slate-300 truncate">{it.name}</span>
+                          {it.isPercent ? (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-semibold flex-shrink-0">
+                              {it.percentValue}% del repuesto
+                            </span>
+                          ) : (
+                            <>
+                              <span className="text-xs text-slate-400 flex-shrink-0">{it.qty} ×</span>
+                              <span className="text-xs text-slate-500 flex-shrink-0">{fmt(it.unitPrice)}</span>
+                              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex-shrink-0 w-16 text-right">
+                                {fmt((Number(it.qty) || 0) * (Number(it.unitPrice) || 0))}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between items-center px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-700">
+                      <span className="text-xs text-slate-500 font-medium">
+                        Total ({order.budgetItems.length} ítem{order.budgetItems.length !== 1 ? 's' : ''})
+                      </span>
+                      <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                        {fmt(order.budgetItems.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Status Timeline */}
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
-            <h2 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Status History</h2>
+            <h2 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Historial de estado</h2>
             <div className="relative">
               <div className="absolute left-3.5 top-0 bottom-0 w-px bg-slate-200 dark:bg-slate-700" />
               <div className="space-y-4">

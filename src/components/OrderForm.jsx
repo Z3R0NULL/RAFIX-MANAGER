@@ -972,7 +972,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                 readOnly={clientReadOnly}
               />
             </Field>
-            <Field label="Teléfono (WhatsApp)">
+            <Field label="Teléfono">
               <input
                 className={`${inputClass} ${clientReadOnly ? 'opacity-70 cursor-default' : ''}`}
                 type="tel"
@@ -993,7 +993,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
               />
             </Field>
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Dirección (opcional)</label>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Dirección</label>
               <input
                 className={`${inputClass} ${clientReadOnly ? 'opacity-70 cursor-default' : ''}`}
                 value={form.customerAddress}
@@ -1043,7 +1043,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             />
           </Field>
 
-          <Field label="Número de serie / IMEI">
+          <Field label="ID">
             <input className={inputClass} value={form.deviceSerial} onChange={(e) => set('deviceSerial', e.target.value)} placeholder="SN o IMEI" />
           </Field>
 
@@ -1072,7 +1072,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
       {/* ── Seguridad ── */}
       <Section title="Seguridad / Bloqueo" icon={Shield} defaultOpen={false}>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Contraseña / PIN">
+          <Field label="Contraseña">
             <input
               className={inputClass}
               value={form.devicePassword}
@@ -1083,7 +1083,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
           <div className="col-span-2 sm:col-span-1">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
-              Patrón de desbloqueo
+              Patrón
             </label>
             <PatternInput
               value={form.devicePattern}

@@ -7,7 +7,6 @@ import {
   Eye,
   ShoppingCart,
   Package,
-  User,
   ArrowUpDown,
   LayoutList,
   LayoutGrid,
@@ -284,7 +283,18 @@ export default function SalesPage() {
       ) : (
         /* GRID VIEW */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {sorted.map((sale) => (
+          {sorted.map((sale) => {
+            const AVATAR_COLORS = [
+              'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300',
+              'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300',
+              'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300',
+              'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300',
+              'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300',
+              'bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300',
+            ]
+            const avatarColor = AVATAR_COLORS[(sale.customerName?.charCodeAt(0) || 0) % AVATAR_COLORS.length]
+            const initials = (sale.customerName || '?').trim().split(/\s+/).slice(0, 2).map((w) => w[0].toUpperCase()).join('')
+            return (
             <Link
               key={sale.id}
               to={`/sales/${sale.id}`}
@@ -296,8 +306,8 @@ export default function SalesPage() {
               </div>
 
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                  <User size={14} className="text-emerald-500" />
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xs ${avatarColor}`}>
+                  {initials}
                 </div>
                 <div className="min-w-0">
                   <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{sale.customerName || '—'}</p>
@@ -317,7 +327,8 @@ export default function SalesPage() {
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{fmt(sale.total)}</span>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
       )}
 

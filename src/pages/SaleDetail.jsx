@@ -7,10 +7,9 @@ import {
   FileText,
   Trash2,
   ShoppingCart,
-  Calendar,
-  Hash,
   Edit3,
   Check,
+  X,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { formatDate } from '../utils/constants'
@@ -39,26 +38,19 @@ function EditSaleModal({ sale, onSave, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-sm shadow-2xl">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Editar venta</h3>
             <p className="text-xs text-slate-400 mt-0.5 font-mono">{sale.saleNumber}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            <ArrowLeft size={15} />
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <X size={15} />
           </button>
         </div>
 
         <div className="p-5 space-y-4">
-          {/* Estado */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
-              Estado
-            </label>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Estado</label>
             <div className="grid grid-cols-3 gap-2">
               {Object.entries(SALE_STATUS_CONFIG).map(([key, cfg]) => (
                 <button
@@ -83,11 +75,8 @@ function EditSaleModal({ sale, onSave, onClose }) {
             </div>
           </div>
 
-          {/* Notas */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
-              Notas
-            </label>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Notas</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -98,7 +87,6 @@ function EditSaleModal({ sale, onSave, onClose }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex gap-3 px-5 pb-5">
           <button
             onClick={onClose}
@@ -134,10 +122,7 @@ export default function SaleDetail() {
       <div className="p-6 max-w-3xl mx-auto flex flex-col items-center justify-center py-24 text-slate-400">
         <ShoppingCart size={40} className="mb-3 opacity-40" />
         <p className="font-medium text-slate-500 dark:text-slate-400">Venta no encontrada</p>
-        <button
-          onClick={() => navigate('/sales')}
-          className="mt-4 text-sm text-emerald-600 hover:underline"
-        >
+        <button onClick={() => navigate('/sales')} className="mt-4 text-sm text-emerald-600 hover:underline">
           Volver a ventas
         </button>
       </div>
@@ -145,9 +130,11 @@ export default function SaleDetail() {
   }
 
   const subtotal = (sale.items || []).reduce((a, i) => a + (i.price || 0) * (i.qty || 1), 0)
-  const costos   = (sale.items || []).reduce((a, i) => a + (i.cost || 0) * (i.qty || 1), 0)
+  const costos   = (sale.items || []).reduce((a, i) => a + (i.cost  || 0) * (i.qty || 1), 0)
   const total    = sale.total ?? subtotal
   const ganancia = total - costos
+
+  const hasClientData = sale.customerName || sale.customerPhone || sale.customerDni || sale.customerEmail || sale.customerAddress
 
   function handleDelete() {
     deleteSale(sale.id)
@@ -159,40 +146,33 @@ export default function SaleDetail() {
     setEditing(false)
   }
 
-  const hasClientData = sale.customerName || sale.customerPhone || sale.customerDni || sale.customerEmail || sale.customerAddress
-
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-5">
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate('/sales')}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">
-              {sale.saleNumber}
-            </h1>
-            <SaleBadge status={sale.status} />
-          </div>
-          <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-400">
-            <span className="flex items-center gap-1">
-              <Calendar size={11} />
-              {sale.createdAt ? formatDate(sale.createdAt) : '—'}
-            </span>
-            {sale.createdBy && (
-              <span className="flex items-center gap-1">
-                <Hash size={11} />
-                {sale.createdBy}
-              </span>
-            )}
+      {/* Header — same structure as OrderDetail */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white font-mono">{sale.saleNumber}</h1>
+                <SaleBadge status={sale.status} />
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                {sale.customerName || '—'} · {formatDate(sale.createdAt)}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+
+        {/* Action buttons row */}
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setDeleteConfirm(true)}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-red-200 dark:border-red-800 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -207,24 +187,6 @@ export default function SaleDetail() {
             <Edit3 size={14} />
             Editar
           </button>
-        </div>
-      </div>
-
-      {/* Resumen rápido (3 tarjetas) */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
-          <p className="text-xs text-slate-400 mb-1">Total venta</p>
-          <p className="text-xl font-bold text-blue-500 dark:text-blue-400">{fmt(total)}</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
-          <p className="text-xs text-slate-400 mb-1">Costo</p>
-          <p className="text-xl font-bold text-slate-500 dark:text-slate-400">{fmt(costos)}</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4">
-          <p className="text-xs text-slate-400 mb-1">Ganancia</p>
-          <p className={`text-xl font-bold ${ganancia >= 0 ? 'text-emerald-500' : 'text-red-400'}`}>
-            {fmt(ganancia)}
-          </p>
         </div>
       </div>
 
@@ -259,11 +221,21 @@ export default function SaleDetail() {
           )}
         </div>
 
-        {/* Footer total */}
+        {/* Footer con desglose financiero */}
         {(sale.items || []).length > 0 && (
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 rounded-b-xl">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total</span>
-            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{fmt(total)}</span>
+          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 rounded-b-xl space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-500">Costo</span>
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{fmt(costos)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-500">Ganancia</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(ganancia)}</span>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total</span>
+              <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{fmt(total)}</span>
+            </div>
           </div>
         )}
       </section>
@@ -304,11 +276,7 @@ export default function SaleDetail() {
 
       {/* Edit modal */}
       {editing && (
-        <EditSaleModal
-          sale={sale}
-          onSave={handleSave}
-          onClose={() => setEditing(false)}
-        />
+        <EditSaleModal sale={sale} onSave={handleSave} onClose={() => setEditing(false)} />
       )}
 
       {/* Delete confirm modal */}

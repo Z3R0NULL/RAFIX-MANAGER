@@ -15,10 +15,26 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+// Plugin to inject permissive iframe headers on every response,
+// including the HTML document served by Vite's dev middleware.
+function frameHeadersPlugin() {
+  return {
+    name: 'frame-headers',
+    configureServer(server) {
+      server.middlewares.use((_req, res, next) => {
+        res.setHeader('X-Frame-Options', 'ALLOWALL')
+        res.setHeader('Content-Security-Policy', "frame-ancestors *")
+        next()
+      })
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    frameHeadersPlugin(),
   ],
   resolve: {
     dedupe: ['react', 'react-dom'],
