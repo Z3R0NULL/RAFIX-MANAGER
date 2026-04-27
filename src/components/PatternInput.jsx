@@ -219,8 +219,8 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
                     fill={active ? dotActive : dotInactive}
                     className="transition-colors duration-100"
                   />
-                  {/* Número de orden (edición) */}
-                  {active && !readOnly && (
+                  {/* Número de orden (edición y readOnly) */}
+                  {active && (
                     <text
                       x={pos.x} y={pos.y + 0.8}
                       textAnchor="middle"
@@ -231,34 +231,6 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
                       style={{ userSelect: 'none', pointerEvents: 'none' }}
                     >
                       {stepIndex + 1}
-                    </text>
-                  )}
-                  {/* Indicador INICIO en readOnly */}
-                  {isFirst && readOnly && (
-                    <text
-                      x={pos.x} y={pos.y - 11}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize="3.8"
-                      fill={dotActive}
-                      fontWeight="700"
-                      style={{ userSelect: 'none', pointerEvents: 'none' }}
-                    >
-                      INICIO
-                    </text>
-                  )}
-                  {/* Indicador FIN en readOnly */}
-                  {isLast && readOnly && (
-                    <text
-                      x={pos.x} y={pos.y + 13}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize="3.8"
-                      fill="#94a3b8"
-                      fontWeight="600"
-                      style={{ userSelect: 'none', pointerEvents: 'none' }}
-                    >
-                      FIN
                     </text>
                   )}
                 </g>

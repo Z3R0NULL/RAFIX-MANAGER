@@ -3,138 +3,42 @@
 > vite --host 0.0.0.0 --port 3000
 
 
-  VITE v8.0.8  ready in 246 ms
+  VITE v8.0.8  ready in 280 ms
 
   ➜  Local:   http://localhost:3000/
-  ➜  Network: http://172.20.0.17:3000/
-12:43:18 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-12:47:50 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-12:47:58 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-12:48:41 AM [vite] (client) [Unhandled error] ReferenceError: Cannot access 'getTotalSpent' before initialization
- > src/pages/Clients.jsx:222:28
-    220 |          case 'orders_desc': return getOrderCount(b) - getOrderCount(a)
-    221 |          case 'orders_asc':  return getOrderCount(a) - getOrderCount(b)
-    222 |          case 'spent_desc':  return getTotalSpent(b) - getTotalSpent(a)
-        |                              ^
-    223 |          case 'spent_asc':   return getTotalSpent(a) - getTotalSpent(b)
-    224 |          default:           return (a.name || '').localeCompare(b.name || '')
- > src/pages/Clients.jsx:217:16
- > updateMemo node_modules/react-dom/cjs/react-dom-client.development.js:8795:18
- > Object.useMemo node_modules/react-dom/cjs/react-dom-client.development.js:26484:17
- > exports.useMemo node_modules/react/cjs/react.development.js:1251:33
- > Clients src/pages/Clients.jsx:205:19
+  ➜  Network: http://172.20.0.14:3000/
+1:32:39 AM [vite] (client) page reload src/store/useStore.js
+1:39:29 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
+1:52:17 AM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
+1:56:16 AM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
+1:56:25 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
+1:56:33 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
+1:56:40 AM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+1:56:47 AM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+2:03:31 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
+2:03:35 AM [vite] (client) [Unhandled error] ReferenceError: inventory is not defined
+ > src/pages/SaleDetail.jsx:150:27
+    148 |    const costos   = (sale.items || []).reduce((a, i) => {
+    149 |      // fallback: si el item guardado no tiene costo, buscarlo en inventario actual
+    150 |      const cost = i.cost || inventory.find((inv) => inv.id === i.id)?.costPrice || 0
+        |                             ^
+    151 |      return a + cost * (i.qty || 1)
+    152 |    }, 0)
+ > SaleDetail src/pages/SaleDetail.jsx:148:38
  > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
  > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
  > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
 
-12:48:41 AM [vite] (client) [console.warn] An error occurred in the <Clients> component.
+2:03:35 AM [vite] (client) [console.warn] An error occurred in the <SaleDetail> component.
 
 Consider adding an error boundary to your tree to customize error handling behavior.
 Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
 
-12:52:45 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
-12:55:53 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-12:56:18 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-12:56:37 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:01:46 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:01:47 AM [vite] Internal server error: Transform failed with 1 error:
-
-[31m[PARSE_ERROR] Error:[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
-     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Clients.jsx:657:1 [38;5;246m][0m
-     [38;5;246m│[0m
- [38;5;246m657 │[0m [38;5;249m}[0m
- [38;5;240m    │[0m │ 
- [38;5;240m    │[0m ╰─ 
-[38;5;246m─────╯[0m
-
-  Plugin: vite:oxc
-  File: /home/user/app/src/pages/Clients.jsx
-      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
-      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
-      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
-      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
-      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
-1:01:47 AM [vite] Internal server error: Transform failed with 1 error:
-
-[31m[PARSE_ERROR] Error:[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
-     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Clients.jsx:657:1 [38;5;246m][0m
-     [38;5;246m│[0m
- [38;5;246m657 │[0m [38;5;249m}[0m
- [38;5;240m    │[0m │ 
- [38;5;240m    │[0m ╰─ 
-[38;5;246m─────╯[0m
-
-  Plugin: vite:oxc
-  File: /home/user/app/src/pages/Clients.jsx
-      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
-      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
-      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
-      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
-      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
-1:01:47 AM [vite] (client) [console.error] [vite] Failed to reload /src/pages/Clients.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
-1:01:47 AM [vite] (client) [console.error] [vite] Failed to reload /src/pages/Clients.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
-1:01:53 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:01:54 AM [vite] Internal server error: Transform failed with 1 error:
-
-[31m[PARSE_ERROR] Error:[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
-     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Clients.jsx:657:1 [38;5;246m][0m
-     [38;5;246m│[0m
- [38;5;246m657 │[0m [38;5;249m}[0m
- [38;5;240m    │[0m │ 
- [38;5;240m    │[0m ╰─ 
-[38;5;246m─────╯[0m
-
-  Plugin: vite:oxc
-  File: /home/user/app/src/pages/Clients.jsx
-      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
-      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
-      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
-      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
-      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
-1:01:54 AM [vite] Internal server error: Transform failed with 1 error:
-
-[31m[PARSE_ERROR] Error:[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
-     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Clients.jsx:657:1 [38;5;246m][0m
-     [38;5;246m│[0m
- [38;5;246m657 │[0m [38;5;249m}[0m
- [38;5;240m    │[0m │ 
- [38;5;240m    │[0m ╰─ 
-[38;5;246m─────╯[0m
-
-  Plugin: vite:oxc
-  File: /home/user/app/src/pages/Clients.jsx
-      at transformWithOxc (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3745:19)
-      at TransformPluginContext.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:3813:26)
-      at EnvironmentPluginContainer.transform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:30143:51)
-      at async loadAndTransform (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24468:26)
-      at async viteTransformMiddleware (file:///home/user/app/node_modules/vite/dist/node/chunks/node.js:24262:20)
-1:01:54 AM [vite] (client) [console.error] [vite] Failed to reload /src/pages/Clients.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
-1:01:54 AM [vite] (client) [console.error] [vite] Failed to reload /src/pages/Clients.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
-1:02:06 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:03:31 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:03:37 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:03:46 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:04:55 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:05:03 AM [vite] (client) hmr update /src/pages/Clients.jsx, /src/index.css
-1:06:41 AM [vite] (client) [Unhandled error] ReferenceError: Cannot access 'getOrderCount' before initialization
- > src/pages/Clients.jsx:226:26
-    224 |        // activity filter
-    225 |        if (activityFilter) {
-    226 |          const hasOrders = getOrderCount(c) > 0
-        |                            ^
-    227 |          const hasSales  = getSaleCount(c) > 0
-    228 |          if (activityFilter === 'orders' && !(hasOrders && !hasSales)) return false
- > src/pages/Clients.jsx:213:25
- > updateMemo node_modules/react-dom/cjs/react-dom-client.development.js:8795:18
- > Object.useMemo node_modules/react-dom/cjs/react-dom-client.development.js:26484:17
- > exports.useMemo node_modules/react/cjs/react.development.js:1251:33
- > Clients src/pages/Clients.jsx:212:19
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
-
-1:06:41 AM [vite] (client) [console.warn] An error occurred in the <Clients> component.
-
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
-
+2:03:38 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
+2:03:44 AM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+2:03:50 AM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
+2:17:08 AM [vite] (client) hmr update /src/index.css, /src/components/PatternInput.jsx

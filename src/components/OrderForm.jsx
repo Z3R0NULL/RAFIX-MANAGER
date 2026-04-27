@@ -616,7 +616,20 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
   const inventory = useStore((s) => s.inventory)
   const services  = useStore((s) => s.services)
   // null = buscando / sin selección | { id, ... } = cliente seleccionado de la DB
-  const [selectedClient, setSelectedClient] = useState(null)
+  // Al editar una orden existente con datos de cliente, pre-poblamos el chip
+  const [selectedClient, setSelectedClient] = useState(() => {
+    if (initialData?.customerName) {
+      return {
+        id: initialData.customerId || null,
+        name: initialData.customerName || '',
+        dni: initialData.customerDni || '',
+        phone: initialData.customerPhone || '',
+        email: initialData.customerEmail || '',
+        address: initialData.customerAddress || '',
+      }
+    }
+    return null
+  })
   // true = campos de cliente en modo edición (solo lectura por defecto si hay cliente seleccionado)
   const [clientEditing, setClientEditing] = useState(false)
 

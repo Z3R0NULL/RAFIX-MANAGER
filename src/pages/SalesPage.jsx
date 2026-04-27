@@ -94,7 +94,7 @@ export default function SalesPage() {
   const pagadas       = sales.filter((s) => s.status === 'paid').length
   const ingresos      = sales.filter((s) => s.status === 'paid').reduce((a, s) => a + (s.total || 0), 0)
   const costos        = sales.filter((s) => s.status === 'paid').reduce((a, s) =>
-    a + (s.items || []).reduce((b, i) => b + (i.cost || 0) * i.qty, 0), 0)
+    a + (s.items || []).reduce((b, i) => b + (i.cost || 0) * (i.qty || 1), 0), 0)
   const ganancia      = ingresos - costos
 
   if (dataLoading) return <PageLoader rows={6} title="Cargando ventas..." />

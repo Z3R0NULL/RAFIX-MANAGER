@@ -133,8 +133,8 @@ export default function NewSale() {
       return [...prev, {
         id:         item.id,
         name:       item.name,
-        price:      item.price  || 0,
-        cost:       item.cost   || 0,
+        price:      item.salePrice || item.price || 0,
+        cost:       item.costPrice || item.cost  || 0,
         stock:      item.stock  || 0,
         qty:        1,
         identifier: '',

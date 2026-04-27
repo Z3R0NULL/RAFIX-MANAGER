@@ -145,7 +145,7 @@ export default function SaleDetail() {
   }
 
   const subtotal = (sale.items || []).reduce((a, i) => a + (i.price || 0) * (i.qty || 1), 0)
-  const costos   = (sale.items || []).reduce((a, i) => a + (i.cost  || 0) * (i.qty || 1), 0)
+  const costos   = (sale.items || []).reduce((a, i) => a + (i.cost || 0) * (i.qty || 1), 0)
   const total    = sale.total ?? subtotal
   const ganancia = total - costos
 

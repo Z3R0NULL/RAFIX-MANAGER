@@ -865,6 +865,32 @@ export const useStore = create(
       },
 
       // ── Orders ─────────────────────────────────────────────────────
+      // ── Inventory stock adjustment helpers for orders ──────────────
+      _adjustInventoryForBudgetItems: (prevItems = [], nextItems = [], username) => {
+        // Build a map of net qty change per inventory sourceId
+        const delta = {}
+        for (const it of prevItems) {
+          if (it.type === 'inventory' && it.sourceId) {
+            delta[it.sourceId] = (delta[it.sourceId] || 0) + (Number(it.qty) || 1)
+          }
+        }
+        for (const it of nextItems) {
+          if (it.type === 'inventory' && it.sourceId) {
+            delta[it.sourceId] = (delta[it.sourceId] || 0) - (Number(it.qty) || 1)
+          }
+        }
+        // Apply deltas: negative delta means more units consumed → deduct stock
+        const { inventory } = get()
+        const updatedInventory = inventory.map((item) => {
+          if (!(item.id in delta) || delta[item.id] === 0) return item
+          const newStock = Math.max(0, (item.stock || 0) + delta[item.id])
+          const next = { ...item, stock: newStock, updatedAt: new Date().toISOString() }
+          syncInventoryItemToTurso(next, username)
+          return next
+        })
+        set({ inventory: updatedInventory })
+      },
+
       createOrder: (data) => {
         if (data.customerName) {
           get().upsertClient({
@@ -877,12 +903,13 @@ export const useStore = create(
         }
 
         const { auth } = get()
+        const username = data.createdBy || auth?.username || 'admin'
         const order = {
           ...initialOrder,
           ...data,
           id: Date.now().toString(),
           orderNumber: generateOrderNumber(),
-          createdBy: data.createdBy || auth?.username || 'admin',
+          createdBy: username,
           entryDate: new Date().toISOString(),
           deliveryDate: null,
           statusHistory: [
@@ -895,6 +922,12 @@ export const useStore = create(
         }
         set((s) => ({ orders: [order, ...s.orders] }))
         syncOrderToTurso(order)
+
+        // Deduct inventory stock for any budget items included at creation
+        if (data.budgetItems?.length) {
+          get()._adjustInventoryForBudgetItems([], data.budgetItems, username)
+        }
+
         return order
       },
 
@@ -918,6 +951,18 @@ export const useStore = create(
               return { error: check.reason }
             }
           }
+        }
+
+        // Adjust inventory stock if budgetItems changed
+        if (data.budgetItems !== undefined) {
+          const { auth, orders } = get()
+          const username = auth?.username || 'admin'
+          const currentOrder = orders.find((o) => o.id === id)
+          get()._adjustInventoryForBudgetItems(
+            currentOrder?.budgetItems || [],
+            data.budgetItems,
+            username
+          )
         }
 
         set((s) => ({
