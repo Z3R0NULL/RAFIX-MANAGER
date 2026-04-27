@@ -37,7 +37,7 @@ export default function NewOrder() {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Fill in the customer and device details</p>
         </div>
       </div>
-      <OrderForm initialData={prefill} onSubmit={handleSubmit} submitLabel="Create Order" />
+      <OrderForm initialData={prefill} onSubmit={handleSubmit} submitLabel="Crear Orden" />
     </div>
   )
 }

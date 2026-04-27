@@ -987,6 +987,7 @@ export const useStore = create(
 
       getOrder: (id) => get().orders.find((o) => o.id === id),
       getOrderByNumber: (num) => get().orders.find((o) => o.orderNumber === num),
+      getSaleByNumber: (num) => get().sales.find((s) => s.saleNumber === num),
 
       // ── Sales ──────────────────────────────────────────────────────
       createSale: (data) => {

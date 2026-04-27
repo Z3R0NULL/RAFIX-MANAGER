@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -10,10 +10,21 @@ import {
   Edit3,
   Check,
   X,
+  MessageCircle,
+  Mail,
+  Share2,
+  Link2,
+  Printer,
+  ChevronDown,
+  ExternalLink,
+  QrCode,
+  Copy,
 } from 'lucide-react'
+import QRCode from 'qrcode'
 import { useStore } from '../store/useStore'
 import { formatDate } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
+import { generateSalePDF } from '../utils/pdfGenerator'
 
 const SALE_STATUS_CONFIG = {
   paid:      { label: 'Pagado',    color: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',  dot: 'bg-green-500' },
@@ -109,11 +120,18 @@ function EditSaleModal({ sale, onSave, onClose }) {
 export default function SaleDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { sales, deleteSale, updateSale } = useStore()
+  const { sales, deleteSale, updateSale, settings } = useStore()
   const fmt = useCurrency()
 
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [qrModal, setQrModal] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState('')
+  const contactRef = useRef(null)
+  const shareRef = useRef(null)
 
   const sale = sales.find((s) => s.id === id)
 
@@ -135,6 +153,42 @@ export default function SaleDetail() {
   const ganancia = total - costos
 
   const hasClientData = sale.customerName || sale.customerPhone || sale.customerDni || sale.customerEmail || sale.customerAddress
+
+  const hasWhatsApp = !!sale.customerPhone
+  const hasMail     = !!sale.customerEmail
+  const hasContact  = hasWhatsApp || hasMail
+
+  function openWhatsApp() {
+    const phone = sale.customerPhone?.replace(/\D/g, '')
+    const msg = encodeURIComponent(`Hola ${sale.customerName || ''}, le enviamos el comprobante de su compra ${sale.saleNumber}.`)
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank')
+  }
+
+  function openMail() {
+    const subject = encodeURIComponent(`Comprobante de venta ${sale.saleNumber}`)
+    const body = encodeURIComponent(`Estimado/a ${sale.customerName || ''},\n\nAdjuntamos el comprobante de su compra ${sale.saleNumber}.\n\nGracias por su preferencia.`)
+    window.open(`mailto:${sale.customerEmail}?subject=${subject}&body=${body}`)
+  }
+
+  function buildTrackingUrl() {
+    return `${window.location.origin}/sale-track/${sale.saleNumber}`
+  }
+
+  function copySaleLink() {
+    navigator.clipboard.writeText(buildTrackingUrl()).then(() => {
+      setCopied(true)
+      setShareOpen(false)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  async function openQrModal() {
+    setShareOpen(false)
+    const url = buildTrackingUrl()
+    const dataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2, color: { dark: '#1e2937', light: '#ffffff' } })
+    setQrDataUrl(dataUrl)
+    setQrModal(true)
+  }
 
   function handleDelete() {
     deleteSale(sale.id)
@@ -173,6 +227,91 @@ export default function SaleDetail() {
 
         {/* Action buttons row */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Contactar */}
+          {hasContact && (
+            <div className="relative" ref={contactRef}>
+              <button
+                onClick={() => setContactOpen((o) => !o)}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                <MessageCircle size={14} />
+                Contactar
+                <ChevronDown size={13} className={`transition-transform ${contactOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {contactOpen && (
+                <div className="absolute left-0 mt-1.5 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                  {hasWhatsApp && (
+                    <button
+                      onClick={() => { setContactOpen(false); openWhatsApp() }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0"
+                    >
+                      <MessageCircle size={15} className="text-green-500" />
+                      WhatsApp
+                    </button>
+                  )}
+                  {hasMail && (
+                    <button
+                      onClick={() => { setContactOpen(false); openMail() }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0"
+                    >
+                      <Mail size={15} className="text-indigo-500" />
+                      Mail
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Compartir */}
+          <div className="relative" ref={shareRef}>
+            <button
+              onClick={() => setShareOpen((o) => !o)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              {copied ? <Check size={14} className="text-green-500" /> : <Share2 size={14} />}
+              {copied ? 'Copiado!' : 'Compartir'}
+              <ChevronDown size={13} className={`transition-transform ${shareOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {shareOpen && (
+              <div className="absolute left-0 mt-1.5 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                <button
+                  onClick={openQrModal}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800"
+                >
+                  <QrCode size={15} className="text-emerald-500" />
+                  Código QR
+                </button>
+                <button
+                  onClick={copySaleLink}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <Link2 size={15} className="text-emerald-500" />
+                  Copiar enlace
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Seguimiento */}
+          <button
+            onClick={() => window.open(buildTrackingUrl(), '_blank')}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <ExternalLink size={14} />
+            Seguimiento
+          </button>
+
+          {/* PDF */}
+          <button
+            onClick={() => generateSalePDF(sale, settings)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <Printer size={14} />
+            PDF
+          </button>
+
+          {/* Eliminar */}
           <button
             onClick={() => setDeleteConfirm(true)}
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-red-200 dark:border-red-800 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -180,6 +319,8 @@ export default function SaleDetail() {
             <Trash2 size={14} />
             Eliminar
           </button>
+
+          {/* Editar */}
           <button
             onClick={() => setEditing(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors"

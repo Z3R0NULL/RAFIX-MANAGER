@@ -165,9 +165,10 @@ export default function PatternInput({ value = [], onChange, readOnly = false })
     <div className="flex flex-col items-start gap-3">
       <div className="flex items-center gap-3">
         <div
-          className={`relative w-36 h-36 rounded-xl bg-slate-800 border ${
+          className={`relative rounded-xl bg-slate-800 border ${
             readOnly ? 'border-slate-700' : locked ? 'border-slate-600' : hasPattern ? 'border-indigo-500/50' : 'border-slate-700'
           } ${!readOnly ? (locked ? 'cursor-not-allowed select-none touch-none' : 'cursor-crosshair select-none touch-none') : ''}`}
+          style={{ width: '144px', height: '144px', flexShrink: 0 }}
         >
           <svg
             ref={svgRef}

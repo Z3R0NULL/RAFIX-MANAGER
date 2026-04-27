@@ -418,3 +418,229 @@ export async function generateInvoicePDF(order, settings = {}) {
 
   doc.save(`${order.orderNumber || 'orden'}-servicio.pdf`)
 }
+
+export async function generateSalePDF(sale, settings = {}) {
+  const businessName   = settings.businessName   || 'RAFIX'
+  const businessLogo   = settings.businessLogo   || null
+  const currency       = settings.currency       || 'ARS'
+  const currencyLocale = settings.currencyLocale || 'es-AR'
+
+  const f = (v) => fmt(v, currency, currencyLocale)
+
+  const doc   = new jsPDF({ unit: 'mm', format: 'a4' })
+  const pageW = 210
+  const pageH = 297
+  const ML    = 14
+  const CW    = pageW - ML * 2
+  const font  = 'helvetica'
+
+  const C = {
+    primary:   [16, 185, 129],   // emerald
+    primaryDk: [5,  150, 105],
+    white:     [255, 255, 255],
+    dark:      [30,  41,  59],
+    mid:       [100, 116, 139],
+    light:     [248, 250, 252],
+    border:    [226, 232, 240],
+    accent:    [209, 250, 229],  // emerald-100
+  }
+
+  let y = 0
+
+  const setFont = (style, size, color) => {
+    doc.setFont(font, style)
+    doc.setFontSize(size)
+    doc.setTextColor(...(color || C.dark))
+  }
+
+  const checkPage = (needed = 10) => {
+    if (y + needed > pageH - 22) { doc.addPage(); y = ML }
+  }
+
+  const hr = (posY, color = C.border, lw = 0.3) => {
+    doc.setDrawColor(...color)
+    doc.setLineWidth(lw)
+    doc.line(ML, posY, pageW - ML, posY)
+  }
+
+  const sectionHeader = (title, posY) => {
+    doc.setFillColor(...C.primary)
+    doc.rect(ML, posY, CW, 7, 'F')
+    setFont('bold', 7.5, C.white)
+    doc.text(title.toUpperCase(), ML + 3, posY + 5)
+    return posY + 7
+  }
+
+  const infoField = (label, value, x, posY, w) => {
+    const safeVal = String(value || '—')
+    setFont('normal', 7, C.mid)
+    doc.text(label, x, posY)
+    setFont('normal', 8.5, C.dark)
+    const lines = doc.splitTextToSize(safeVal, w - 2)
+    doc.text(lines.slice(0, 2), x, posY + 4.2)
+    return posY + 4.2 + Math.min(lines.length, 2) * 4
+  }
+
+  const twoCol = (leftLabel, leftVal, rightLabel, rightVal, posY) => {
+    const half = CW / 2 - 3
+    const yL = infoField(leftLabel, leftVal,  ML,           posY, half)
+    const yR = infoField(rightLabel, rightVal, ML + CW / 2, posY, half)
+    return Math.max(yL, yR) + 2
+  }
+
+  // ── Header band ──────────────────────────────────────────────────────────
+  doc.setFillColor(...C.primaryDk)
+  doc.rect(0, 0, pageW, 42, 'F')
+
+  let logoEndX = ML
+  if (businessLogo) {
+    try {
+      doc.addImage(businessLogo, ML, 7, 28, 28)
+      logoEndX = ML + 32
+    } catch (_) { logoEndX = ML }
+  }
+
+  setFont('bold', 20, C.white)
+  doc.text(businessName, logoEndX, 19)
+  setFont('normal', 8, [167, 243, 208])
+  doc.text('Comprobante de Venta', logoEndX, 26)
+
+  setFont('bold', 16, C.white)
+  doc.text(sale.saleNumber || '—', pageW - ML, 18, { align: 'right' })
+  setFont('normal', 7.5, [167, 243, 208])
+  doc.text('Nº de Venta', pageW - ML, 24, { align: 'right' })
+
+  setFont('normal', 7, [167, 243, 208])
+  doc.text(`Fecha: ${formatDate(sale.createdAt)}`, pageW - ML, 33, { align: 'right' })
+
+  y = 50
+
+  // ── Status ────────────────────────────────────────────────────────────────
+  const statusColors = { paid: [16, 185, 129], pending: [245, 158, 11], cancelled: [239, 68, 68] }
+  const statusLabels = { paid: 'Pagado', pending: 'Pendiente', cancelled: 'Cancelado' }
+  const sc = statusColors[sale.status] || statusColors.pending
+  doc.setFillColor(sc[0] + 180 > 255 ? 235 : sc[0] + 180, sc[1] + 180 > 255 ? 235 : sc[1] + 180, sc[2] + 180 > 255 ? 235 : sc[2] + 180)
+  doc.roundedRect(ML, y - 4, 48, 9, 2, 2, 'F')
+  doc.setFillColor(...sc)
+  doc.circle(ML + 5, y + 0.5, 1.5, 'F')
+  setFont('bold', 8, [sc[0] > 200 ? sc[0] - 60 : sc[0], sc[1] > 200 ? sc[1] - 60 : sc[1], sc[2] > 200 ? sc[2] - 60 : sc[2]])
+  doc.text(`Estado: ${statusLabels[sale.status] || 'Pendiente'}`, ML + 9, y + 1.2)
+  setFont('normal', 7, C.mid)
+  doc.text(`Generado: ${formatDate(new Date().toISOString())}`, pageW - ML, y + 1, { align: 'right' })
+  y += 12
+
+  // ── Customer ──────────────────────────────────────────────────────────────
+  const hasCustomer = sale.customerName || sale.customerPhone || sale.customerEmail || sale.customerDni
+  if (hasCustomer) {
+    checkPage(40)
+    y = sectionHeader('Datos del Cliente', y) + 4
+    y = twoCol('Nombre', sale.customerName, 'DNI / Documento', sale.customerDni, y)
+    y = twoCol('Teléfono', sale.customerPhone, 'Email', sale.customerEmail, y)
+    if (sale.customerAddress) {
+      setFont('normal', 7, C.mid)
+      doc.text('Dirección', ML, y)
+      setFont('normal', 8.5, C.dark)
+      const addrLines = doc.splitTextToSize(sale.customerAddress, CW - 2)
+      doc.text(addrLines.slice(0, 2), ML, y + 4.2)
+      y += 4.2 + Math.min(addrLines.length, 2) * 4 + 4
+    }
+    y += 3
+    hr(y)
+    y += 5
+  }
+
+  // ── Items table ───────────────────────────────────────────────────────────
+  checkPage(30 + (sale.items?.length || 1) * 7)
+  y = sectionHeader('Productos / Servicios', y) + 4
+
+  doc.setFillColor(...C.accent)
+  doc.rect(ML, y, CW, 6.5, 'F')
+  setFont('bold', 7.5, C.primaryDk)
+  doc.text('Descripción',   ML + 2,       y + 4.5)
+  doc.text('Cant.',         ML + CW - 45, y + 4.5, { align: 'right' })
+  doc.text('P. Unit.',      ML + CW - 25, y + 4.5, { align: 'right' })
+  doc.text('Total',         ML + CW,      y + 4.5, { align: 'right' })
+  y += 6.5
+
+  const items = sale.items || []
+  let subtotal = 0
+  let costos = 0
+
+  items.forEach((item, idx) => {
+    checkPage(8)
+    const qty   = parseFloat(item.qty   || 1)
+    const price = parseFloat(item.price || 0)
+    const cost  = parseFloat(item.cost  || 0)
+    const rowTotal = qty * price
+    subtotal += rowTotal
+    costos   += qty * cost
+
+    if (idx % 2 === 0) {
+      doc.setFillColor(240, 253, 249)
+      doc.rect(ML, y, CW, 6.5, 'F')
+    }
+    setFont('normal', 8, C.dark)
+    const descLines = doc.splitTextToSize(item.name || '—', CW - 55)
+    doc.text(descLines[0], ML + 2, y + 4.5)
+    doc.text(String(qty),  ML + CW - 45, y + 4.5, { align: 'right' })
+    doc.text(f(price),     ML + CW - 25, y + 4.5, { align: 'right' })
+    setFont('bold', 8, C.dark)
+    doc.text(f(rowTotal),  ML + CW,      y + 4.5, { align: 'right' })
+    y += 6.5
+  })
+
+  // ── Totals box ────────────────────────────────────────────────────────────
+  const total    = sale.total ?? subtotal
+  const ganancia = total - costos
+
+  hr(y, C.border, 0.4)
+  y += 6
+
+  checkPage(40)
+  doc.setFillColor(...C.light)
+  doc.setDrawColor(...C.border)
+  doc.setLineWidth(0.3)
+  doc.roundedRect(ML, y, CW, 28, 2, 2, 'FD')
+
+  setFont('normal', 7, C.mid)
+  doc.text('Costo',    ML + 4, y + 8)
+  doc.text('Ganancia', ML + 4, y + 17)
+  setFont('bold', 9, C.dark)
+  doc.text(f(costos),   ML + 4, y + 13)
+  doc.text(f(ganancia), ML + 4, y + 22)
+
+  doc.setFillColor(...C.primary)
+  doc.roundedRect(ML + CW - 60, y + 2, 56, 24, 2, 2, 'F')
+  setFont('normal', 7, [167, 243, 208])
+  doc.text('TOTAL', ML + CW - 32, y + 9, { align: 'center' })
+  setFont('bold', 14, C.white)
+  doc.text(f(total), ML + CW - 32, y + 20, { align: 'center' })
+
+  y += 38
+
+  // ── Notes ─────────────────────────────────────────────────────────────────
+  if (sale.notes?.trim()) {
+    checkPage(25)
+    y = sectionHeader('Notas', y) + 4
+    const noteLines = doc.splitTextToSize(sale.notes, CW - 6)
+    const noteH = noteLines.length * 4.2 + 6
+    doc.setFillColor(...C.light)
+    doc.roundedRect(ML, y - 1, CW, noteH, 2, 2, 'F')
+    setFont('normal', 8.5, C.dark)
+    doc.text(noteLines, ML + 3, y + 4)
+    y += noteH + 8
+  }
+
+  // ── Footer ────────────────────────────────────────────────────────────────
+  const footerY = pageH - 20
+  hr(footerY, C.border, 0.3)
+  setFont('bold', 7.5, C.primary)
+  doc.text(businessName, ML, footerY + 5)
+  setFont('normal', 7, C.mid)
+  doc.text('— Sistema de Gestión', ML + doc.getTextWidth(businessName) + 1, footerY + 5)
+  doc.text(`Generado: ${formatDate(new Date().toISOString())}`, pageW - ML, footerY + 5, { align: 'right' })
+  setFont('normal', 6.5, C.mid)
+  doc.text(`Venta: ${sale.saleNumber || '—'}`, ML, footerY + 10)
+
+  doc.save(`${sale.saleNumber || 'venta'}-comprobante.pdf`)
+}

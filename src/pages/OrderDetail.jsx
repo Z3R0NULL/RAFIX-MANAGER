@@ -287,7 +287,7 @@ export default function OrderDetail() {
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Edit Order</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Editar Orden</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{order.orderNumber}</p>
           </div>
         </div>
@@ -537,9 +537,11 @@ export default function OrderDetail() {
             </div>
             <InfoRow label="Contraseña" value={order.devicePassword} />
             {order.devicePattern?.length > 0 && (
-              <div className="py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                <span className="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0 w-28">Patrón</span>
-                <PatternInput value={order.devicePattern} readOnly />
+              <div className="py-2.5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <span className="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0 sm:w-28">Patrón</span>
+                <div className="flex items-start">
+                  <PatternInput value={order.devicePattern} readOnly />
+                </div>
               </div>
             )}
             <InfoRow label="Notas de bloqueo" value={order.lockNotes} />

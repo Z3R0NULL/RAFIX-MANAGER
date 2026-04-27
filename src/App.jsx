@@ -31,6 +31,7 @@ import ServicesPage from './pages/ServicesPage'
 import SalesPage from './pages/SalesPage'
 import NewSale from './pages/NewSale'
 import SaleDetail from './pages/SaleDetail'
+import TrackSale from './pages/TrackSale'
 
 function AppLoader() {
   return (
@@ -108,6 +109,8 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/track" element={<TrackOrder />} />
           <Route path="/track/:orderNumber" element={<TrackOrder />} />
+          <Route path="/sale-track" element={<TrackSale />} />
+          <Route path="/sale-track/:saleNumber" element={<TrackSale />} />
 
           {/* Protected routes */}
           <Route
