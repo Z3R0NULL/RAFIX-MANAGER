@@ -613,9 +613,12 @@ export default function OrderDetail() {
         <div className="space-y-5">
           {/* Budget */}
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <DollarSign size={14} className="text-indigo-500" />
-              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Budget</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <DollarSign size={14} className="text-indigo-500" />
+                <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Budget</h2>
+              </div>
+              <BudgetBadge status={order.budgetStatus} />
             </div>
             {/* Itemized budget list */}
             {order.budgetItems?.length > 0 && (
@@ -662,34 +665,44 @@ export default function OrderDetail() {
             )}
 
             <div className="space-y-3">
+              {/* Precio final — protagonista */}
+              <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">Precio final</span>
+                <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice)}</span>
+              </div>
+
+              {/* Precio estimado */}
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Estimated</span>
+                <span className="text-xs text-slate-500">Precio estimado</span>
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.estimatedPrice)}</span>
               </div>
+
+              {/* Divisor */}
+              <div className="border-t border-slate-100 dark:border-slate-800" />
+
+              {/* Costo de reparación */}
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Repair Cost</span>
+                <span className="text-xs text-slate-500">Costo de reparación</span>
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.repairCost)}</span>
               </div>
-              {(Number(order.finalPrice) > 0 || Number(order.repairCost) > 0) && (() => {
+
+              {/* Divisor */}
+              <div className="border-t border-slate-100 dark:border-slate-800" />
+
+              {/* Ganancia */}
+              {(() => {
                 const profit = Number(order.finalPrice || 0) - Number(order.repairCost || 0)
                 const isPositive = profit >= 0
                 return (
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-500">Ganancia</span>
-                    <span className={`text-sm font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                    <span className={`text-sm font-bold ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
                       {isPositive ? '+' : ''}{fmt(profit)}
                     </span>
                   </div>
                 )
               })()}
-              <div className="flex justify-between items-center py-2 border-t border-b border-slate-100 dark:border-slate-800">
-                <span className="text-sm font-semibold text-slate-900 dark:text-white">Final Price</span>
-                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Budget Status</span>
-                <BudgetBadge status={order.budgetStatus} />
-              </div>
+
             </div>
           </div>
 

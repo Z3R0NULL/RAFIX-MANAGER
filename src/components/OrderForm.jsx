@@ -29,6 +29,7 @@
  *  - CheckGroup: separador de categoría dentro del checklist.
  */
 import React, { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
   ChevronDown, ChevronUp, Search, UserCheck, Camera, Pencil, X,
@@ -339,33 +340,170 @@ function SelectedClientChip({ client, onEdit, onClear }) {
 }
 
 // ── Editor de ítems de presupuesto ─────────────────────────────────────────
+// ── Selector de modificador (servicio) para un ítem de inventario ─────────────
+function ModifierSelector({ itemId, modifier, itemUnitPrice, itemQty, services, onSelect, onRemove }) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [dropdownStyle, setDropdownStyle] = useState({})
+  const triggerRef = useRef(null)
+  const dropdownRef = useRef(null)
+
+  // Calculate position for portal dropdown
+  const updatePosition = () => {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const dropdownH = 260
+    if (spaceBelow >= dropdownH) {
+      setDropdownStyle({ top: rect.bottom + 6, left: rect.left, width: 288 })
+    } else {
+      setDropdownStyle({ bottom: window.innerHeight - rect.top + 6, left: rect.left, width: 288 })
+    }
+  }
+
+  useEffect(() => {
+    if (!open) return
+    updatePosition()
+    const handler = (e) => {
+      if (
+        triggerRef.current && !triggerRef.current.contains(e.target) &&
+        dropdownRef.current && !dropdownRef.current.contains(e.target)
+      ) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    window.addEventListener('scroll', updatePosition, true)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      window.removeEventListener('scroll', updatePosition, true)
+    }
+  }, [open])
+
+  const activeServices = (services || []).filter((s) => s.active !== false)
+  const filtered = search.trim()
+    ? activeServices.filter((s) => s.name?.toLowerCase().includes(search.toLowerCase()))
+    : activeServices
+
+  const calcModifierPrice = (svc, basePrice) => {
+    if (!svc) return 0
+    if (svc.priceType === 'percent') return Math.round((Number(svc.price) || 0) / 100 * (Number(basePrice) || 0))
+    return Number(svc.price) || 0
+  }
+
+  const modPrice = modifier ? calcModifierPrice(modifier, (Number(itemUnitPrice) || 0) * (Number(itemQty) || 1)) : 0
+
+  const dropdown = open && !modifier && createPortal(
+    <div
+      ref={dropdownRef}
+      style={{ position: 'fixed', zIndex: 9999, ...dropdownStyle }}
+      className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden"
+    >
+      <div className="p-2 border-b border-slate-700/60">
+        <div className="relative">
+          <Search size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            autoFocus
+            className="w-full pl-7 pr-3 py-1.5 rounded-md bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="Buscar servicio..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="max-h-52 overflow-y-auto">
+        {filtered.length === 0 && (
+          <p className="text-xs text-slate-500 text-center py-3">Sin servicios activos</p>
+        )}
+        {filtered.map((svc) => {
+          const base = (Number(itemUnitPrice) || 0) * (Number(itemQty) || 1)
+          const price = calcModifierPrice(svc, base)
+          return (
+            <button
+              key={svc.id}
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); onSelect(svc); setOpen(false); setSearch('') }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs hover:bg-indigo-900/20 border-b border-slate-800 last:border-0 transition-colors text-left"
+            >
+              <Wrench size={12} className="text-indigo-400 flex-shrink-0" />
+              <span className="flex-1 text-slate-200 truncate">{svc.name}</span>
+              <span className="text-slate-400 flex-shrink-0">
+                {svc.priceType === 'percent'
+                  ? <span className="text-violet-400">{svc.price}% <span className="text-slate-500">= +${price.toLocaleString('es-AR')}</span></span>
+                  : <span className="text-emerald-400">+${price.toLocaleString('es-AR')}</span>
+                }
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>,
+    document.body
+  )
+
+  return (
+    <div className="relative inline-block">
+      {modifier ? (
+        <div className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-indigo-900/30 border border-indigo-700/50 text-xs">
+          <Wrench size={11} className="text-indigo-400 flex-shrink-0" />
+          <span className="text-indigo-200 truncate max-w-[90px]">{modifier.name}</span>
+          <span className="text-indigo-400 font-semibold flex-shrink-0">
+            {modifier.priceType === 'percent' ? `${modifier.price}%` : ''}
+            {' +$'}{modPrice.toLocaleString('es-AR')}
+          </span>
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); onRemove() }}
+            className="p-0.5 rounded text-indigo-400 hover:text-red-400 transition-colors flex-shrink-0"
+            title="Quitar modificador"
+          >
+            <X size={11} />
+          </button>
+        </div>
+      ) : (
+        <button
+          ref={triggerRef}
+          type="button"
+          onMouseDown={(e) => { e.preventDefault(); setOpen((v) => !v) }}
+          className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-slate-600 text-slate-500 hover:border-indigo-500 hover:text-indigo-400 text-xs transition-colors"
+          title="Agregar modificador de servicio"
+        >
+          <Wrench size={11} />
+          <span>+ Servicio</span>
+        </button>
+      )}
+      {dropdown}
+    </div>
+  )
+}
+
 function BudgetItemsEditor({ items = [], onChange, inventory = [], services = [] }) {
   const [search, setSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const searchRef = useRef(null)
 
-  // Merge services + inventory for search
-  const allSuggestions = [
-    ...services.map((s) => ({
-      id: s.id,
-      label: s.name,
-      price: s.priceType === 'percent' ? 0 : (Number(s.price) || 0),
-      priceDisplay: s.priceType === 'percent' ? `${s.price ?? '?'}% repuesto` : `$${Number(s.price || 0).toLocaleString('es-AR')}`,
-      isPercent: s.priceType === 'percent',
-      percentValue: s.priceType === 'percent' ? s.price : null,
-      type: 'service',
-    })),
-    ...inventory.map((i) => ({
-      id: i.id,
-      label: i.name,
-      price: Number(i.salePrice || i.price || 0),
-      priceDisplay: `$${Number(i.salePrice || i.price || 0).toLocaleString('es-AR')}`,
-      isPercent: false,
-      percentValue: null,
-      type: 'inventory',
-      stock: i.stock,
-    })),
-  ]
+  // Only inventory items appear in the main search (services are added as modifiers)
+  const inventorySuggestions = inventory.map((i) => ({
+    id: i.id,
+    label: i.name,
+    price: Number(i.salePrice || i.price || 0),
+    priceDisplay: `$${Number(i.salePrice || i.price || 0).toLocaleString('es-AR')}`,
+    isPercent: false,
+    percentValue: null,
+    type: 'inventory',
+    stock: i.stock,
+  }))
+
+  // Keep services available in search too (as standalone items)
+  const serviceSuggestions = services.map((s) => ({
+    id: s.id,
+    label: s.name,
+    price: s.priceType === 'percent' ? 0 : (Number(s.price) || 0),
+    priceDisplay: s.priceType === 'percent' ? `${s.price ?? '?'}% repuesto` : `$${Number(s.price || 0).toLocaleString('es-AR')}`,
+    isPercent: s.priceType === 'percent',
+    percentValue: s.priceType === 'percent' ? s.price : null,
+    type: 'service',
+  }))
+
+  const allSuggestions = [...serviceSuggestions, ...inventorySuggestions]
 
   const filtered = search.length >= 1
     ? allSuggestions.filter((s) => s.label?.toLowerCase().includes(search.toLowerCase())).slice(0, 8)
@@ -395,6 +533,7 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
       unitPrice: Number(suggestion.price) || 0,
       isPercent: suggestion.isPercent || false,
       percentValue: suggestion.isPercent ? suggestion.percentValue : null,
+      modifier: null, // { id, name, priceType, price }
     }
     onChange([...items, newItem])
     setSearch('')
@@ -405,11 +544,27 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
     onChange(items.map((it) => it.id === id ? { ...it, [field]: value } : it))
   }
 
+  const setModifier = (id, svc) => {
+    onChange(items.map((it) => {
+      if (it.id !== id) return it
+      return { ...it, modifier: svc ? { id: svc.id, name: svc.name, priceType: svc.priceType, price: svc.price } : null }
+    }))
+  }
+
   const removeItem = (id) => {
     onChange(items.filter((it) => it.id !== id))
   }
 
-  const total = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0)
+  const calcModifierAmount = (it) => {
+    if (!it.modifier) return 0
+    const base = (Number(it.qty) || 1) * (Number(it.unitPrice) || 0)
+    if (it.modifier.priceType === 'percent') return Math.round((Number(it.modifier.price) || 0) / 100 * base)
+    return Number(it.modifier.price) || 0
+  }
+
+  const itemTotal = (it) => (Number(it.qty) || 0) * (Number(it.unitPrice) || 0) + calcModifierAmount(it)
+
+  const total = items.reduce((acc, it) => acc + itemTotal(it), 0)
 
   return (
     <div className="space-y-3">
@@ -419,7 +574,7 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             className="w-full pl-8 pr-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition"
-            placeholder="Buscar"
+            placeholder="Buscar repuesto o servicio..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSearchOpen(true) }}
             onFocus={() => setSearchOpen(true)}
@@ -471,27 +626,28 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {items.map((it) => (
-              <div key={it.id} className="flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-slate-900/60">
-                <span className="flex-shrink-0">
-                  {it.type === 'service'   && <Wrench  size={12} className="text-indigo-400" />}
-                  {it.type === 'inventory' && <Package size={12} className="text-emerald-400" />}
-                  {it.type === 'custom'    && <DollarSign size={12} className="text-amber-400" />}
-                </span>
-                <span className="flex-1 text-sm text-slate-800 dark:text-slate-200 truncate min-w-0">
-                  {it.name}
-                </span>
-                {it.isPercent ? (
-                  <span className="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-semibold flex-shrink-0">
-                    {it.percentValue}% del repuesto
+              <div key={it.id} className="px-3 py-2.5 bg-white dark:bg-slate-900/60 space-y-2">
+                {/* Fila principal */}
+                <div className="flex items-center gap-2">
+                  <span className="flex-shrink-0">
+                    {it.type === 'service'   && <Wrench  size={12} className="text-indigo-400" />}
+                    {it.type === 'inventory' && <Package size={12} className="text-emerald-400" />}
+                    {it.type === 'custom'    && <DollarSign size={12} className="text-amber-400" />}
                   </span>
-                ) : (
-                  <>
-                    {(() => {
-                      const invItem = it.type === 'inventory' ? inventory.find((i) => i.id === it.sourceId) : null
-                      const maxQty = invItem ? Number(invItem.stock ?? 0) : undefined
-                      const overStock = maxQty !== undefined && Number(it.qty) > maxQty
-                      return (
-                        <>
+                  <span className="flex-1 text-sm text-slate-800 dark:text-slate-200 truncate min-w-0">
+                    {it.name}
+                  </span>
+                  {it.isPercent ? (
+                    <span className="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-semibold flex-shrink-0">
+                      {it.percentValue}% del repuesto
+                    </span>
+                  ) : (
+                    <>
+                      {(() => {
+                        const invItem = it.type === 'inventory' ? inventory.find((i) => i.id === it.sourceId) : null
+                        const maxQty = invItem ? Number(invItem.stock ?? 0) : undefined
+                        const overStock = maxQty !== undefined && Number(it.qty) > maxQty
+                        return (
                           <input
                             type="number" min="1" step="1"
                             max={maxQty}
@@ -502,37 +658,60 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
                             }}
                             className={`w-14 text-center text-xs px-1.5 py-1.5 rounded-md border bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400 ${overStock ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-700'}`}
                           />
-                        </>
-                      )
-                    })()}
-                    <span className="text-xs text-slate-400">×</span>
-                    {it.type === 'inventory' || it.type === 'service' ? (
-                      <span className="w-24 text-right text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
-                        ${Number(it.unitPrice).toLocaleString('es-AR')}
+                        )
+                      })()}
+                      <span className="text-xs text-slate-400">×</span>
+                      {it.type === 'inventory' || it.type === 'service' ? (
+                        <span className="w-24 text-right text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
+                          ${Number(it.unitPrice).toLocaleString('es-AR')}
+                        </span>
+                      ) : (
+                        <div className="relative w-24 flex-shrink-0">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                          <input
+                            type="number" min="0" step="1"
+                            value={it.unitPrice}
+                            onChange={(e) => updateItem(it.id, 'unitPrice', Number(e.target.value) || 0)}
+                            className="w-full pl-5 pr-1 py-1.5 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                          />
+                        </div>
+                      )}
+                      <span className="w-20 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 flex-shrink-0">
+                        ${itemTotal(it).toLocaleString('es-AR')}
                       </span>
-                    ) : (
-                      <div className="relative w-24 flex-shrink-0">
-                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-                        <input
-                          type="number" min="0" step="1"
-                          value={it.unitPrice}
-                          onChange={(e) => updateItem(it.id, 'unitPrice', Number(e.target.value) || 0)}
-                          className="w-full pl-5 pr-1 py-1.5 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
-                        />
-                      </div>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeItem(it.id)}
+                    className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+
+                {/* Fila modificador — solo para ítems de inventario */}
+                {it.type === 'inventory' && !it.isPercent && (
+                  <div className="flex items-center gap-2 pl-5">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wide flex-shrink-0">Modificador:</span>
+                    <ModifierSelector
+                      itemId={it.id}
+                      modifier={it.modifier || null}
+                      itemUnitPrice={it.unitPrice}
+                      itemQty={it.qty}
+                      services={services}
+                      onSelect={(svc) => setModifier(it.id, svc)}
+                      onRemove={() => setModifier(it.id, null)}
+                    />
+                    {it.modifier && (
+                      <span className="text-[10px] text-slate-500 ml-auto">
+                        Subtotal repuesto: <span className="text-slate-300">${((Number(it.qty)||1)*(Number(it.unitPrice)||0)).toLocaleString('es-AR')}</span>
+                        {' + servicio: '}
+                        <span className="text-indigo-300">${calcModifierAmount(it).toLocaleString('es-AR')}</span>
+                      </span>
                     )}
-                    <span className="w-20 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 flex-shrink-0">
-                      ${((Number(it.qty) || 0) * (Number(it.unitPrice) || 0)).toLocaleString('es-AR')}
-                    </span>
-                  </>
+                  </div>
                 )}
-                <button
-                  type="button"
-                  onClick={() => removeItem(it.id)}
-                  className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
-                >
-                  <Trash2 size={13} />
-                </button>
               </div>
             ))}
           </div>
@@ -1189,7 +1368,23 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             </label>
             <BudgetItemsEditor
               items={form.budgetItems}
-              onChange={(items) => set('budgetItems', items)}
+              onChange={(items) => {
+                set('budgetItems', items)
+                // Auto-calculate totals from items (repuesto + modificador)
+                const newTotal = items.reduce((acc, it) => {
+                  const base = (Number(it.qty) || 0) * (Number(it.unitPrice) || 0)
+                  let modAmt = 0
+                  if (it.modifier && !it.isPercent) {
+                    if (it.modifier.priceType === 'percent') modAmt = Math.round((Number(it.modifier.price) || 0) / 100 * base)
+                    else modAmt = Number(it.modifier.price) || 0
+                  }
+                  return acc + base + modAmt
+                }, 0)
+                set('estimatedPrice', newTotal > 0 ? String(newTotal) : '')
+                // Costo = solo repuestos/servicios sin modificadores
+                const costTotal = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0)
+                set('repairCost', costTotal > 0 ? String(costTotal) : '')
+              }}
               inventory={inventory}
               services={services}
             />

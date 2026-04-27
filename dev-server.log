@@ -3,42 +3,13 @@
 > vite --host 0.0.0.0 --port 3000
 
 
-  VITE v8.0.8  ready in 280 ms
+  VITE v8.0.8  ready in 267 ms
 
   ➜  Local:   http://localhost:3000/
-  ➜  Network: http://172.20.0.14:3000/
-1:32:39 AM [vite] (client) page reload src/store/useStore.js
-1:39:29 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
-1:52:17 AM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
-1:56:16 AM [vite] (client) hmr update /src/pages/NewSale.jsx, /src/index.css
-1:56:25 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
-1:56:33 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
-1:56:40 AM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
-1:56:47 AM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
-2:03:31 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
-2:03:35 AM [vite] (client) [Unhandled error] ReferenceError: inventory is not defined
- > src/pages/SaleDetail.jsx:150:27
-    148 |    const costos   = (sale.items || []).reduce((a, i) => {
-    149 |      // fallback: si el item guardado no tiene costo, buscarlo en inventario actual
-    150 |      const cost = i.cost || inventory.find((inv) => inv.id === i.id)?.costPrice || 0
-        |                             ^
-    151 |      return a + cost * (i.qty || 1)
-    152 |    }, 0)
- > SaleDetail src/pages/SaleDetail.jsx:148:38
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
-
-2:03:35 AM [vite] (client) [console.warn] An error occurred in the <SaleDetail> component.
-
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
-
-2:03:38 AM [vite] (client) hmr update /src/pages/SaleDetail.jsx, /src/index.css
-2:03:44 AM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
-2:03:50 AM [vite] (client) hmr update /src/pages/SalesPage.jsx, /src/index.css
-2:17:08 AM [vite] (client) hmr update /src/index.css, /src/components/PatternInput.jsx
+  ➜  Network: http://172.20.0.9:3000/
+4:00:50 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
+4:01:11 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
+4:05:57 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
+4:06:27 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
+4:27:51 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
+4:29:41 AM [vite] (client) hmr update /src/index.css, /src/components/OrderForm.jsx
