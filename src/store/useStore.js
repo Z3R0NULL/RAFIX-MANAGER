@@ -912,13 +912,7 @@ export const useStore = create(
           createdBy: username,
           entryDate: new Date().toISOString(),
           deliveryDate: null,
-          statusHistory: [
-            {
-              status: data.status || 'pending',
-              timestamp: new Date().toISOString(),
-              note: 'Orden creada',
-            },
-          ],
+          statusHistory: buildStatusHistory([], data.status || 'pending', 'Orden creada'),
         }
         set((s) => ({ orders: [order, ...s.orders] }))
         syncOrderToTurso(order)

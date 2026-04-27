@@ -530,6 +530,22 @@ export default function OrderDetail() {
             </div>
           </div>
 
+          {/* Security */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield size={14} className="text-indigo-500" />
+              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Seguridad</h2>
+            </div>
+            <InfoRow label="Contraseña / PIN" value={order.devicePassword} />
+            {order.devicePattern?.length > 0 && (
+              <div className="py-2.5 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-xs text-slate-400 dark:text-slate-500 block mb-2">Patrón de desbloqueo</span>
+                <PatternInput value={order.devicePattern} readOnly />
+              </div>
+            )}
+            <InfoRow label="Notas de bloqueo" value={order.lockNotes} />
+          </div>
+
           {/* Diagnosis */}
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
             <div className="flex items-center gap-2 mb-4">
@@ -591,22 +607,6 @@ export default function OrderDetail() {
               ))}
             </div>
           </div>
-
-          {/* Security */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield size={14} className="text-indigo-500" />
-              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Seguridad</h2>
-            </div>
-            <InfoRow label="Contraseña / PIN" value={order.devicePassword} />
-            {order.devicePattern?.length > 0 && (
-              <div className="py-2.5 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-xs text-slate-400 dark:text-slate-500 block mb-2">Patrón de desbloqueo</span>
-                <PatternInput value={order.devicePattern} readOnly />
-              </div>
-            )}
-            <InfoRow label="Notas de bloqueo" value={order.lockNotes} />
-          </div>
         </div>
 
         {/* Right column */}
@@ -617,28 +617,9 @@ export default function OrderDetail() {
               <DollarSign size={14} className="text-indigo-500" />
               <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Budget</h2>
             </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Estimated</span>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.estimatedPrice)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Repair Cost</span>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.repairCost)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-t border-b border-slate-100 dark:border-slate-800">
-                <span className="text-sm font-semibold text-slate-900 dark:text-white">Final Price</span>
-                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Budget Status</span>
-                <BudgetBadge status={order.budgetStatus} />
-              </div>
-            </div>
-
             {/* Itemized budget list */}
             {order.budgetItems?.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                   Ítems del presupuesto
                 </p>
@@ -679,6 +660,37 @@ export default function OrderDetail() {
                 </div>
               </div>
             )}
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Estimated</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.estimatedPrice)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Repair Cost</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.repairCost)}</span>
+              </div>
+              {(Number(order.finalPrice) > 0 || Number(order.repairCost) > 0) && (() => {
+                const profit = Number(order.finalPrice || 0) - Number(order.repairCost || 0)
+                const isPositive = profit >= 0
+                return (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500">Ganancia</span>
+                    <span className={`text-sm font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                      {isPositive ? '+' : ''}{fmt(profit)}
+                    </span>
+                  </div>
+                )
+              })()}
+              <div className="flex justify-between items-center py-2 border-t border-b border-slate-100 dark:border-slate-800">
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">Final Price</span>
+                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Budget Status</span>
+                <BudgetBadge status={order.budgetStatus} />
+              </div>
+            </div>
           </div>
 
           {/* Dates */}
