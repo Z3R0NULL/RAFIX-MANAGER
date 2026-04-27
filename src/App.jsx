@@ -32,6 +32,7 @@ import SalesPage from './pages/SalesPage'
 import NewSale from './pages/NewSale'
 import SaleDetail from './pages/SaleDetail'
 import TrackSale from './pages/TrackSale'
+import SettingsPage from './pages/SettingsPage'
 
 function AppLoader() {
   return (
@@ -283,6 +284,17 @@ export default function App() {
                   <AdminDashboard />
                 </Layout>
               </SuperAdminRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <SettingsPage />
+                </Layout>
+              </PrivateRoute>
             }
           />
 

@@ -18,6 +18,13 @@ import {
   GripVertical,
   Check,
   Settings,
+  AtSign,
+  Music2,
+  MessageCircle,
+  Link,
+  Banknote,
+  ArrowRightLeft,
+  Percent,
 } from 'lucide-react'
 import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '../store/useStore'
 
@@ -289,6 +296,129 @@ export default function SettingsPanel({ open, onClose }) {
               </div>
             </div>
           </div>
+
+          {/* ── Redes Sociales ── */}
+          <div className="rounded-xl border border-slate-700/50 bg-slate-900 overflow-hidden">
+            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-700/50 bg-slate-800/40">
+              <div className="w-6 h-6 rounded-md bg-pink-500/15 flex items-center justify-center">
+                <Instagram size={13} className="text-pink-400" />
+              </div>
+              <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Redes Sociales</h3>
+            </div>
+            <div className="px-4 py-4 space-y-3">
+              {[
+                { key: 'instagram', label: 'Instagram',   Icon: AtSign,        placeholder: 'https://instagram.com/tunegocio', color: 'text-pink-400' },
+                { key: 'facebook',  label: 'Facebook',    Icon: AtSign,        placeholder: 'https://facebook.com/tunegocio',  color: 'text-blue-400' },
+                { key: 'twitter',   label: 'Twitter / X', Icon: AtSign,        placeholder: 'https://x.com/tunegocio',         color: 'text-sky-400' },
+                { key: 'tiktok',    label: 'TikTok',      Icon: Music2,        placeholder: 'https://tiktok.com/@tunegocio',   color: 'text-slate-300' },
+                { key: 'whatsapp',  label: 'WhatsApp',    Icon: MessageCircle, placeholder: '5491112345678',                   color: 'text-green-400' },
+                { key: 'website',   label: 'Sitio web',   Icon: Link,          placeholder: 'https://tunegocio.com',           color: 'text-indigo-400' },
+              ].map(({ key, label, Icon, placeholder, color }) => (
+                <div key={key}>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
+                    <Icon size={11} className={color} />
+                    {label}
+                  </label>
+                  <input
+                    type="text"
+                    value={local.socialLinks?.[key] ?? ''}
+                    onChange={(e) => patch('socialLinks', { ...local.socialLinks, [key]: e.target.value })}
+                    placeholder={placeholder}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Ajustes de Pago ── */}
+          <div className="rounded-xl border border-slate-700/50 bg-slate-900 overflow-hidden">
+            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-700/50 bg-slate-800/40">
+              <div className="w-6 h-6 rounded-md bg-emerald-500/15 flex items-center justify-center">
+                <Percent size={13} className="text-emerald-400" />
+              </div>
+              <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Ajustes de Pago</h3>
+            </div>
+            <div className="px-4 py-4 space-y-4">
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Configurá un descuento o recargo automático según el método de pago. Se aplica al total de ventas y presupuestos.
+              </p>
+              {[
+                { key: 'cash',     label: 'Efectivo',       Icon: Banknote,        iconColor: 'text-emerald-400' },
+                { key: 'transfer', label: 'Transferencia',  Icon: ArrowRightLeft,  iconColor: 'text-blue-400' },
+              ].map(({ key, label, Icon, iconColor }) => {
+                const adj = local.paymentAdjustments?.[key] ?? { enabled: false, value: 0, type: 'discount' }
+                const patchAdj = (changes) =>
+                  patch('paymentAdjustments', {
+                    ...local.paymentAdjustments,
+                    [key]: { ...adj, ...changes },
+                  })
+                return (
+                  <div key={key} className="rounded-lg border border-slate-700/60 bg-slate-800/40 p-3.5 space-y-3">
+                    {/* Header row */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Icon size={14} className={iconColor} />
+                        <span className="text-sm font-medium text-slate-200">{label}</span>
+                      </div>
+                      {/* Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => patchAdj({ enabled: !adj.enabled })}
+                        className={`relative w-9 h-5 rounded-full transition-colors ${adj.enabled ? 'bg-emerald-600' : 'bg-slate-600'}`}
+                      >
+                        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${adj.enabled ? 'left-4' : 'left-0.5'}`} />
+                      </button>
+                    </div>
+                    {adj.enabled && (
+                      <div className="flex items-center gap-2">
+                        {/* Tipo */}
+                        <div className="flex rounded-lg overflow-hidden border border-slate-700 flex-shrink-0">
+                          {[
+                            { value: 'discount', label: 'Desc.' },
+                            { value: 'surcharge', label: 'Rec.' },
+                          ].map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => patchAdj({ type: opt.value })}
+                              className={`px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                                adj.type === opt.value
+                                  ? opt.value === 'discount'
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-amber-500 text-white'
+                                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Valor % */}
+                        <div className="flex items-center gap-1.5 flex-1">
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step={0.5}
+                            value={adj.value}
+                            onChange={(e) => patchAdj({ value: parseFloat(e.target.value) || 0 })}
+                            className="w-20 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
+                          />
+                          <span className="text-slate-400 text-sm">%</span>
+                        </div>
+                        {/* Preview */}
+                        <span className={`text-xs font-medium px-2 py-1 rounded-md ${adj.type === 'discount' ? 'bg-emerald-900/30 text-emerald-400' : 'bg-amber-900/30 text-amber-400'}`}>
+                          {adj.type === 'discount' ? '-' : '+'}{adj.value}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
         </div>
 
         {/* Footer */}

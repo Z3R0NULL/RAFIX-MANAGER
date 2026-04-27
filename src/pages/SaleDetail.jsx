@@ -282,7 +282,7 @@ export default function SaleDetail() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-5">
+    <div className="p-6 max-w-4xl mx-auto space-y-5">
 
       {/* Header — same structure as OrderDetail */}
       <div className="flex flex-col gap-3">

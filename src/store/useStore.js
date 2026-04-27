@@ -401,6 +401,20 @@ export const DEFAULT_SETTINGS = {
     'Garantizamos nuestras reparaciones por 30 días bajo condiciones de uso normal.',
     'El pago se realiza al momento de retirar el equipo.',
   ],
+  // Redes sociales
+  socialLinks: {
+    instagram: '',
+    facebook: '',
+    twitter: '',
+    tiktok: '',
+    whatsapp: '',
+    website: '',
+  },
+  // Ajustes de precio por método de pago (% positivo = recargo, negativo = descuento)
+  paymentAdjustments: {
+    cash:     { enabled: false, value: 0, type: 'discount' },   // efectivo
+    transfer: { enabled: false, value: 0, type: 'surcharge' },  // transferencia
+  },
 }
 
 export const CURRENCY_OPTIONS = [
