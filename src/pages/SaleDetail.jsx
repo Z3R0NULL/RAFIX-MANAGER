@@ -19,6 +19,11 @@ import {
   ExternalLink,
   QrCode,
   Copy,
+  Banknote,
+  ArrowRightLeft,
+  HandCoins,
+  Truck,
+  Hash,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useStore } from '../store/useStore'
@@ -43,8 +48,12 @@ function SaleBadge({ status }) {
 }
 
 function EditSaleModal({ sale, onSave, onClose }) {
-  const [status, setStatus] = useState(sale.status || 'pending')
-  const [notes, setNotes]   = useState(sale.notes || '')
+  const [status,         setStatus]         = useState(sale.status || 'pending')
+  const [notes,          setNotes]          = useState(sale.notes || '')
+  const [paymentMethod,  setPaymentMethod]  = useState(sale.paymentMethod || '')
+  const [deliveryMethod, setDeliveryMethod] = useState(sale.deliveryMethod || '')
+  const [courierName,    setCourierName]    = useState(sale.courierName || '')
+  const [trackingNumber, setTrackingNumber] = useState(sale.trackingNumber || '')
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -91,10 +100,78 @@ function EditSaleModal({ sale, onSave, onClose }) {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+              rows={2}
               placeholder="Observaciones de la venta..."
               className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
             />
+          </div>
+
+          {/* Método de pago */}
+          <div>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Pago</label>
+            <div className="flex gap-2">
+              {[
+                { value: 'cash',     label: 'Efectivo',      Icon: Banknote },
+                { value: 'transfer', label: 'Transferencia', Icon: ArrowRightLeft },
+              ].map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setPaymentMethod(paymentMethod === value ? '' : value)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all
+                    ${paymentMethod === value
+                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 bg-white dark:bg-slate-800'
+                    }`}
+                >
+                  <Icon size={13} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Entrega */}
+          <div>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Entrega</label>
+            <div className="flex gap-2 mb-2">
+              {[
+                { value: 'in_person', label: 'En mano', Icon: HandCoins },
+                { value: 'shipped',   label: 'Correo',  Icon: Truck },
+              ].map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setDeliveryMethod(deliveryMethod === value ? '' : value)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all
+                    ${deliveryMethod === value
+                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 bg-white dark:bg-slate-800'
+                    }`}
+                >
+                  <Icon size={13} />
+                  {label}
+                </button>
+              ))}
+            </div>
+            {deliveryMethod === 'shipped' && (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Correo / empresa (Andreani, OCA...)"
+                  value={courierName}
+                  onChange={(e) => setCourierName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
+                />
+                <input
+                  type="text"
+                  placeholder="Número de seguimiento"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -106,7 +183,11 @@ function EditSaleModal({ sale, onSave, onClose }) {
             Cancelar
           </button>
           <button
-            onClick={() => onSave({ status, notes })}
+            onClick={() => onSave({
+              status, notes, paymentMethod, deliveryMethod,
+              courierName:    deliveryMethod === 'shipped' ? courierName.trim()    : '',
+              trackingNumber: deliveryMethod === 'shipped' ? trackingNumber.trim() : '',
+            })}
             className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors"
           >
             Guardar
@@ -201,7 +282,7 @@ export default function SaleDetail() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-5">
+    <div className="p-6 max-w-5xl mx-auto space-y-5">
 
       {/* Header — same structure as OrderDetail */}
       <div className="flex flex-col gap-3">
@@ -231,7 +312,7 @@ export default function SaleDetail() {
           {hasContact && (
             <div className="relative" ref={contactRef}>
               <button
-                onClick={() => setContactOpen((o) => !o)}
+                onClick={() => { setShareOpen(false); setContactOpen((o) => !o) }}
                 className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
                 <MessageCircle size={14} />
@@ -266,7 +347,7 @@ export default function SaleDetail() {
           {/* Compartir */}
           <div className="relative" ref={shareRef}>
             <button
-              onClick={() => setShareOpen((o) => !o)}
+              onClick={() => { setContactOpen(false); setShareOpen((o) => !o) }}
               className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               {copied ? <Check size={14} className="text-green-500" /> : <Share2 size={14} />}
@@ -402,6 +483,58 @@ export default function SaleDetail() {
         </section>
       )}
 
+      {/* Pago y Entrega */}
+      {(sale.paymentMethod || sale.deliveryMethod) && (
+        <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60">
+          <div className="flex items-center gap-2 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 rounded-t-xl">
+            <Banknote size={15} className="text-emerald-400" />
+            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">Pago y Entrega</span>
+          </div>
+          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5">
+            {sale.paymentMethod && (
+              <div className="flex items-center gap-3">
+                {sale.paymentMethod === 'cash' ? <Banknote size={16} className="text-emerald-500 shrink-0" /> : <ArrowRightLeft size={16} className="text-blue-500 shrink-0" />}
+                <div>
+                  <p className="text-xs text-slate-400">Método de pago</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                    {sale.paymentMethod === 'cash' ? 'Efectivo' : 'Transferencia'}
+                  </p>
+                </div>
+              </div>
+            )}
+            {sale.deliveryMethod && (
+              <div className="flex items-center gap-3">
+                {sale.deliveryMethod === 'in_person' ? <HandCoins size={16} className="text-emerald-500 shrink-0" /> : <Truck size={16} className="text-indigo-500 shrink-0" />}
+                <div>
+                  <p className="text-xs text-slate-400">Entrega</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                    {sale.deliveryMethod === 'in_person' ? 'En mano' : 'Correo'}
+                  </p>
+                </div>
+              </div>
+            )}
+            {sale.deliveryMethod === 'shipped' && sale.courierName && (
+              <div className="flex items-center gap-3">
+                <Truck size={16} className="text-slate-400 shrink-0" />
+                <div>
+                  <p className="text-xs text-slate-400">Empresa de correo</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{sale.courierName}</p>
+                </div>
+              </div>
+            )}
+            {sale.deliveryMethod === 'shipped' && sale.trackingNumber && (
+              <div className="flex items-center gap-3">
+                <Hash size={16} className="text-slate-400 shrink-0" />
+                <div>
+                  <p className="text-xs text-slate-400">Número de seguimiento</p>
+                  <p className="text-sm font-mono font-medium text-slate-800 dark:text-slate-200">{sale.trackingNumber}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Notas */}
       {sale.notes && (
         <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60">
@@ -418,6 +551,45 @@ export default function SaleDetail() {
       {/* Edit modal */}
       {editing && (
         <EditSaleModal sale={sale} onSave={handleSave} onClose={() => setEditing(false)} />
+      )}
+
+      {/* QR Modal */}
+      {qrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm" onClick={() => setQrModal(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 max-w-xs w-full shadow-2xl flex flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between w-full">
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Código QR de seguimiento</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{sale.saleNumber}</p>
+              </div>
+              <button onClick={() => setQrModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+            {qrDataUrl && (
+              <img src={qrDataUrl} alt="QR seguimiento" className="w-52 h-52 rounded-xl border border-slate-100 dark:border-slate-800" />
+            )}
+            <p className="text-xs text-slate-400 text-center leading-relaxed">
+              El cliente puede escanear este QR para ver el estado de su venta en tiempo real
+            </p>
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={copySaleLink}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                {copied ? 'Copiado!' : 'Copiar enlace'}
+              </button>
+              <a
+                href={qrDataUrl}
+                download={`qr-${sale.saleNumber}.png`}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-xs font-medium text-white transition-colors"
+              >
+                Descargar QR
+              </a>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Delete confirm modal */}

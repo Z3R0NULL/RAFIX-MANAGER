@@ -14,6 +14,10 @@ import {
   Pencil,
   X,
   Hash,
+  Banknote,
+  ArrowRightLeft,
+  HandCoins,
+  Truck,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { useCurrency } from '../utils/useCurrency'
@@ -55,8 +59,12 @@ export default function NewSale() {
   const [cartItems, setCartItems] = useState([])   // { id, name, price, cost, qty, stock }
 
   // Extra
-  const [status, setStatus] = useState('paid')
-  const [notes,  setNotes]  = useState('')
+  const [status,          setStatus]          = useState('paid')
+  const [notes,           setNotes]           = useState('')
+  const [paymentMethod,   setPaymentMethod]   = useState('')   // 'cash' | 'transfer' | ''
+  const [deliveryMethod,  setDeliveryMethod]  = useState('')   // 'in_person' | 'shipped' | ''
+  const [courierName,     setCourierName]     = useState('')
+  const [trackingNumber,  setTrackingNumber]  = useState('')
 
   // Saving
   const [saving, setSaving] = useState(false)
@@ -188,6 +196,10 @@ export default function NewSale() {
       total,
       status,
       notes: notes.trim(),
+      paymentMethod,
+      deliveryMethod,
+      courierName:    deliveryMethod === 'shipped' ? courierName.trim()    : '',
+      trackingNumber: deliveryMethod === 'shipped' ? trackingNumber.trim() : '',
     })
     setSaving(false)
     setSaved(true)
@@ -491,8 +503,8 @@ export default function NewSale() {
         </div>
       </section>
 
-      {/* Status + Notes */}
-      <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
+      {/* Status + Payment + Delivery + Notes */}
+      <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Estado</label>
@@ -516,6 +528,80 @@ export default function NewSale() {
               className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 transition"
             />
           </div>
+        </div>
+
+        {/* Método de pago */}
+        <div>
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Método de pago</label>
+          <div className="flex gap-2">
+            {[
+              { value: 'cash',     label: 'Efectivo',      Icon: Banknote },
+              { value: 'transfer', label: 'Transferencia', Icon: ArrowRightLeft },
+            ].map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setPaymentMethod(paymentMethod === value ? '' : value)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all
+                  ${paymentMethod === value
+                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
+                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50 dark:bg-slate-800'
+                  }`}
+              >
+                <Icon size={15} />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Método de entrega */}
+        <div>
+          <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Entrega</label>
+          <div className="flex gap-2 mb-3">
+            {[
+              { value: 'in_person', label: 'En mano',  Icon: HandCoins },
+              { value: 'shipped',   label: 'Correo',   Icon: Truck },
+            ].map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setDeliveryMethod(deliveryMethod === value ? '' : value)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all
+                  ${deliveryMethod === value
+                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
+                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50 dark:bg-slate-800'
+                  }`}
+              >
+                <Icon size={15} />
+                {label}
+              </button>
+            ))}
+          </div>
+          {deliveryMethod === 'shipped' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Correo / empresa</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Andreani, OCA, DHL..."
+                  value={courierName}
+                  onChange={(e) => setCourierName(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 transition"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Número de seguimiento</label>
+                <input
+                  type="text"
+                  placeholder="Ej: AR123456789"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 transition"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
