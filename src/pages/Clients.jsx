@@ -30,12 +30,15 @@ import {
   ChevronDown,
   Wrench,
   ShoppingCart,
+  Wallet,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
 import { useCurrency } from '../utils/useCurrency'
 
 const SORT_OPTIONS = [
+  { value: 'newest',     label: 'Más recientes' },
+  { value: 'oldest',     label: 'Más antiguos' },
   { value: 'name_az',    label: 'Nombre A→Z' },
   { value: 'name_za',    label: 'Nombre Z→A' },
   { value: 'orders_desc', label: 'Más órdenes' },
@@ -186,12 +189,17 @@ export default function Clients() {
   const [modal, setModal] = useState(null) // null | 'new' | client object
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [view, setView] = useState(() => localStorage.getItem('clientsView') || (window.innerWidth < 768 ? 'grid' : 'grid'))
-  const [sort, setSort] = useState('name_az')
+  const [sort, setSort] = useState('newest')
   const [sortOpen, setSortOpen] = useState(false)
+  const [activityFilter, setActivityFilter] = useState('')
+  const [activityOpen, setActivityOpen] = useState(false)
 
-  // Close sort dropdown on outside click
+  // Close dropdowns on outside click
   React.useEffect(() => {
-    const handler = (e) => { if (!e.target.closest('[data-sort-dropdown]')) setSortOpen(false) }
+    const handler = (e) => {
+      if (!e.target.closest('[data-sort-dropdown]')) setSortOpen(false)
+      if (!e.target.closest('[data-activity-dropdown]')) setActivityOpen(false)
+    }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
@@ -203,28 +211,42 @@ export default function Clients() {
 
   const filtered = useMemo(() => {
     let list = myClients.filter((c) => {
-      if (!search.trim()) return true
-      const q = search.toLowerCase()
-      return (
-        c.name?.toLowerCase().includes(q) ||
-        c.phone?.includes(q) ||
-        c.email?.toLowerCase().includes(q) ||
-        c.dni?.includes(q)
-      )
+      // text search
+      if (search.trim()) {
+        const q = search.toLowerCase()
+        const matchText =
+          c.name?.toLowerCase().includes(q) ||
+          c.phone?.includes(q) ||
+          c.email?.toLowerCase().includes(q) ||
+          c.dni?.includes(q)
+        if (!matchText) return false
+      }
+      // activity filter
+      if (activityFilter) {
+        const hasOrders = getOrderCount(c) > 0
+        const hasSales  = getSaleCount(c) > 0
+        if (activityFilter === 'orders' && !(hasOrders && !hasSales)) return false
+        if (activityFilter === 'sales'  && !(hasSales  && !hasOrders)) return false
+        if (activityFilter === 'both'   && !(hasOrders && hasSales))   return false
+      }
+      return true
     })
     // sort
     return list.sort((a, b) => {
       switch (sort) {
-        case 'name_za':    return (b.name || '').localeCompare(a.name || '')
+        case 'newest':      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+        case 'oldest':      return new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
+        case 'name_za':     return (b.name || '').localeCompare(a.name || '')
+        case 'name_az':     return (a.name || '').localeCompare(b.name || '')
         case 'orders_desc': return getOrderCount(b) - getOrderCount(a)
         case 'orders_asc':  return getOrderCount(a) - getOrderCount(b)
         case 'spent_desc':  return getTotalSpent(b) - getTotalSpent(a)
         case 'spent_asc':   return getTotalSpent(a) - getTotalSpent(b)
-        default:           return (a.name || '').localeCompare(b.name || '')
+        default:            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
       }
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myClients, search, sort])
+  }, [myClients, search, sort, activityFilter])
 
   const getClientOrders = (client) =>
     orders.filter(
@@ -261,13 +283,20 @@ export default function Clients() {
     return null
   }
 
-  const getTotalSpent = (client) =>
-    getClientOrders(client)
+  const getTotalSpent = (client) => {
+    const fromOrders = getClientOrders(client)
       .filter((o) => o.status === 'delivered')
       .reduce((sum, o) => {
         const val = parseFloat(o.finalPrice)
         return sum + (isNaN(val) ? 0 : val)
       }, 0)
+    const fromSales = getClientSales(client)
+      .reduce((sum, s) => {
+        const val = parseFloat(s.total)
+        return sum + (isNaN(val) ? 0 : val)
+      }, 0)
+    return fromOrders + fromSales
+  }
 
   const handleSave = (form) => {
     if (modal && modal !== 'new') {
@@ -306,9 +335,10 @@ export default function Clients() {
         </button>
       </div>
 
-      {/* Search + Sort + View */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+      {/* Search + filters */}
+      <div className="flex flex-col gap-3">
+        {/* Row 1: search */}
+        <div className="relative">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -324,8 +354,46 @@ export default function Clients() {
           )}
         </div>
 
+        {/* Row 2: filters + view/sort pill */}
+        <div className="flex flex-row items-center gap-2">
+
+        {/* Activity filter dropdown */}
+        <div className="relative flex-shrink-0" data-activity-dropdown>
+          <button
+            onClick={() => setActivityOpen((o) => !o)}
+            className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm transition-colors whitespace-nowrap
+              ${activityFilter
+                ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+          >
+            {activityFilter === 'orders' ? 'Solo reparaciones' : activityFilter === 'sales' ? 'Solo compras' : activityFilter === 'both' ? 'Ambas' : 'Actividad'}
+            <ChevronDown size={13} className={`transition-transform ${activityOpen ? 'rotate-180' : ''} ${activityFilter ? 'text-indigo-400' : 'text-slate-400'}`} />
+          </button>
+          {activityOpen && (
+            <div className="absolute left-0 mt-1.5 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+              {[
+                { value: '', label: 'Todos los clientes' },
+                { value: 'orders', label: 'Solo reparaciones' },
+                { value: 'sales',  label: 'Solo compras' },
+                { value: 'both',   label: 'Ambas' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setActivityFilter(opt.value); setActivityOpen(false) }}
+                  className={`w-full flex items-center px-4 py-2.5 text-sm transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0
+                    ${activityFilter === opt.value
+                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-medium'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* View + Sort pill */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 flex-shrink-0">
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 ml-auto flex-shrink-0">
           <button
             onClick={() => setView('grid')}
             title="Vista cuadrícula"
@@ -366,6 +434,7 @@ export default function Clients() {
             )}
           </div>
         </div>
+        </div>{/* end row 2 */}
       </div>
 
       {/* List */}
@@ -535,7 +604,7 @@ export default function Clients() {
                       {saleCount} Compra{saleCount !== 1 ? 's' : ''}
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                      <CreditCard size={13} />
+                      <Wallet size={13} />
                       {totalSpent > 0 ? fmt(totalSpent) : '—'}
                     </div>
                   </div>
