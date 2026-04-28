@@ -18,7 +18,7 @@ import {
   ArrowRightLeft,
   CreditCard,
   Percent,
-  Youtube,
+  //Youtube,
   X,
 } from 'lucide-react'
 import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '../store/useStore'
