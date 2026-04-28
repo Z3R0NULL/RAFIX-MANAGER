@@ -15,7 +15,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft, Edit3, Printer, ExternalLink, CheckCircle2, XCircle, MinusCircle,
   Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2, CheckSquare,
-  RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2, Mail, ChevronDown,
+  RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2, Mail, ChevronDown, ChevronUp,
   Package, Wrench,
 } from 'lucide-react'
 import QRCode from 'qrcode'
@@ -134,6 +134,30 @@ const InfoRow = ({ label, value, compact }) => (
     <span className={`font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap ${compact ? 'text-xs' : 'text-sm'}`}>{value || '—'}</span>
   </div>
 )
+
+function CheckGroup({ title, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 select-none">{title}</span>
+        {open
+          ? <ChevronUp size={14} className="text-slate-400 flex-shrink-0" />
+          : <ChevronDown size={14} className="text-slate-400 flex-shrink-0" />
+        }
+      </button>
+      {open && (
+        <div className="divide-y divide-slate-100 dark:divide-slate-800 px-4">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function OrderDetail() {
   const fmt = useCurrency()
@@ -313,9 +337,6 @@ export default function OrderDetail() {
                 <h1 className="text-xl font-bold text-slate-900 dark:text-white font-mono">{order.orderNumber}</h1>
                 <StatusBadge status={order.status} />
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                {order.customerName} · {order.deviceBrand} {order.deviceModel}
-              </p>
             </div>
           </div>
         </div>
@@ -555,16 +576,16 @@ export default function OrderDetail() {
             </div>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">Problema reportado por el cliente</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">Problema reportado</p>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.reportedIssue || '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">Problema encontrado por el técnico</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mb-1">Problema encontrado</p>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.techFindings || '—'}</p>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-xs text-slate-400 dark:text-slate-500">Observaciones del técnico</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">Notas internas</p>
                 </div>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.technicianNotes || '—'}</p>
               </div>
@@ -581,8 +602,11 @@ export default function OrderDetail() {
               <CheckSquare size={14} className="text-indigo-500" />
               <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Chequeo Técnico</h2>
             </div>
-            <div className="space-y-4">
-              {[
+            {(() => {
+              const PHYS_LABELS = { ok: 'OK', scratched: 'Rayado', broken: 'Roto', dented: 'Golpes', bent: 'Doblado', present: 'Presente', damaged: 'Dañada', missing: 'Faltante' }
+              const PHYS_CLS   = { ok: 'text-green-600 dark:text-green-400', scratched: 'text-yellow-600 dark:text-yellow-400', broken: 'text-red-600 dark:text-red-400', dented: 'text-yellow-600 dark:text-yellow-400', bent: 'text-red-600 dark:text-red-400', present: 'text-green-600 dark:text-green-400', damaged: 'text-yellow-600 dark:text-yellow-400', missing: 'text-red-600 dark:text-red-400' }
+              const groups = [
+                { group: 'Accesorios recibidos', items: null },
                 { group: 'Estado físico', items: [
                   { key: 'screenCondition',    label: 'Pantalla',       type: 'phys' },
                   { key: 'backCoverCondition', label: 'Tapa trasera',   type: 'phys' },
@@ -590,62 +614,70 @@ export default function OrderDetail() {
                   { key: 'simTray',            label: 'Bandeja SIM',    type: 'sim'  },
                 ]},
                 { group: 'Funciones básicas', items: [
-                  { key: 'powersOn',         label: 'Enciende',                   type: 'tri' },
-                  { key: 'chargingPortWorks',label: 'Puerto de carga',            type: 'tri' },
-                  { key: 'charges',          label: 'Carga correctamente',        type: 'tri' },
-                  { key: 'screenWorks',      label: 'Pantalla',                   type: 'tri' },
-                  { key: 'touchWorks',       label: 'Touch / táctil',             type: 'tri' },
-                  { key: 'buttonsWork',      label: 'Botones',                    type: 'tri' },
-                  { key: 'vibrationWorks',   label: 'Vibración',                  type: 'tri' },
+                  { key: 'powersOn',          label: 'Enciende',              type: 'tri' },
+                  { key: 'chargingPortWorks', label: 'Puerto de carga',       type: 'tri' },
+                  { key: 'charges',           label: 'Carga correctamente',   type: 'tri' },
+                  { key: 'screenWorks',       label: 'Pantalla',              type: 'tri' },
+                  { key: 'touchWorks',        label: 'Touch / táctil',        type: 'tri' },
+                  { key: 'buttonsWork',       label: 'Botones',               type: 'tri' },
+                  { key: 'vibrationWorks',    label: 'Vibración',             type: 'tri' },
                 ]},
                 { group: 'Cámaras', items: [
-                  { key: 'rearCameraWorks',  label: 'Cámara trasera',  type: 'tri' },
-                  { key: 'frontCameraWorks', label: 'Cámara frontal',  type: 'tri' },
-                  { key: 'flashWorks',       label: 'Flash / Linterna',type: 'tri' },
+                  { key: 'rearCameraWorks',  label: 'Cámara trasera',   type: 'tri' },
+                  { key: 'frontCameraWorks', label: 'Cámara frontal',   type: 'tri' },
+                  { key: 'flashWorks',       label: 'Flash / Linterna', type: 'tri' },
                 ]},
                 { group: 'Audio', items: [
-                  { key: 'audioWorks',       label: 'Bocina / altavoz',    type: 'tri' },
-                  { key: 'earSpeakerWorks',  label: 'Auricular (llamadas)',type: 'tri' },
-                  { key: 'micWorks',         label: 'Micrófono',           type: 'tri' },
+                  { key: 'audioWorks',      label: 'Bocina / altavoz',     type: 'tri' },
+                  { key: 'earSpeakerWorks', label: 'Auricular (llamadas)', type: 'tri' },
+                  { key: 'micWorks',        label: 'Micrófono',            type: 'tri' },
                 ]},
                 { group: 'Conectividad y sensores', items: [
-                  { key: 'wifiWorks',        label: 'Wi-Fi',                   type: 'tri' },
-                  { key: 'bluetoothWorks',   label: 'Bluetooth',               type: 'tri' },
-                  { key: 'gpsWorks',         label: 'GPS',                     type: 'tri' },
-                  { key: 'biometricWorks',   label: 'Face ID / Huella digital',type: 'tri' },
+                  { key: 'wifiWorks',      label: 'Wi-Fi',                    type: 'tri' },
+                  { key: 'bluetoothWorks', label: 'Bluetooth',                type: 'tri' },
+                  { key: 'gpsWorks',       label: 'GPS',                      type: 'tri' },
+                  { key: 'biometricWorks', label: 'Face ID / Huella digital', type: 'tri' },
                 ]},
                 { group: 'Humedad / Líquidos', items: [
-                  { key: 'waterDamage',        label: 'Daño por agua',                  type: 'bool' },
-                  { key: 'humidityIndicator',  label: 'Indicador de humedad activado',  type: 'bool' },
-                  { key: 'liquidSigns',        label: 'Señales visibles de líquido',    type: 'bool' },
-                  { key: 'corrosionVisible',   label: 'Oxidación visible en placa',     type: 'bool' },
+                  { key: 'waterDamage',       label: 'Daño por agua',                 type: 'bool' },
+                  { key: 'humidityIndicator', label: 'Indicador de humedad activado', type: 'bool' },
+                  { key: 'liquidSigns',       label: 'Señales visibles de líquido',   type: 'bool' },
+                  { key: 'corrosionVisible',  label: 'Oxidación visible en placa',    type: 'bool' },
                 ]},
                 { group: 'Condición general', items: [
-                  { key: 'physicalDamage',    label: 'Daño físico visible',    type: 'bool' },
-                  { key: 'previouslyOpened',  label: 'Abierto anteriormente',  type: 'bool' },
+                  { key: 'physicalDamage',   label: 'Daño físico visible',   type: 'bool' },
+                  { key: 'previouslyOpened', label: 'Abierto anteriormente', type: 'bool' },
                 ]},
                 { group: 'Software', items: [
-                  { key: 'bootsSystem',       label: 'Inicia el sistema',                   type: 'tri'  },
-                  { key: 'hasPinPattern',     label: 'Tiene PIN / patrón / contraseña',     type: 'bool' },
-                  { key: 'hasGoogleIcloud',   label: 'Tiene cuenta Google / iCloud',        type: 'bool' },
-                  { key: 'frpActive',         label: 'FRP / Bloqueo de activación activo',  type: 'bool' },
+                  { key: 'bootsSystem',     label: 'Inicia el sistema',                  type: 'tri'  },
+                  { key: 'hasPinPattern',   label: 'Tiene PIN / patrón / contraseña',    type: 'bool' },
+                  { key: 'hasGoogleIcloud', label: 'Tiene cuenta Google / iCloud',       type: 'bool' },
+                  { key: 'frpActive',       label: 'FRP / Bloqueo de activación activo', type: 'bool' },
                 ]},
-              ].map(({ group, items }) => {
-                const PHYS_LABELS = { ok: 'OK', scratched: 'Rayado', broken: 'Roto', dented: 'Golpes', bent: 'Doblado', present: 'Presente', damaged: 'Dañada', missing: 'Faltante' }
-                const PHYS_CLS   = { ok: 'text-green-600 dark:text-green-400', scratched: 'text-yellow-600 dark:text-yellow-400', broken: 'text-red-600 dark:text-red-400', dented: 'text-yellow-600 dark:text-yellow-400', bent: 'text-red-600 dark:text-red-400', present: 'text-green-600 dark:text-green-400', damaged: 'text-yellow-600 dark:text-yellow-400', missing: 'text-red-600 dark:text-red-400' }
-                return (
-                  <div key={group}>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mb-2 pb-1 border-b border-slate-100 dark:border-slate-800">
-                      {group}
-                    </p>
-                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {items.map(({ key, label, type }) => {
+              ]
+              return (
+                <div className="space-y-2">
+                  {groups.map(({ group, items }) => (
+                    <CheckGroup key={group} title={group}>
+                      {/* Accesorios */}
+                      {!items && (
+                        <div className="flex flex-wrap gap-1.5 py-3">
+                          {order.accessories?.length > 0
+                            ? order.accessories.map((a) => (
+                                <span key={a} className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300">{a}</span>
+                              ))
+                            : <span className="text-xs text-slate-400">—</span>
+                          }
+                        </div>
+                      )}
+                      {/* Resto de items */}
+                      {items?.map(({ key, label, type }) => {
                         const val = order[key]
                         return (
                           <div key={key} className="flex items-center justify-between py-2">
                             <span className="text-xs text-slate-600 dark:text-slate-400">{label}</span>
-                            {(type === 'tri') && <TriIcon val={val} />}
-                            {(type === 'bool') && (
+                            {type === 'tri' && <TriIcon val={val} />}
+                            {type === 'bool' && (
                               val === true  ? <XCircle size={15} className="text-red-500" /> :
                               val === false ? <CheckCircle2 size={15} className="text-green-500" /> :
                               <MinusCircle size={15} className="text-slate-300 dark:text-slate-600" />
@@ -658,11 +690,11 @@ export default function OrderDetail() {
                           </div>
                         )
                       })}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                    </CheckGroup>
+                  ))}
+                </div>
+              )
+            })()}
           </div>
         </div>
 
@@ -695,7 +727,7 @@ export default function OrderDetail() {
 
               {/* Costo de reparación */}
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Costo de reparación</span>
+                <span className="text-xs text-slate-500">Costo</span>
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.repairCost)}</span>
               </div>
 
@@ -729,7 +761,7 @@ export default function OrderDetail() {
               {[
                 { label: 'Fecha de ingreso',      value: formatDate(order.entryDate) },
                 { label: 'Entrega estimada',       value: order.estimatedDelivery ? formatDateShort(order.estimatedDelivery) : '—' },
-                { label: 'Fecha de entrega real',  value: formatDate(order.deliveryDate) },
+                { label: 'Fecha de entrega',  value: formatDate(order.deliveryDate) },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between gap-2 py-2.5">
                   <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{label}</span>

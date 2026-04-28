@@ -777,7 +777,26 @@ export const useStore = create(
       deleteAppUser: async (id) => {
         if (!isTursoConfigured) return { error: 'Turso not configured' }
         try {
+          // Resolve username so we can cascade-delete all related data
+          const userToDelete = get().appUsers.find((u) => u.id === id)
+          const username = userToDelete?.username
+
           await turso.execute({ sql: 'DELETE FROM app_users WHERE id = ?', args: [id] })
+
+          // Cascade: delete all data that belongs to this user
+          if (username) {
+            await turso.batch([
+              { sql: 'DELETE FROM orders       WHERE created_by = ?', args: [username] },
+              { sql: 'DELETE FROM clients      WHERE created_by = ?', args: [username] },
+              { sql: 'DELETE FROM inventory    WHERE created_by = ?', args: [username] },
+              { sql: 'DELETE FROM suppliers    WHERE created_by = ?', args: [username] },
+              { sql: 'DELETE FROM services     WHERE created_by = ?', args: [username] },
+              { sql: 'DELETE FROM sales        WHERE created_by = ?', args: [username] },
+              { sql: 'DELETE FROM user_settings WHERE username  = ?', args: [username] },
+              { sql: 'DELETE FROM login_logs   WHERE username   = ?', args: [username] },
+            ], 'write')
+          }
+
           set((s) => ({ appUsers: s.appUsers.filter((u) => u.id !== id) }))
           return { error: null }
         } catch (e) {

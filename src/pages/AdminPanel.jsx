@@ -502,7 +502,7 @@ export default function AdminPanel() {
             <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800/50">
               <AlertTriangle size={18} className="text-red-500 flex-shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-400">
-                ¿Eliminar el usuario <strong>{modal.user.username}</strong>? Esta acción no se puede deshacer.
+                ¿Eliminar el usuario <strong>{modal.user.username}</strong>? Se eliminarán también todas sus órdenes, ventas, clientes, inventario, servicios, proveedores y configuración. Esta acción no se puede deshacer.
               </p>
             </div>
             <div className="flex gap-2">

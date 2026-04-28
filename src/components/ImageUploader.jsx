@@ -8,7 +8,7 @@
  *  - maxImages: number (default 6)
  */
 import React, { useRef, useState } from 'react'
-import { Camera, X, ZoomIn } from 'lucide-react'
+import { Camera, X, ZoomIn, ImagePlus } from 'lucide-react'
 
 const MAX_SIZE = 1200
 const QUALITY = 0.75
@@ -36,6 +36,7 @@ function compressImage(file) {
 
 export default function ImageUploader({ images = [], onChange, label, maxImages = 6 }) {
   const inputRef = useRef(null)
+  const cameraRef = useRef(null)
   const [dragging, setDragging] = useState(false)
   const [lightbox, setLightbox] = useState(null) // index o null
   const [processing, setProcessing] = useState(false)
@@ -94,26 +95,43 @@ export default function ImageUploader({ images = [], onChange, label, maxImages 
           </div>
         ))}
 
-        {/* Add button */}
+        {/* Add buttons */}
         {canAdd && (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
+          <div
+            className={`aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all ${
+              dragging
+                ? 'border-indigo-500 bg-indigo-900/20'
+                : 'border-slate-700 hover:border-slate-600 bg-slate-800/30'
+            } ${processing ? 'opacity-50 cursor-wait' : ''}`}
             onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
-            disabled={processing}
-            className={`aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1.5 transition-all ${
-              dragging
-                ? 'border-indigo-500 bg-indigo-900/20'
-                : 'border-slate-700 hover:border-slate-500 hover:bg-slate-800/50'
-            } ${processing ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
           >
-            <Camera size={18} className={dragging ? 'text-indigo-400' : 'text-slate-500'} />
-            <span className="text-xs text-slate-500">
-              {processing ? 'Procesando...' : images.length === 0 ? 'Agregar foto' : '+'}
-            </span>
-          </button>
+            {processing ? (
+              <span className="text-xs text-slate-500">Procesando...</span>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => cameraRef.current?.click()}
+                  className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-indigo-600/20 transition-colors group"
+                  title="Tomar foto"
+                >
+                  <Camera size={20} className="text-indigo-400 group-hover:text-indigo-300" />
+                  <span className="text-[10px] text-slate-500 group-hover:text-slate-300">Cámara</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => inputRef.current?.click()}
+                  className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-slate-700/60 transition-colors group"
+                  title="Seleccionar de galería"
+                >
+                  <ImagePlus size={18} className="text-slate-500 group-hover:text-slate-300" />
+                  <span className="text-[10px] text-slate-500 group-hover:text-slate-300">Galería</span>
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -121,13 +139,23 @@ export default function ImageUploader({ images = [], onChange, label, maxImages 
         <p className="text-xs text-slate-600 mt-1.5">{images.length} / {maxImages} fotos</p>
       )}
 
+      {/* Galería (múltiple) */}
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
         multiple
         className="hidden"
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => { handleFiles(e.target.files); e.target.value = '' }}
+      />
+      {/* Cámara directa (capture) */}
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => { handleFiles(e.target.files); e.target.value = '' }}
       />
 
       {/* Lightbox */}

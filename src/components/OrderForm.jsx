@@ -32,8 +32,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
-  ChevronDown, ChevronUp, Search, UserCheck, Camera, Pencil, X,
-  Trash2, Package, Wrench
+  Search, UserCheck, Camera, Pencil, X,
+  Trash2, Package, Wrench, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 import { useStore } from '../store/useStore'
@@ -41,22 +41,16 @@ import ImageUploader from './ImageUploader'
 import PatternInput from './PatternInput'
 
 // ── Sección colapsable ──────────────────────────────────────────────────────
-const Section = ({ title, icon: Icon, children, defaultOpen = true }) => {
-  const [open, setOpen] = useState(defaultOpen)
+const Section = ({ title, icon: Icon, children }) => {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-      >
+      <div className="w-full flex items-center px-5 py-4">
         <div className="flex items-center gap-2.5">
           <Icon size={15} className="text-indigo-500" />
           <span className="font-semibold text-slate-900 dark:text-white text-sm">{title}</span>
         </div>
-        {open ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
-      </button>
-      {open && <div className="p-5">{children}</div>}
+      </div>
+      <div className="p-5">{children}</div>
     </div>
   )
 }
@@ -192,12 +186,32 @@ function CurrencyInput({ value, onChange, placeholder = '0', className }) {
   )
 }
 
-// Separador de grupo dentro del checklist
-const CheckGroup = ({ title }) => (
-  <p className="pt-5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 select-none border-t border-slate-100 dark:border-slate-800 mt-1">
-    {title}
-  </p>
-)
+// Sección colapsable dentro del checklist
+const CheckSection = ({ title, children, defaultOpen = true }) => {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden mt-2 first:mt-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 select-none">
+          {title}
+        </span>
+        {open
+          ? <ChevronUp size={14} className="text-slate-400 flex-shrink-0" />
+          : <ChevronDown size={14} className="text-slate-400 flex-shrink-0" />
+        }
+      </button>
+      {open && (
+        <div className="divide-y divide-slate-100 dark:divide-slate-800 px-4">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ── Autocomplete genérico ──────────────────────────────────────────────────
 function AutocompleteInput({ value, onChange, suggestions, placeholder, className, required }) {
@@ -955,9 +969,9 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
       {/* ── Cliente ── */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5">
+        <div className="px-5 py-4 flex items-center gap-2.5">
           <User size={15} className="text-indigo-500" />
-          <span className="font-semibold text-slate-900 dark:text-white text-sm">Datos del Cliente</span>
+          <span className="font-semibold text-slate-900 dark:text-white text-sm">Datos del cliente</span>
         </div>
 
         <div className="p-5 space-y-4">
@@ -1017,7 +1031,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                 type="email"
                 value={form.customerEmail}
                 onChange={(e) => set('customerEmail', e.target.value)}
-                placeholder="cliente@email.com"
+                placeholder="cliente@correo.com"
                 readOnly={clientReadOnly}
               />
             </Field>
@@ -1044,7 +1058,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
       </div>
 
       {/* ── Dispositivo ── */}
-      <Section title="Información del Dispositivo" icon={Smartphone}>
+      <Section title="Información del dispositivo" icon={Smartphone}>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Tipo de dispositivo" required>
             <select className={selectClass} value={form.deviceType} onChange={(e) => set('deviceType', e.target.value)} required>
@@ -1076,30 +1090,11 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             <input className={inputClass} value={form.deviceSerial} onChange={(e) => set('deviceSerial', e.target.value)} placeholder="SN o IMEI" />
           </Field>
 
-          <div className="col-span-2">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Accesorios recibidos</label>
-            <div className="flex flex-wrap gap-2">
-              {ACCESSORIES_OPTIONS.map((acc) => (
-                <button
-                  key={acc}
-                  type="button"
-                  onClick={() => toggleAccessory(acc)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
-                    form.accessories.includes(acc)
-                      ? 'bg-indigo-600 text-white border-indigo-600'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-300'
-                  }`}
-                >
-                  {acc}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </Section>
 
       {/* ── Seguridad ── */}
-      <Section title="Seguridad / Bloqueo" icon={Shield} defaultOpen={false}>
+      <Section title="Seguridad" icon={Shield} defaultOpen={false}>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Contraseña">
             <input
@@ -1127,7 +1122,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
               rows={2}
               value={form.lockNotes}
               onChange={(e) => set('lockNotes', e.target.value)}
-              placeholder="Cuentas bloqueadas, Find My, iCloud, etc."
+              placeholder="Cuentas Google, iCloud, etc."
             />
           </div>
         </div>
@@ -1156,7 +1151,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
       </Section>
 
       {/* ── Checklist técnico ── */}
-      <Section title="Checklist Técnico" icon={CheckSquare} defaultOpen={false}>
+      <Section title="Checklist técnico" icon={CheckSquare} defaultOpen={false}>
         {/* Relleno masivo */}
         <div className="flex items-center gap-1 mb-5 p-1 rounded-lg bg-slate-100 dark:bg-slate-800">
           {[
@@ -1175,20 +1170,35 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             </button>
           ))}
         </div>
-        <div className="space-y-0">
+        <div className="space-y-2">
 
-          {/* Estado físico */}
-          <CheckGroup title="Estado físico" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <CheckSection title="Accesorios recibidos" defaultOpen={false}>
+            <div className="flex flex-wrap gap-2 py-2">
+              {ACCESSORIES_OPTIONS.map((acc) => (
+                <button
+                  key={acc}
+                  type="button"
+                  onClick={() => toggleAccessory(acc)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                    form.accessories.includes(acc)
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-300'
+                  }`}
+                >
+                  {acc}
+                </button>
+              ))}
+            </div>
+          </CheckSection>
+
+          <CheckSection title="Estado físico" defaultOpen={false}>
             <PhysState label="Pantalla" value={form.screenCondition} onChange={(v) => set('screenCondition', v)} options={PHYS_OK_DMG_BRK} />
             <PhysState label="Tapa trasera" value={form.backCoverCondition} onChange={(v) => set('backCoverCondition', v)} options={PHYS_OK_DMG_BRK} />
             <PhysState label="Marco / bordes" value={form.frameCondition} onChange={(v) => set('frameCondition', v)} options={PHYS_OK_DENTED_BENT} />
             <PhysState label="Bandeja SIM" value={form.simTray} onChange={(v) => set('simTray', v)} options={PHYS_SIM} />
-          </div>
+          </CheckSection>
 
-          {/* Funciones básicas */}
-          <CheckGroup title="Funciones básicas" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <CheckSection title="Funciones básicas" defaultOpen={false}>
             <TriState label="Enciende" value={form.powersOn} onChange={(v) => set('powersOn', v)} />
             <TriState label="Puerto de carga" value={form.chargingPortWorks} onChange={(v) => set('chargingPortWorks', v)} />
             <TriState label="Carga correctamente" value={form.charges} onChange={(v) => set('charges', v)} />
@@ -1196,71 +1206,59 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             <TriState label="Touch / táctil" value={form.touchWorks} onChange={(v) => set('touchWorks', v)} />
             <TriState label="Botones (vol. / encendido)" value={form.buttonsWork} onChange={(v) => set('buttonsWork', v)} />
             <TriState label="Vibración" value={form.vibrationWorks} onChange={(v) => set('vibrationWorks', v)} />
-          </div>
+          </CheckSection>
 
-          {/* Cámaras */}
-          <CheckGroup title="Cámaras" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <CheckSection title="Cámaras" defaultOpen={false}>
             <TriState label="Cámara trasera" value={form.rearCameraWorks} onChange={(v) => set('rearCameraWorks', v)} />
             <TriState label="Cámara frontal" value={form.frontCameraWorks} onChange={(v) => set('frontCameraWorks', v)} />
             <TriState label="Flash / Linterna" value={form.flashWorks} onChange={(v) => set('flashWorks', v)} />
-          </div>
+          </CheckSection>
 
-          {/* Audio */}
-          <CheckGroup title="Audio" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <CheckSection title="Audio" defaultOpen={false}>
             <TriState label="Bocina / altavoz" value={form.audioWorks} onChange={(v) => set('audioWorks', v)} />
             <TriState label="Auricular (llamadas)" value={form.earSpeakerWorks} onChange={(v) => set('earSpeakerWorks', v)} />
             <TriState label="Micrófono" value={form.micWorks} onChange={(v) => set('micWorks', v)} />
-          </div>
+          </CheckSection>
 
-          {/* Conectividad y sensores */}
-          <CheckGroup title="Conectividad y sensores" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <CheckSection title="Conectividad y sensores" defaultOpen={false}>
             <TriState label="Wi-Fi" value={form.wifiWorks} onChange={(v) => set('wifiWorks', v)} />
             <TriState label="Bluetooth" value={form.bluetoothWorks} onChange={(v) => set('bluetoothWorks', v)} />
             <TriState label="GPS" value={form.gpsWorks} onChange={(v) => set('gpsWorks', v)} />
             <TriState label="Face ID / Huella digital" value={form.biometricWorks} onChange={(v) => set('biometricWorks', v)} />
-          </div>
+          </CheckSection>
 
-          {/* Humedad / Líquidos */}
-          <CheckGroup title="Humedad / Líquidos" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <CheckSection title="Humedad / Líquidos" defaultOpen={false}>
             <BoolState label="Daño por agua" value={form.waterDamage === true ? true : form.waterDamage === false ? false : null} onChange={(v) => set('waterDamage', v)} />
             <BoolState label="Indicador de humedad activado" value={form.humidityIndicator} onChange={(v) => set('humidityIndicator', v)} />
             <BoolState label="Señales visibles de líquido" value={form.liquidSigns} onChange={(v) => set('liquidSigns', v)} />
             <BoolState label="Oxidación visible en placa" value={form.corrosionVisible} onChange={(v) => set('corrosionVisible', v)} />
-          </div>
+          </CheckSection>
 
-          {/* Condición general */}
-          <CheckGroup title="Condición general" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <CheckSection title="Condición general" defaultOpen={false}>
             <BoolState label="Daño físico visible" value={form.physicalDamage === true ? true : form.physicalDamage === false ? false : null} onChange={(v) => set('physicalDamage', v)} />
             <BoolState label="Abierto anteriormente" value={form.previouslyOpened === true ? true : form.previouslyOpened === false ? false : null} onChange={(v) => set('previouslyOpened', v)} />
-          </div>
+          </CheckSection>
 
-          {/* Software */}
-          <CheckGroup title="Software" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <CheckSection title="Software" defaultOpen={false}>
             <TriState label="Inicia el sistema" value={form.bootsSystem} onChange={(v) => set('bootsSystem', v)} />
             <BoolState label="Tiene PIN / patrón / contraseña" value={form.hasPinPattern} onChange={(v) => set('hasPinPattern', v)} />
             <BoolState label="Tiene cuenta Google / iCloud" value={form.hasGoogleIcloud} onChange={(v) => set('hasGoogleIcloud', v)} />
             <BoolState label="FRP / Bloqueo de activación activo" value={form.frpActive} onChange={(v) => set('frpActive', v)} />
-          </div>
+          </CheckSection>
 
         </div>
       </Section>
 
       {/* ── Fotos ── */}
-      <Section title="Fotos del Equipo" icon={Camera} defaultOpen={false}>
+      <Section title="Fotos del dispositivo" icon={Camera} defaultOpen={false}>
         <div className="grid sm:grid-cols-2 gap-6">
           <ImageUploader
-            label="Fotos de ingreso (cómo llegó)"
+            label="Fotos de ingreso"
             images={form.photosEntry}
             onChange={(imgs) => set('photosEntry', imgs)}
           />
           <ImageUploader
-            label="Fotos de salida (cómo se fue)"
+            label="Fotos de salida"
             images={form.photosExit}
             onChange={(imgs) => set('photosExit', imgs)}
           />
@@ -1268,7 +1266,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
       </Section>
 
       {/* ── Presupuesto ── */}
-      <Section title="Presupuesto y Precios (ARS)" icon={DollarSign} defaultOpen={false}>
+      <Section title="Presupuesto" icon={DollarSign} defaultOpen={false}>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Precio estimado">
             <div className="relative">
@@ -1319,31 +1317,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             </div>
           </Field>
           <div className="col-span-2 sm:col-span-1">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-              Aprobación del cliente
-            </label>
-            <div className="flex rounded-lg border border-slate-700 overflow-hidden text-xs">
-              {[
-                { value: 'pending',  label: 'Pendiente', activeClass: 'bg-slate-600 text-white' },
-                { value: 'approved', label: '✓ Aprobado', activeClass: 'bg-green-600 text-white' },
-                { value: 'rejected', label: '✕ Rechazado', activeClass: 'bg-red-600 text-white' },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => set('budgetStatus', opt.value)}
-                  className={`flex-1 py-2.5 font-medium transition-colors ${
-                    form.budgetStatus === opt.value
-                      ? opt.activeClass
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="col-span-2">
             <button
               type="button"
               onClick={() => set('isWarranty', !form.isWarranty)}
@@ -1405,7 +1378,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
           </div>
 
           <div className="col-span-2">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Trabajo realizado / Servicios prestados</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Trabajos / Servicios realizados</label>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.workDone} onChange={(e) => set('workDone', e.target.value)} placeholder="Describir qué se hizo, piezas reemplazadas, etc." />
           </div>
         </div>
