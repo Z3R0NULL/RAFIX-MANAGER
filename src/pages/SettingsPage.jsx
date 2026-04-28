@@ -22,6 +22,47 @@ import {
 } from 'lucide-react'
 import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '../store/useStore'
 
+const TIMEZONE_OPTIONS = [
+  { group: 'América del Sur', zones: [
+    'America/Argentina/Buenos_Aires',
+    'America/Argentina/Cordoba',
+    'America/Argentina/Mendoza',
+    'America/Santiago',
+    'America/Lima',
+    'America/Bogota',
+    'America/Caracas',
+    'America/La_Paz',
+    'America/Asuncion',
+    'America/Montevideo',
+    'America/Sao_Paulo',
+    'America/Guayaquil',
+  ]},
+  { group: 'América del Norte', zones: [
+    'America/Mexico_City',
+    'America/Monterrey',
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'America/Bogota',
+    'America/Toronto',
+  ]},
+  { group: 'Europa', zones: [
+    'Europe/Madrid',
+    'Europe/London',
+    'Europe/Paris',
+    'Europe/Berlin',
+    'Europe/Rome',
+    'Europe/Lisbon',
+  ]},
+  { group: 'Otros', zones: [
+    'UTC',
+    'Asia/Tokyo',
+    'Asia/Shanghai',
+    'Australia/Sydney',
+  ]},
+]
+
 const YoutubeIcon = ({ size = 16, className = '' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -98,6 +139,16 @@ export default function SettingsPage() {
               onChange={(e) => patch('businessName', e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
               placeholder="Ej. TecnoFix"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Dirección del negocio</label>
+            <input
+              type="text"
+              value={local.businessAddress}
+              onChange={(e) => patch('businessAddress', e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
+              placeholder="Ej. Av. Corrientes 1234, Buenos Aires"
             />
           </div>
           <div>
@@ -184,6 +235,25 @@ export default function SettingsPage() {
                 ⚠ Cambio de idioma disponible en próximas versiones.
               </p>
             )}
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Zona horaria</label>
+            <select
+              value={local.timezone}
+              onChange={(e) => patch('timezone', e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
+            >
+              {TIMEZONE_OPTIONS.map(({ group, zones }) => (
+                <optgroup key={group} label={group}>
+                  {zones.map((tz) => (
+                    <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <p className="text-slate-600 text-[10px] mt-1.5 pl-0.5">
+              Hora actual: {new Intl.DateTimeFormat('es', { timeZone: local.timezone, hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }).format(new Date())}
+            </p>
           </div>
         </div>
       </div>

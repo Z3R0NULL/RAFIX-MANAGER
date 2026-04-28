@@ -393,6 +393,7 @@ export const DEFAULT_SETTINGS = {
   currency: 'ARS',
   currencyLocale: 'es-AR',
   language: 'es',
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Argentina/Buenos_Aires',
   warrantyDays: 30,
   warrantyPolicy: [
     'El taller no se hace responsable por la pérdida de datos. El cliente debe realizar una copia de seguridad antes del servicio.',

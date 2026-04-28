@@ -516,7 +516,7 @@ export default function OrderDetail() {
             <InfoRow label="Modelo" value={order.deviceModel} />
             <InfoRow label="ID" value={order.deviceSerial} />
             <div className="py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-              <span className="text-xs text-slate-400 dark:text-slate-500 block mb-1.5">Accessories</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500 block mb-1.5">Accesorios</span>
               {order.accessories?.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
                   {order.accessories.map((a) => (
@@ -568,20 +568,6 @@ export default function OrderDetail() {
                 </div>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{order.technicianNotes || '—'}</p>
               </div>
-              <div className="flex gap-2 flex-wrap pt-1">
-                {[
-                  { key: 'waterDamage', label: 'Water Damage', activeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
-                  { key: 'physicalDamage', label: 'Physical Damage', activeColor: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' },
-                  { key: 'previouslyOpened', label: 'Previously Opened', activeColor: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
-                ].map(({ key, label, activeColor }) => (
-                  <span
-                    key={key}
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${order[key] ? activeColor : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 line-through'}`}
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -595,20 +581,87 @@ export default function OrderDetail() {
               <CheckSquare size={14} className="text-indigo-500" />
               <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Chequeo Técnico</h2>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="space-y-4">
               {[
-                { key: 'powersOn', label: 'Powers On' },
-                { key: 'charges', label: 'Charges' },
-                { key: 'screenWorks', label: 'Screen Works' },
-                { key: 'touchWorks', label: 'Touch Works' },
-                { key: 'audioWorks', label: 'Audio Works' },
-                { key: 'buttonsWork', label: 'Buttons Work' },
-              ].map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                  <TriIcon val={order[key]} />
-                  <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">{label}</span>
-                </div>
-              ))}
+                { group: 'Estado físico', items: [
+                  { key: 'screenCondition',    label: 'Pantalla',       type: 'phys' },
+                  { key: 'backCoverCondition', label: 'Tapa trasera',   type: 'phys' },
+                  { key: 'frameCondition',     label: 'Marco / bordes', type: 'phys' },
+                  { key: 'simTray',            label: 'Bandeja SIM',    type: 'sim'  },
+                ]},
+                { group: 'Funciones básicas', items: [
+                  { key: 'powersOn',         label: 'Enciende',                   type: 'tri' },
+                  { key: 'chargingPortWorks',label: 'Puerto de carga',            type: 'tri' },
+                  { key: 'charges',          label: 'Carga correctamente',        type: 'tri' },
+                  { key: 'screenWorks',      label: 'Pantalla',                   type: 'tri' },
+                  { key: 'touchWorks',       label: 'Touch / táctil',             type: 'tri' },
+                  { key: 'buttonsWork',      label: 'Botones',                    type: 'tri' },
+                  { key: 'vibrationWorks',   label: 'Vibración',                  type: 'tri' },
+                ]},
+                { group: 'Cámaras', items: [
+                  { key: 'rearCameraWorks',  label: 'Cámara trasera',  type: 'tri' },
+                  { key: 'frontCameraWorks', label: 'Cámara frontal',  type: 'tri' },
+                  { key: 'flashWorks',       label: 'Flash / Linterna',type: 'tri' },
+                ]},
+                { group: 'Audio', items: [
+                  { key: 'audioWorks',       label: 'Bocina / altavoz',    type: 'tri' },
+                  { key: 'earSpeakerWorks',  label: 'Auricular (llamadas)',type: 'tri' },
+                  { key: 'micWorks',         label: 'Micrófono',           type: 'tri' },
+                ]},
+                { group: 'Conectividad y sensores', items: [
+                  { key: 'wifiWorks',        label: 'Wi-Fi',                   type: 'tri' },
+                  { key: 'bluetoothWorks',   label: 'Bluetooth',               type: 'tri' },
+                  { key: 'gpsWorks',         label: 'GPS',                     type: 'tri' },
+                  { key: 'biometricWorks',   label: 'Face ID / Huella digital',type: 'tri' },
+                ]},
+                { group: 'Humedad / Líquidos', items: [
+                  { key: 'waterDamage',        label: 'Daño por agua',                  type: 'bool' },
+                  { key: 'humidityIndicator',  label: 'Indicador de humedad activado',  type: 'bool' },
+                  { key: 'liquidSigns',        label: 'Señales visibles de líquido',    type: 'bool' },
+                  { key: 'corrosionVisible',   label: 'Oxidación visible en placa',     type: 'bool' },
+                ]},
+                { group: 'Condición general', items: [
+                  { key: 'physicalDamage',    label: 'Daño físico visible',    type: 'bool' },
+                  { key: 'previouslyOpened',  label: 'Abierto anteriormente',  type: 'bool' },
+                ]},
+                { group: 'Software', items: [
+                  { key: 'bootsSystem',       label: 'Inicia el sistema',                   type: 'tri'  },
+                  { key: 'hasPinPattern',     label: 'Tiene PIN / patrón / contraseña',     type: 'bool' },
+                  { key: 'hasGoogleIcloud',   label: 'Tiene cuenta Google / iCloud',        type: 'bool' },
+                  { key: 'frpActive',         label: 'FRP / Bloqueo de activación activo',  type: 'bool' },
+                ]},
+              ].map(({ group, items }) => {
+                const PHYS_LABELS = { ok: 'OK', scratched: 'Rayado', broken: 'Roto', dented: 'Golpes', bent: 'Doblado', present: 'Presente', damaged: 'Dañada', missing: 'Faltante' }
+                const PHYS_CLS   = { ok: 'text-green-600 dark:text-green-400', scratched: 'text-yellow-600 dark:text-yellow-400', broken: 'text-red-600 dark:text-red-400', dented: 'text-yellow-600 dark:text-yellow-400', bent: 'text-red-600 dark:text-red-400', present: 'text-green-600 dark:text-green-400', damaged: 'text-yellow-600 dark:text-yellow-400', missing: 'text-red-600 dark:text-red-400' }
+                return (
+                  <div key={group}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mb-2 pb-1 border-b border-slate-100 dark:border-slate-800">
+                      {group}
+                    </p>
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {items.map(({ key, label, type }) => {
+                        const val = order[key]
+                        return (
+                          <div key={key} className="flex items-center justify-between py-2">
+                            <span className="text-xs text-slate-600 dark:text-slate-400">{label}</span>
+                            {(type === 'tri') && <TriIcon val={val} />}
+                            {(type === 'bool') && (
+                              val === true  ? <XCircle size={15} className="text-red-500" /> :
+                              val === false ? <CheckCircle2 size={15} className="text-green-500" /> :
+                              <MinusCircle size={15} className="text-slate-300 dark:text-slate-600" />
+                            )}
+                            {(type === 'phys' || type === 'sim') && (
+                              val
+                                ? <span className={`text-xs font-semibold ${PHYS_CLS[val] || 'text-slate-400'}`}>{PHYS_LABELS[val] || val}</span>
+                                : <MinusCircle size={15} className="text-slate-300 dark:text-slate-600" />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

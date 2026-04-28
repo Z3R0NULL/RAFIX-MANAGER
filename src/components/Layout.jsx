@@ -30,7 +30,7 @@ export default function Layout({ children }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile topbar */}
-        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-700/60">
+        <header className="md:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-700/60">
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 rounded-lg text-slate-400 hover:bg-slate-800"

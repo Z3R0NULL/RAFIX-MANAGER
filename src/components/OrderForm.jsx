@@ -202,18 +202,35 @@ const CheckGroup = ({ title }) => (
 // ── Autocomplete genérico ──────────────────────────────────────────────────
 function AutocompleteInput({ value, onChange, suggestions, placeholder, className, required }) {
   const [open, setOpen] = useState(false)
-  const [filtered, setFiltered] = useState([])
-  const [focused, setFocused] = useState(false)
   const wrapRef = useRef(null)
+  const blurTimerRef = useRef(null)
 
-  useEffect(() => {
-    if (!value || value.length < 1) { setFiltered([]); setOpen(false); return }
-    const q = value.toLowerCase()
-    const matches = suggestions.filter((s) => s.toLowerCase().includes(q)).slice(0, 8)
-    setFiltered(matches)
-    setOpen(focused && matches.length > 0)
-  }, [value, suggestions, focused])
+  const filtered = value && value.length >= 1
+    ? suggestions.filter((s) => s.toLowerCase().includes(value.toLowerCase())).slice(0, 8)
+    : []
 
+  const handleFocus = () => {
+    clearTimeout(blurTimerRef.current)
+    if (filtered.length > 0) setOpen(true)
+  }
+
+  const handleBlur = () => {
+    // Delay closing so a tap/click on an option has time to fire first
+    blurTimerRef.current = setTimeout(() => setOpen(false), 150)
+  }
+
+  const handleChange = (e) => {
+    onChange(e.target.value)
+    setOpen(true)
+  }
+
+  const handleSelect = (s) => {
+    clearTimeout(blurTimerRef.current)
+    onChange(s)
+    setOpen(false)
+  }
+
+  // Close on outside click
   useEffect(() => {
     const handler = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false) }
     document.addEventListener('mousedown', handler)
@@ -225,21 +242,22 @@ function AutocompleteInput({ value, onChange, suggestions, placeholder, classNam
       <input
         className={className}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleChange}
         placeholder={placeholder}
         required={required}
         autoComplete="off"
-        onFocus={() => { setFocused(true); filtered.length > 0 && setOpen(true) }}
-        onBlur={() => setFocused(false)}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       />
-      {open && (
+      {open && filtered.length > 0 && (
         <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-52 overflow-y-auto">
           {filtered.map((s) => (
             <li key={s}>
               <button
                 type="button"
                 className="w-full text-left px-3.5 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-                onMouseDown={(e) => { e.preventDefault(); onChange(s); setOpen(false) }}
+                onMouseDown={(e) => { e.preventDefault(); handleSelect(s) }}
+                onTouchEnd={(e) => { e.preventDefault(); handleSelect(s) }}
               >
                 {s}
               </button>
@@ -257,6 +275,7 @@ function ClientSearch({ onSelect }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const wrapRef = useRef(null)
+  const blurTimerRef = useRef(null)
 
   useEffect(() => {
     setResults(searchClients(query))
@@ -268,6 +287,13 @@ function ClientSearch({ onSelect }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  const handleSelect = (c) => {
+    clearTimeout(blurTimerRef.current)
+    onSelect(c)
+    setQuery('')
+    setResults([])
+  }
+
   return (
     <div ref={wrapRef} className="relative">
       <div className="relative">
@@ -278,6 +304,8 @@ function ClientSearch({ onSelect }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoComplete="off"
+          onBlur={() => { blurTimerRef.current = setTimeout(() => setResults([]), 150) }}
+          onFocus={() => clearTimeout(blurTimerRef.current)}
         />
       </div>
       {results.length > 0 && (
@@ -287,7 +315,8 @@ function ClientSearch({ onSelect }) {
               <button
                 type="button"
                 className="w-full text-left px-4 py-3 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors border-b border-slate-100 dark:border-slate-700/50 last:border-0"
-                onMouseDown={(e) => { e.preventDefault(); onSelect(c); setQuery(''); setResults([]) }}
+                onMouseDown={(e) => { e.preventDefault(); handleSelect(c) }}
+                onTouchEnd={(e) => { e.preventDefault(); handleSelect(c) }}
               >
                 <p className="text-sm font-medium text-slate-900 dark:text-white">{c.name}</p>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -844,7 +873,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     'flashWorks','audioWorks','earSpeakerWorks','micWorks','wifiWorks',
     'bluetoothWorks','gpsWorks','biometricWorks','bootsSystem',
   ]
-  const BOOL_DAMAGE_KEYS = ['humidityIndicator','liquidSigns','corrosionVisible']
+  const BOOL_DAMAGE_KEYS = ['waterDamage','humidityIndicator','liquidSigns','corrosionVisible','physicalDamage','previouslyOpened']
   const BOOL_INFO_KEYS   = ['hasPinPattern','hasGoogleIcloud','frpActive']
 
   const fillChecklist = (mode) => {
@@ -1123,29 +1152,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             </div>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.technicianNotes} onChange={(e) => set('technicianNotes', e.target.value)} placeholder="Notas internas del técnico (no visible para el cliente)..." />
           </div>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { key: 'waterDamage', label: 'Daño por agua', color: 'blue' },
-              { key: 'physicalDamage', label: 'Daño físico', color: 'orange' },
-              { key: 'previouslyOpened', label: 'Abierto anteriormente', color: 'yellow' },
-            ].map(({ key, label, color }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => toggle(key)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-medium transition-colors ${
-                  form[key]
-                    ? color === 'blue' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
-                      : color === 'orange' ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300'
-                      : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300'
-                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
-                }`}
-              >
-                <div className={`w-2 h-2 rounded-full ${form[key] ? (color === 'blue' ? 'bg-blue-500' : color === 'orange' ? 'bg-orange-500' : 'bg-yellow-500') : 'bg-slate-300 dark:bg-slate-600'}`} />
-                {label}
-              </button>
-            ))}
-          </div>
         </div>
       </Section>
 
@@ -1220,9 +1226,17 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
           {/* Humedad / Líquidos */}
           <CheckGroup title="Humedad / Líquidos" />
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <BoolState label="Daño por agua" value={form.waterDamage === true ? true : form.waterDamage === false ? false : null} onChange={(v) => set('waterDamage', v)} />
             <BoolState label="Indicador de humedad activado" value={form.humidityIndicator} onChange={(v) => set('humidityIndicator', v)} />
             <BoolState label="Señales visibles de líquido" value={form.liquidSigns} onChange={(v) => set('liquidSigns', v)} />
             <BoolState label="Oxidación visible en placa" value={form.corrosionVisible} onChange={(v) => set('corrosionVisible', v)} />
+          </div>
+
+          {/* Condición general */}
+          <CheckGroup title="Condición general" />
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <BoolState label="Daño físico visible" value={form.physicalDamage === true ? true : form.physicalDamage === false ? false : null} onChange={(v) => set('physicalDamage', v)} />
+            <BoolState label="Abierto anteriormente" value={form.previouslyOpened === true ? true : form.previouslyOpened === false ? false : null} onChange={(v) => set('previouslyOpened', v)} />
           </div>
 
           {/* Software */}
