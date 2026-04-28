@@ -18,10 +18,11 @@ import {
   ArrowRightLeft,
   CreditCard,
   Percent,
-  //Youtube,
   X,
 } from 'lucide-react'
 import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '../store/useStore'
+
+//Youtube
 
 export default function SettingsPage() {
   const navigate = useNavigate()
