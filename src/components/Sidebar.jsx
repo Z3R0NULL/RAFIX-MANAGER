@@ -134,7 +134,7 @@ export default function Sidebar({ onClose, onOpenSettings }) {
             </div>
           </div>
           <button
-            onClick={() => onOpenSettings?.()}
+            onClick={() => { navigate('/settings'); onClose?.() }}
             title="Configuración"
             className="p-2 mr-1 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-indigo-400 transition-colors flex-shrink-0 flex items-center"
           >

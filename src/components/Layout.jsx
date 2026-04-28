@@ -1,22 +1,17 @@
 import React, { useState } from 'react'
 import { Menu } from 'lucide-react'
 import Sidebar from './Sidebar'
-import SettingsPanel from './SettingsPanel'
 import { useStore } from '../store/useStore'
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const businessName = useStore((s) => s.settings?.businessName || 'RAFIX')
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">
-      {/* Settings panel — mounted at root level so z-index is never clipped */}
-      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-shrink-0">
-        <Sidebar onOpenSettings={() => setSettingsOpen(true)} />
+        <Sidebar />
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -27,10 +22,7 @@ export default function Layout({ children }) {
             onClick={() => setSidebarOpen(false)}
           />
           <aside className="relative z-50 flex-shrink-0">
-            <Sidebar
-              onClose={() => setSidebarOpen(false)}
-              onOpenSettings={() => { setSidebarOpen(false); setSettingsOpen(true) }}
-            />
+            <Sidebar onClose={() => setSidebarOpen(false)} />
           </aside>
         </div>
       )}

@@ -16,7 +16,9 @@ import {
   Link,
   Banknote,
   ArrowRightLeft,
+  CreditCard,
   Percent,
+  Youtube,
   X,
 } from 'lucide-react'
 import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '../store/useStore'
@@ -253,6 +255,7 @@ export default function SettingsPage() {
             { key: 'facebook',  label: 'Facebook',    Icon: AtSign,        placeholder: 'https://facebook.com/tunegocio',  color: 'text-blue-400' },
             { key: 'twitter',   label: 'Twitter / X', Icon: AtSign,        placeholder: 'https://x.com/tunegocio',         color: 'text-sky-400' },
             { key: 'tiktok',    label: 'TikTok',      Icon: Music2,        placeholder: 'https://tiktok.com/@tunegocio',   color: 'text-slate-300' },
+            { key: 'youtube',   label: 'YouTube',     Icon: Youtube,       placeholder: 'https://youtube.com/@tunegocio',  color: 'text-red-400' },
             { key: 'whatsapp',  label: 'WhatsApp',    Icon: MessageCircle, placeholder: '5491112345678',                   color: 'text-green-400' },
             { key: 'website',   label: 'Sitio web',   Icon: Link,          placeholder: 'https://tunegocio.com',           color: 'text-indigo-400' },
           ].map(({ key, label, Icon, placeholder, color }) => (
@@ -288,6 +291,7 @@ export default function SettingsPage() {
           {[
             { key: 'cash',     label: 'Efectivo',      Icon: Banknote,       iconColor: 'text-emerald-400' },
             { key: 'transfer', label: 'Transferencia', Icon: ArrowRightLeft, iconColor: 'text-blue-400' },
+            { key: 'card',     label: 'Tarjeta',       Icon: CreditCard,     iconColor: 'text-violet-400' },
           ].map(({ key, label, Icon, iconColor }) => {
             const adj = local.paymentAdjustments?.[key] ?? { enabled: false, value: 0, type: 'discount' }
             const patchAdj = (changes) =>

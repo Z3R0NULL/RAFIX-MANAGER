@@ -16,6 +16,7 @@ import {
   Hash,
   Banknote,
   ArrowRightLeft,
+  CreditCard,
   HandCoins,
   Truck,
 } from 'lucide-react'
@@ -533,10 +534,11 @@ export default function NewSale() {
         {/* Método de pago */}
         <div>
           <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Método de pago</label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {[
               { value: 'cash',     label: 'Efectivo',      Icon: Banknote },
               { value: 'transfer', label: 'Transferencia', Icon: ArrowRightLeft },
+              { value: 'card',     label: 'Tarjeta',       Icon: CreditCard },
             ].map(({ value, label, Icon }) => (
               <button
                 key={value}
