@@ -256,7 +256,7 @@ export default function SettingsPage() {
             { key: 'facebook',  label: 'Facebook',    Icon: AtSign,        placeholder: 'https://facebook.com/tunegocio',  color: 'text-blue-400' },
             { key: 'twitter',   label: 'Twitter / X', Icon: AtSign,        placeholder: 'https://x.com/tunegocio',         color: 'text-sky-400' },
             { key: 'tiktok',    label: 'TikTok',      Icon: Music2,        placeholder: 'https://tiktok.com/@tunegocio',   color: 'text-slate-300' },
-            { key: 'youtube',   label: 'YouTube',     Icon: Youtube,       placeholder: 'https://youtube.com/@tunegocio',  color: 'text-red-400' },
+            //{ key: 'youtube',   label: 'YouTube',     Icon: Youtube,       placeholder: 'https://youtube.com/@tunegocio',  color: 'text-red-400' },
             { key: 'whatsapp',  label: 'WhatsApp',    Icon: MessageCircle, placeholder: '5491112345678',                   color: 'text-green-400' },
             { key: 'website',   label: 'Sitio web',   Icon: Link,          placeholder: 'https://tunegocio.com',           color: 'text-indigo-400' },
           ].map(({ key, label, Icon, placeholder, color }) => (
