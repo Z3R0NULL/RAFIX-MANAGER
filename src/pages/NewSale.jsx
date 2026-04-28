@@ -31,7 +31,7 @@ const SALE_STATUSES = [
 
 export default function NewSale() {
   const navigate = useNavigate()
-  const { inventory, clients, searchClients, createSale } = useStore()
+  const { inventory, clients, searchClients, createSale, settings } = useStore()
   const fmt = useCurrency()
 
   // Customer
@@ -172,7 +172,14 @@ export default function NewSale() {
     setCartItems((prev) => prev.map((i) => i.id === id ? { ...i, identifier: value } : i))
   }
 
-  const total = cartItems.reduce((a, i) => a + i.price * i.qty, 0)
+  const subtotal = cartItems.reduce((a, i) => a + i.price * i.qty, 0)
+
+  const paymentAdj = paymentMethod ? settings?.paymentAdjustments?.[paymentMethod] : null
+  const adjActive  = paymentAdj?.enabled && paymentAdj?.value > 0
+  const adjAmount  = adjActive
+    ? (paymentAdj.type === 'discount' ? -1 : 1) * (subtotal * paymentAdj.value) / 100
+    : 0
+  const total = subtotal + adjAmount
 
   // ── Validate & submit ──────────────────────────────────────────
   function validate() {
@@ -194,7 +201,9 @@ export default function NewSale() {
       customerEmail:   customerEmail.trim(),
       customerAddress: customerAddress.trim(),
       items: cartItems,
+      subtotal,
       total,
+      paymentAdjustment: adjActive ? { type: paymentAdj.type, value: paymentAdj.value, amount: adjAmount } : null,
       status,
       notes: notes.trim(),
       paymentMethod,
@@ -495,9 +504,27 @@ export default function NewSale() {
               ))}
 
               {/* Total */}
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Total</span>
-                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{fmt(total)}</span>
+              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 overflow-hidden">
+                {adjActive && (
+                  <>
+                    <div className="flex items-center justify-between px-3 py-2 border-b border-emerald-100 dark:border-emerald-800/40">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Subtotal</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-300">{fmt(subtotal)}</span>
+                    </div>
+                    <div className="flex items-center justify-between px-3 py-2 border-b border-emerald-100 dark:border-emerald-800/40">
+                      <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'}{` ${paymentMethod === 'cash' ? 'efectivo' : paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'} (${paymentAdj.value}%)`}
+                      </span>
+                      <span className={`text-sm font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {paymentAdj.type === 'discount' ? '-' : '+'}{fmt(Math.abs(adjAmount))}
+                      </span>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center justify-between px-3 py-2.5">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Total</span>
+                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{fmt(total)}</span>
+                </div>
               </div>
             </div>
           )}

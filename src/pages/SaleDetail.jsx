@@ -21,6 +21,7 @@ import {
   Copy,
   Banknote,
   ArrowRightLeft,
+  CreditCard,
   HandCoins,
   Truck,
   Hash,
@@ -47,13 +48,22 @@ function SaleBadge({ status }) {
   )
 }
 
-function EditSaleModal({ sale, onSave, onClose }) {
+function EditSaleModal({ sale, onSave, onClose, settings }) {
+  const fmt = useCurrency()
   const [status,         setStatus]         = useState(sale.status || 'pending')
   const [notes,          setNotes]          = useState(sale.notes || '')
   const [paymentMethod,  setPaymentMethod]  = useState(sale.paymentMethod || '')
   const [deliveryMethod, setDeliveryMethod] = useState(sale.deliveryMethod || '')
   const [courierName,    setCourierName]    = useState(sale.courierName || '')
   const [trackingNumber, setTrackingNumber] = useState(sale.trackingNumber || '')
+
+  const saleSubtotal  = (sale.items || []).reduce((a, i) => a + (i.price || 0) * (i.qty || 1), 0)
+  const paymentAdj    = paymentMethod ? settings?.paymentAdjustments?.[paymentMethod] : null
+  const adjActive     = paymentAdj?.enabled && paymentAdj?.value > 0
+  const adjAmount     = adjActive
+    ? (paymentAdj.type === 'discount' ? -1 : 1) * (saleSubtotal * paymentAdj.value) / 100
+    : 0
+  const computedTotal = saleSubtotal + adjAmount
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -113,6 +123,7 @@ function EditSaleModal({ sale, onSave, onClose }) {
               {[
                 { value: 'cash',     label: 'Efectivo',      Icon: Banknote },
                 { value: 'transfer', label: 'Transferencia', Icon: ArrowRightLeft },
+                { value: 'card',     label: 'Tarjeta',       Icon: CreditCard },
               ].map(({ value, label, Icon }) => (
                 <button
                   key={value}
@@ -175,6 +186,30 @@ function EditSaleModal({ sale, onSave, onClose }) {
           </div>
         </div>
 
+        {/* Desglose del total */}
+        <div className="mx-5 mb-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 overflow-hidden">
+          {adjActive && (
+            <>
+              <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Subtotal</span>
+                <span className="text-sm text-slate-600 dark:text-slate-300">{fmt(saleSubtotal)}</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+                <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                  {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'}{` ${paymentMethod === 'cash' ? 'efectivo' : paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'} (${paymentAdj.value}%)`}
+                </span>
+                <span className={`text-sm font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                  {paymentAdj.type === 'discount' ? '-' : '+'}{fmt(Math.abs(adjAmount))}
+                </span>
+              </div>
+            </>
+          )}
+          <div className="flex items-center justify-between px-3 py-2.5">
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Total</span>
+            <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">{fmt(computedTotal)}</span>
+          </div>
+        </div>
+
         <div className="flex gap-3 px-5 pb-5">
           <button
             onClick={onClose}
@@ -187,6 +222,9 @@ function EditSaleModal({ sale, onSave, onClose }) {
               status, notes, paymentMethod, deliveryMethod,
               courierName:    deliveryMethod === 'shipped' ? courierName.trim()    : '',
               trackingNumber: deliveryMethod === 'shipped' ? trackingNumber.trim() : '',
+              subtotal: saleSubtotal,
+              total: computedTotal,
+              paymentAdjustment: adjActive ? { type: paymentAdj.type, value: paymentAdj.value, amount: adjAmount } : null,
             })}
             className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors"
           >
@@ -454,6 +492,22 @@ export default function SaleDetail() {
               <span className="text-xs text-slate-500">Ganancia</span>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(ganancia)}</span>
             </div>
+            {sale.paymentAdjustment && (
+              <>
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+                  <span className="text-xs text-slate-500">Subtotal</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-300">{fmt(sale.subtotal ?? subtotal)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs font-medium ${sale.paymentAdjustment.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                    {sale.paymentAdjustment.type === 'discount' ? 'Descuento' : 'Recargo'} {sale.paymentAdjustment.value}%
+                  </span>
+                  <span className={`text-sm font-medium ${sale.paymentAdjustment.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                    {sale.paymentAdjustment.type === 'discount' ? '-' : '+'}{fmt(Math.abs(sale.paymentAdjustment.amount))}
+                  </span>
+                </div>
+              </>
+            )}
             <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total</span>
               <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{fmt(total)}</span>
@@ -493,11 +547,11 @@ export default function SaleDetail() {
           <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5">
             {sale.paymentMethod && (
               <div className="flex items-center gap-3">
-                {sale.paymentMethod === 'cash' ? <Banknote size={16} className="text-emerald-500 shrink-0" /> : <ArrowRightLeft size={16} className="text-blue-500 shrink-0" />}
+                {sale.paymentMethod === 'cash' ? <Banknote size={16} className="text-emerald-500 shrink-0" /> : sale.paymentMethod === 'card' ? <CreditCard size={16} className="text-violet-500 shrink-0" /> : <ArrowRightLeft size={16} className="text-blue-500 shrink-0" />}
                 <div>
                   <p className="text-xs text-slate-400">Método de pago</p>
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                    {sale.paymentMethod === 'cash' ? 'Efectivo' : 'Transferencia'}
+                    {sale.paymentMethod === 'cash' ? 'Efectivo' : sale.paymentMethod === 'card' ? 'Tarjeta' : 'Transferencia'}
                   </p>
                 </div>
               </div>
@@ -550,7 +604,7 @@ export default function SaleDetail() {
 
       {/* Edit modal */}
       {editing && (
-        <EditSaleModal sale={sale} onSave={handleSave} onClose={() => setEditing(false)} />
+        <EditSaleModal sale={sale} onSave={handleSave} onClose={() => setEditing(false)} settings={settings} />
       )}
 
       {/* QR Modal */}

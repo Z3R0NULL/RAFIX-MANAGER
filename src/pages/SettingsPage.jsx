@@ -22,7 +22,11 @@ import {
 } from 'lucide-react'
 import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '../store/useStore'
 
-//Youtube
+const YoutubeIcon = ({ size = 16, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+  </svg>
+)
 
 export default function SettingsPage() {
   const navigate = useNavigate()
@@ -184,99 +188,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ── Garantía ── */}
-      <div className="rounded-xl border border-slate-700/50 bg-slate-900 overflow-hidden">
-        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-700/50 bg-slate-800/40">
-          <div className="w-6 h-6 rounded-md bg-indigo-500/15 flex items-center justify-center">
-            <ShieldCheck size={13} className="text-indigo-400" />
-          </div>
-          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Política de Garantía</h3>
-        </div>
-        <div className="px-4 py-4 space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Días de garantía por defecto</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                max={365}
-                value={local.warrantyDays}
-                onChange={(e) => patch('warrantyDays', parseInt(e.target.value, 10) || 0)}
-                className="w-24 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
-              />
-              <span className="text-slate-500 text-xs">días</span>
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-2">
-              Cláusulas <span className="text-slate-600 font-normal">(aparecen en el PDF)</span>
-            </label>
-            <div className="space-y-2">
-              {local.warrantyPolicy.map((clause, idx) => (
-                <div key={idx} className="flex items-start gap-2">
-                  <GripVertical size={14} className="text-slate-700 mt-2.5 flex-shrink-0" />
-                  <textarea
-                    rows={2}
-                    value={clause}
-                    onChange={(e) => handleWarrantyLineChange(idx, e.target.value)}
-                    className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors resize-none"
-                    placeholder={`Cláusula ${idx + 1}`}
-                  />
-                  <button
-                    onClick={() => removeWarrantyLine(idx)}
-                    className="p-1.5 mt-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-900/20 transition-colors flex-shrink-0"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={addWarrantyLine}
-              className="mt-3 flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-            >
-              <Plus size={13} />
-              Agregar cláusula
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Redes Sociales ── */}
-      <div className="rounded-xl border border-slate-700/50 bg-slate-900 overflow-hidden">
-        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-700/50 bg-slate-800/40">
-          <div className="w-6 h-6 rounded-md bg-pink-500/15 flex items-center justify-center">
-            <AtSign size={13} className="text-pink-400" />
-          </div>
-          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Redes Sociales</h3>
-        </div>
-        <div className="px-4 py-4 space-y-3">
-          {[
-            { key: 'instagram', label: 'Instagram',   Icon: AtSign,        placeholder: 'https://instagram.com/tunegocio', color: 'text-pink-400' },
-            { key: 'facebook',  label: 'Facebook',    Icon: AtSign,        placeholder: 'https://facebook.com/tunegocio',  color: 'text-blue-400' },
-            { key: 'twitter',   label: 'Twitter / X', Icon: AtSign,        placeholder: 'https://x.com/tunegocio',         color: 'text-sky-400' },
-            { key: 'tiktok',    label: 'TikTok',      Icon: Music2,        placeholder: 'https://tiktok.com/@tunegocio',   color: 'text-slate-300' },
-            //{ key: 'youtube',   label: 'YouTube',     Icon: Youtube,       placeholder: 'https://youtube.com/@tunegocio',  color: 'text-red-400' },
-            { key: 'whatsapp',  label: 'WhatsApp',    Icon: MessageCircle, placeholder: '5491112345678',                   color: 'text-green-400' },
-            { key: 'website',   label: 'Sitio web',   Icon: Link,          placeholder: 'https://tunegocio.com',           color: 'text-indigo-400' },
-          ].map(({ key, label, Icon, placeholder, color }) => (
-            <div key={key}>
-              <label className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mb-1.5">
-                <Icon size={11} className={color} />
-                {label}
-              </label>
-              <input
-                type="text"
-                value={local.socialLinks?.[key] ?? ''}
-                onChange={(e) => patch('socialLinks', { ...local.socialLinks, [key]: e.target.value })}
-                placeholder={placeholder}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* ── Ajustes de Pago ── */}
       <div className="rounded-xl border border-slate-700/50 bg-slate-900 overflow-hidden">
         <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-700/50 bg-slate-800/40">
@@ -356,6 +267,99 @@ export default function SettingsPage() {
               </div>
             )
           })}
+        </div>
+      </div>
+
+      {/* ── Garantía ── */}
+      <div className="rounded-xl border border-slate-700/50 bg-slate-900 overflow-hidden">
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-700/50 bg-slate-800/40">
+          <div className="w-6 h-6 rounded-md bg-indigo-500/15 flex items-center justify-center">
+            <ShieldCheck size={13} className="text-indigo-400" />
+          </div>
+          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Política de Garantía</h3>
+        </div>
+        <div className="px-4 py-4 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Días de garantía por defecto</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                max={365}
+                value={local.warrantyDays}
+                onChange={(e) => patch('warrantyDays', parseInt(e.target.value, 10) || 0)}
+                className="w-24 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
+              />
+              <span className="text-slate-500 text-xs">días</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              Cláusulas <span className="text-slate-600 font-normal">(aparecen en el PDF)</span>
+            </label>
+            <div className="space-y-2">
+              {local.warrantyPolicy.map((clause, idx) => (
+                <div key={idx} className="flex items-start gap-2">
+                  <GripVertical size={14} className="text-slate-700 mt-2.5 flex-shrink-0" />
+                  <textarea
+                    rows={2}
+                    value={clause}
+                    onChange={(e) => handleWarrantyLineChange(idx, e.target.value)}
+                    className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors resize-none"
+                    placeholder={`Cláusula ${idx + 1}`}
+                  />
+                  <button
+                    onClick={() => removeWarrantyLine(idx)}
+                    className="p-1.5 mt-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-900/20 transition-colors flex-shrink-0"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={addWarrantyLine}
+              className="mt-3 flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              <Plus size={13} />
+              Agregar cláusula
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Redes Sociales ── */}
+      <div className="rounded-xl border border-slate-700/50 bg-slate-900 overflow-hidden">
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-700/50 bg-slate-800/40">
+          <div className="w-6 h-6 rounded-md bg-pink-500/15 flex items-center justify-center">
+            <AtSign size={13} className="text-pink-400" />
+          </div>
+          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-widest">Redes Sociales</h3>
+        </div>
+        <div className="px-4 py-4 space-y-3">
+          {[
+            { key: 'instagram', label: 'Instagram',   Icon: AtSign,        placeholder: 'https://instagram.com/tunegocio', color: 'text-pink-400' },
+            { key: 'facebook',  label: 'Facebook',    Icon: AtSign,        placeholder: 'https://facebook.com/tunegocio',  color: 'text-blue-400' },
+            { key: 'twitter',   label: 'Twitter / X', Icon: AtSign,        placeholder: 'https://x.com/tunegocio',         color: 'text-sky-400' },
+            { key: 'tiktok',    label: 'TikTok',      Icon: Music2,        placeholder: 'https://tiktok.com/@tunegocio',   color: 'text-slate-300' },
+            { key: 'youtube',   label: 'YouTube',     Icon: YoutubeIcon,   placeholder: 'https://youtube.com/@tunegocio',  color: 'text-red-400' },
+            { key: 'whatsapp',  label: 'WhatsApp',    Icon: MessageCircle, placeholder: '5491112345678',                   color: 'text-green-400' },
+            { key: 'website',   label: 'Sitio web',   Icon: Link,          placeholder: 'https://tunegocio.com',           color: 'text-indigo-400' },
+          ].map(({ key, label, Icon, placeholder, color }) => (
+            <div key={key}>
+              <label className="flex items-center gap-1.5 text-xs font-medium text-slate-400 mb-1.5">
+                <Icon size={11} className={color} />
+                {label}
+              </label>
+              <input
+                type="text"
+                value={local.socialLinks?.[key] ?? ''}
+                onChange={(e) => patch('socialLinks', { ...local.socialLinks, [key]: e.target.value })}
+                placeholder={placeholder}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
+              />
+            </div>
+          ))}
         </div>
       </div>
 

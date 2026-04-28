@@ -388,6 +388,7 @@ export async function fetchAllFromTurso({ username } = {}) {
 
 export const DEFAULT_SETTINGS = {
   businessName: 'RAFIX',
+  businessAddress: '',
   businessLogo: null,        // base64 data URL
   currency: 'ARS',
   currencyLocale: 'es-AR',
@@ -407,6 +408,7 @@ export const DEFAULT_SETTINGS = {
     facebook: '',
     twitter: '',
     tiktok: '',
+    youtube: '',
     whatsapp: '',
     website: '',
   },
