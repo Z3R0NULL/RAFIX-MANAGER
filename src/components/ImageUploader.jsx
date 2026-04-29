@@ -76,7 +76,8 @@ export default function ImageUploader({ images = [], onChange, label, maxImages 
         {images.map((src, i) => (
           <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-slate-800 border border-slate-700">
             <img src={src} alt={`foto-${i + 1}`} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+            {/* Overlay zoom — solo en hover */}
+            <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
               <button
                 type="button"
                 onClick={() => setLightbox(i)}
@@ -84,14 +85,15 @@ export default function ImageUploader({ images = [], onChange, label, maxImages 
               >
                 <ZoomIn size={13} />
               </button>
-              <button
-                type="button"
-                onClick={() => removeImage(i)}
-                className="w-7 h-7 rounded-full bg-slate-800/80 flex items-center justify-center text-white hover:bg-red-600 transition-colors"
-              >
-                <X size={13} />
-              </button>
             </div>
+            {/* Botón eliminar — siempre visible */}
+            <button
+              type="button"
+              onClick={() => removeImage(i)}
+              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-slate-900/80 flex items-center justify-center text-white hover:bg-red-600 transition-colors z-10"
+            >
+              <X size={11} />
+            </button>
           </div>
         ))}
 

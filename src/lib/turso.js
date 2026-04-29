@@ -113,6 +113,14 @@ export async function initDb() {
       data TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`,
+    `CREATE TABLE IF NOT EXISTS device_types (
+      id TEXT PRIMARY KEY,
+      value TEXT NOT NULL UNIQUE,
+      label TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`,
   ], 'write')
 
   // Migrate existing tables — safe to run every time (errors = column already exists)
@@ -123,4 +131,39 @@ export async function initDb() {
   for (const sql of migrations) {
     try { await turso.execute(sql) } catch { /* already exists */ }
   }
+
+  // Seed device_types with defaults if empty
+  try {
+    const existing = await turso.execute('SELECT COUNT(*) as cnt FROM device_types')
+    if (Number(existing.rows[0].cnt) === 0) {
+      const defaults = [
+        { value: 'phone',        label: 'Smartphone' },
+        { value: 'laptop',       label: 'Laptop' },
+        { value: 'desktop',      label: 'PC' },
+        { value: 'tablet',       label: 'Tablet' },
+        { value: 'console',      label: 'Consola' },
+        { value: 'smartwatch',   label: 'Smartwatch' },
+        { value: 'gpu',          label: 'Placa de video' },
+        { value: 'motherboard',  label: 'Motherboard' },
+        { value: 'storage',      label: 'Disco (HDD/SSD)' },
+        { value: 'power_supply', label: 'Fuente de poder' },
+        { value: 'audio',        label: 'Audio' },
+        { value: 'tv',           label: 'TV / Monitor' },
+        { value: 'printer',      label: 'Impresora' },
+        { value: 'network',      label: 'Equipo de red' },
+        { value: 'camera',       label: 'Cámara' },
+        { value: 'drone',        label: 'Drone' },
+        { value: 'board',        label: 'Placa' },
+        { value: 'other',        label: 'Otro' },
+      ]
+      const now = new Date().toISOString()
+      await turso.batch(
+        defaults.map((d, i) => ({
+          sql: `INSERT OR IGNORE INTO device_types (id, value, label, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
+          args: [`DT-${i + 1}`, d.value, d.label, i, now, now],
+        })),
+        'write'
+      )
+    }
+  } catch { /* seed failed — non-critical */ }
 }

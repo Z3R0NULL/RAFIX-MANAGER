@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom'
 import {
   Smartphone, ChevronRight, Search, TrendingUp, Clock, CheckCircle2,
   Wrench, BookOpen, Plus, Pencil, Trash2, X, ChevronDown,
-  Loader2, AlertCircle,
+  Loader2, AlertCircle, Tag,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
@@ -36,9 +36,7 @@ function Modal({ title, onClose, children }) {
 }
 
 // ── Formulario agregar / editar ──────────────────────────────────────────────
-const CATEGORIES = DEVICE_TYPES.map((d) => d.label)
-
-function CatalogForm({ initial, onSave, onClose, loading }) {
+function CatalogForm({ initial, onSave, onClose, loading, categories }) {
   const [form, setForm] = useState({
     category: initial?.category || '',
     brand: initial?.brand || '',
@@ -67,7 +65,7 @@ function CatalogForm({ initial, onSave, onClose, loading }) {
         <label className={labelClass}>Categoría</label>
         <select className={inputClass} value={form.category} onChange={f('category')} required>
           <option value="">Seleccionar categoría...</option>
-          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          {categories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
       <div>
@@ -102,6 +100,8 @@ function CatalogTab() {
   const addCatalogItem = useStore((s) => s.addCatalogItem)
   const updateCatalogItem = useStore((s) => s.updateCatalogItem)
   const deleteCatalogItem = useStore((s) => s.deleteCatalogItem)
+  const deviceTypesDb = useStore((s) => s.deviceTypes)
+  const categories = (deviceTypesDb.length > 0 ? deviceTypesDb : DEVICE_TYPES).map((d) => d.label)
 
   const [q, setQ] = useState('')
   const [modal, setModal] = useState(null) // null | { type: 'add' | 'edit' | 'delete', item? }
@@ -287,12 +287,12 @@ function CatalogTab() {
       {/* Modals */}
       {modal?.type === 'add' && (
         <Modal title="Agregar modelo al catálogo" onClose={() => setModal(null)}>
-          <CatalogForm onSave={handleAdd} onClose={() => setModal(null)} loading={loading} />
+          <CatalogForm onSave={handleAdd} onClose={() => setModal(null)} loading={loading} categories={categories} />
         </Modal>
       )}
       {modal?.type === 'edit' && (
         <Modal title="Editar modelo" onClose={() => setModal(null)}>
-          <CatalogForm initial={modal.item} onSave={handleEdit} onClose={() => setModal(null)} loading={loading} />
+          <CatalogForm initial={modal.item} onSave={handleEdit} onClose={() => setModal(null)} loading={loading} categories={categories} />
         </Modal>
       )}
       {modal?.type === 'delete' && (
@@ -318,6 +318,8 @@ function CatalogTab() {
 // ── Pestaña Historial ────────────────────────────────────────────────────────
 function HistorialTab() {
   const orders = useStore((s) => s.orders)
+  const deviceTypesDb = useStore((s) => s.deviceTypes)
+  const allDeviceTypes = deviceTypesDb.length > 0 ? deviceTypesDb : DEVICE_TYPES
   const [q, setQ] = useState('')
 
   const models = useMemo(() => {
@@ -394,7 +396,7 @@ function HistorialTab() {
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {filtered.map(({ brand, model, deviceType, orders: modelOrders }) => {
-              const deviceLabel = DEVICE_TYPES.find((d) => d.value === deviceType)?.label || ''
+              const deviceLabel = allDeviceTypes.find((d) => d.value === deviceType)?.label || ''
               const active = modelOrders.filter((o) => !['delivered', 'irreparable'].includes(o.status))
               const completed = modelOrders.filter((o) => ['completed', 'delivered'].includes(o.status))
               const slug = encodeURIComponent(`${brand}__${model}`)
@@ -442,6 +444,176 @@ function HistorialTab() {
   )
 }
 
+// ── Pestaña Tipos de Dispositivo ─────────────────────────────────────────────
+function DeviceTypesTab() {
+  const deviceTypesDb = useStore((s) => s.deviceTypes)
+  const addDeviceType = useStore((s) => s.addDeviceType)
+  const updateDeviceType = useStore((s) => s.updateDeviceType)
+  const deleteDeviceType = useStore((s) => s.deleteDeviceType)
+
+  const [modal, setModal] = useState(null) // null | { type: 'add' | 'edit' | 'delete', item? }
+  const [form, setForm] = useState({ value: '', label: '' })
+  const [editLabel, setEditLabel] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const inputClass =
+    'w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition'
+
+  const handleAdd = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const res = await addDeviceType({ value: form.value, label: form.label })
+    setLoading(false)
+    if (res?.error) { setError(res.error); return }
+    setModal(null)
+    setForm({ value: '', label: '' })
+  }
+
+  const handleEdit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const res = await updateDeviceType(modal.item.id, { label: editLabel })
+    setLoading(false)
+    if (res?.error) { setError(res.error); return }
+    setModal(null)
+  }
+
+  const handleDelete = async () => {
+    setLoading(true)
+    await deleteDeviceType(modal.item.id)
+    setLoading(false)
+    setModal(null)
+  }
+
+  const list = deviceTypesDb.length > 0 ? deviceTypesDb : DEVICE_TYPES
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-500 dark:text-slate-400">{list.length} tipo{list.length !== 1 ? 's' : ''} de dispositivo</p>
+        <button
+          onClick={() => { setForm({ value: '', label: '' }); setError(''); setModal({ type: 'add' }) }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium transition-colors"
+        >
+          <Plus size={13} /> Nuevo tipo
+        </button>
+      </div>
+
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+        {list.length === 0 ? (
+          <p className="text-sm text-slate-400 text-center py-10">Sin tipos de dispositivo.</p>
+        ) : (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {list.map((dt) => (
+              <div key={dt.id || dt.value} className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center flex-shrink-0">
+                    <Tag size={14} className="text-indigo-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{dt.label}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">{dt.value}</p>
+                  </div>
+                </div>
+                {deviceTypesDb.length > 0 && (
+                  <div className="flex items-center gap-1 ml-4">
+                    <button
+                      onClick={() => { setEditLabel(dt.label); setError(''); setModal({ type: 'edit', item: dt }) }}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                      title="Editar"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      onClick={() => setModal({ type: 'delete', item: dt })}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      title="Eliminar"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {deviceTypesDb.length === 0 && (
+        <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
+          Estos son los tipos predeterminados. Agrega uno nuevo para empezar a gestionar la lista desde la base de datos.
+        </p>
+      )}
+
+      {/* Modal Agregar */}
+      {modal?.type === 'add' && (
+        <Modal title="Nuevo tipo de dispositivo" onClose={() => setModal(null)}>
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Etiqueta (nombre visible)</label>
+              <input className={inputClass} value={form.label} onChange={(e) => setForm((p) => ({ ...p, label: e.target.value }))} placeholder="Ej: Smartphone" required />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Valor interno (identificador único)</label>
+              <input className={inputClass} value={form.value} onChange={(e) => setForm((p) => ({ ...p, value: e.target.value }))} placeholder="Ej: phone, laptop, tablet" required />
+              <p className="text-xs text-slate-400 mt-1">Solo letras, números y guiones bajos. Se convierte a minúsculas.</p>
+            </div>
+            {error && <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><AlertCircle size={13} />{error}</p>}
+            <div className="flex gap-2 pt-1">
+              <button type="button" onClick={() => setModal(null)} className="flex-1 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
+              <button type="submit" disabled={loading} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-60">
+                {loading && <Loader2 size={13} className="animate-spin" />} Agregar
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Modal Editar */}
+      {modal?.type === 'edit' && (
+        <Modal title="Editar tipo de dispositivo" onClose={() => setModal(null)}>
+          <form onSubmit={handleEdit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Etiqueta</label>
+              <input className={inputClass} value={editLabel} onChange={(e) => setEditLabel(e.target.value)} required />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Valor interno</label>
+              <input className={`${inputClass} opacity-50 cursor-not-allowed`} value={modal.item.value} disabled />
+              <p className="text-xs text-slate-400 mt-1">El valor interno no se puede cambiar para no romper órdenes existentes.</p>
+            </div>
+            {error && <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><AlertCircle size={13} />{error}</p>}
+            <div className="flex gap-2 pt-1">
+              <button type="button" onClick={() => setModal(null)} className="flex-1 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
+              <button type="submit" disabled={loading} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-60">
+                {loading && <Loader2 size={13} className="animate-spin" />} Guardar
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Modal Eliminar */}
+      {modal?.type === 'delete' && (
+        <Modal title="Eliminar tipo" onClose={() => setModal(null)}>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+            ¿Eliminar el tipo <strong className="text-slate-900 dark:text-white">{modal.item.label}</strong>? Las órdenes existentes no se verán afectadas.
+          </p>
+          <div className="flex gap-2">
+            <button onClick={() => setModal(null)} className="flex-1 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
+            <button onClick={handleDelete} disabled={loading} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-60">
+              {loading && <Loader2 size={13} className="animate-spin" />} Eliminar
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function DevicesPage() {
   const [activeTab, setActiveTab] = useState('catalog')
@@ -450,6 +622,7 @@ export default function DevicesPage() {
   const tabs = [
     { id: 'catalog', label: 'Catálogo', icon: BookOpen },
     { id: 'history', label: 'Historial', icon: TrendingUp },
+    { id: 'types',   label: 'Tipos',    icon: Tag },
   ]
 
   if (dataLoading) return <PageLoader rows={6} title="Cargando dispositivos..." />
@@ -482,7 +655,7 @@ export default function DevicesPage() {
         ))}
       </div>
 
-      {activeTab === 'catalog' ? <CatalogTab /> : <HistorialTab />}
+      {activeTab === 'catalog' ? <CatalogTab /> : activeTab === 'history' ? <HistorialTab /> : <DeviceTypesTab />}
     </div>
   )
 }

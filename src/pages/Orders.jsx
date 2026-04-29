@@ -266,7 +266,7 @@ export default function Orders() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="thead-row">
-                  <th className="th-std">ID #</th>
+                  <th className="th-std">ID</th>
                   <th className="th-std">Cliente</th>
                   <th className="th-std hidden sm:table-cell">Dispositivo</th>
                   <th className="th-std">Estado</th>

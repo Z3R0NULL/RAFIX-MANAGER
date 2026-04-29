@@ -9,9 +9,13 @@
  *   desde Turso DB una vez que Zustand termina de rehidratar desde localStorage.
  */
 import React, { useEffect } from 'react'
+// Router de navegador para SPA + definición declarativa de rutas.
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+// Store global (Zustand): auth, settings e hidratación persistida.
 import { useStore } from './store/useStore'
+// Layout principal (sidebar/header/contenedor de páginas privadas).
 import Layout from './components/Layout'
+// Páginas/rutas de la aplicación.
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Orders from './pages/Orders'
@@ -34,6 +38,7 @@ import SaleDetail from './pages/SaleDetail'
 import TrackSale from './pages/TrackSale'
 import SettingsPage from './pages/SettingsPage'
 
+// Loader de pantalla completa usado mientras el estado persistido se hidrata.
 function AppLoader() {
   return (
     <div style={{ background: '#020617', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -46,6 +51,7 @@ function AppLoader() {
   )
 }
 
+// Guard de autenticación: solo deja pasar si hay sesión activa.
 function PrivateRoute({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
   const _hydrated = useStore((s) => s._hydrated)
@@ -56,6 +62,7 @@ function PrivateRoute({ children }) {
   return children
 }
 
+// Guard de autorización: restringe acceso a rutas exclusivas de superadmin.
 function SuperAdminRoute({ children }) {
   const auth = useStore((s) => s.auth)
   const _hydrated = useStore((s) => s._hydrated)
@@ -65,6 +72,7 @@ function SuperAdminRoute({ children }) {
   return children
 }
 
+// Wrapper global: fuerza dark mode y controla carga inicial de datos.
 function AppWithDarkMode({ children }) {
   const isLoggedIn = useStore((s) => s.auth.isLoggedIn)
   const _hydrated = useStore((s) => s._hydrated)
@@ -76,10 +84,12 @@ function AppWithDarkMode({ children }) {
   const didInitialLoad = React.useRef(false)
 
   useEffect(() => {
+    // Garantiza clase dark en <html> al montar la app.
     document.documentElement.classList.add('dark')
   }, [])
 
   useEffect(() => {
+    // Título dinámico en pestaña según nombre del negocio configurado.
     const name = businessName?.trim() || 'RaFix'
     document.title = `${name} — RaFix Manager`
   }, [businessName])
@@ -89,10 +99,12 @@ function AppWithDarkMode({ children }) {
   // The login() action handles its own data fetch, so we must not call
   // loadFromTurso() again right after login or duplicates will appear.
   useEffect(() => {
+    // Tras rehidratación + sesión válida, carga inicial desde Turso (una sola vez).
     if (_hydrated && isLoggedIn && !didInitialLoad.current) {
       didInitialLoad.current = true
       loadFromTurso()
     }
+    // Al cerrar sesión, resetea bandera para permitir próxima carga inicial.
     if (!isLoggedIn) {
       didInitialLoad.current = false
     }
@@ -101,6 +113,7 @@ function AppWithDarkMode({ children }) {
   return children
 }
 
+// Componente raíz: define enrutamiento público, protegido y fallback.
 export default function App() {
   return (
     <BrowserRouter>
@@ -113,7 +126,7 @@ export default function App() {
           <Route path="/sale-track" element={<TrackSale />} />
           <Route path="/sale-track/:saleNumber" element={<TrackSale />} />
 
-          {/* Protected routes */}
+          {/* Rutas protegidas: requieren usuario autenticado */}
           <Route
             path="/"
             element={
@@ -124,6 +137,7 @@ export default function App() {
               </PrivateRoute>
             }
           />
+          {/* Sección órdenes */}
           <Route
             path="/orders"
             element={
@@ -154,6 +168,7 @@ export default function App() {
               </PrivateRoute>
             }
           />
+          {/* Sección búsqueda y dispositivos */}
           <Route
             path="/search"
             element={
@@ -184,6 +199,7 @@ export default function App() {
               </PrivateRoute>
             }
           />
+          {/* Sección ventas */}
           <Route
             path="/sales"
             element={
@@ -214,6 +230,7 @@ export default function App() {
               </PrivateRoute>
             }
           />
+          {/* Sección clientes/finanzas/inventario/proveedores */}
           <Route
             path="/clients"
             element={
@@ -255,6 +272,7 @@ export default function App() {
             }
           />
 
+          {/* Catálogo de servicios */}
           <Route
             path="/services"
             element={
@@ -266,6 +284,7 @@ export default function App() {
             }
           />
 
+          {/* Rutas exclusivas de superadmin */}
           <Route
             path="/admin"
             element={
@@ -287,6 +306,7 @@ export default function App() {
             }
           />
 
+          {/* Configuración general de la instancia */}
           <Route
             path="/settings"
             element={
@@ -298,7 +318,7 @@ export default function App() {
             }
           />
 
-          {/* Fallback */}
+          {/* Fallback: cualquier ruta desconocida redirige al tracking público */}
           <Route path="*" element={<Navigate to="/track" replace />} />
         </Routes>
       </AppWithDarkMode>

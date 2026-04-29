@@ -1,21 +1,32 @@
-<!-- index.html — Shell HTML de la SPA.
-     Carga la fuente Inter desde Google Fonts y monta el punto de entrada
-     de React (/src/main.jsx) en el div #root.
-     Vite inyecta aquí los scripts de módulo y el HMR en desarrollo. -->
+<!-- index.html: documento base (shell) de la SPA -->
+<!-- Define que el documento usa HTML5 -->
 <!DOCTYPE html>
+<!-- Elemento raíz: idioma en inglés y clase dark para tema oscuro -->
 <html lang="en" class="dark">
+  <!-- Cabecera con metadatos y recursos globales -->
   <head>
+    <!-- Codificación UTF-8 para soportar caracteres especiales -->
     <meta charset="UTF-8" />
+    <!-- Configuración responsive para móviles y escritorio -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Indica al navegador que el esquema visual principal es oscuro -->
     <meta name="color-scheme" content="dark" />
+    <!-- Título que se muestra en la pestaña del navegador -->
     <title>RaFix — RaFix Manager</title>
+    <!-- Favicon embebido en formato SVG (data URI, no archivo externo) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cg transform='translate(4%2C4) scale(1)'  stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.77z'/%3E%3C/g%3E%3C/svg%3E" />
+    <!-- Preconexión a Google Fonts para acelerar resolución DNS/TLS -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <!-- Preconexión al host de archivos de fuentes con CORS habilitado -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Hoja de estilo externa que carga la fuente Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=optional" rel="stylesheet" />
   </head>
+  <!-- Cuerpo: fondo oscuro y sin margen por defecto del navegador -->
   <body style="background-color:#020617;margin:0">
+    <!-- Contenedor raíz donde React monta toda la aplicación -->
     <div id="root"></div>
+    <!-- Punto de entrada del frontend: carga /src/main.jsx como módulo ES -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

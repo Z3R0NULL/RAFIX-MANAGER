@@ -36,6 +36,7 @@ import {
   Trash2, Package, Wrench, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
+// DEVICE_TYPES kept as fallback when deviceTypes store is empty
 import { useStore } from '../store/useStore'
 import ImageUploader from './ImageUploader'
 import PatternInput from './PatternInput'
@@ -783,8 +784,10 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
 export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel = 'Guardar Orden', isLoading }) {
   const clients = useStore((s) => s.clients)
   const deviceCatalog = useStore((s) => s.deviceCatalog)
+  const deviceTypesDb = useStore((s) => s.deviceTypes)
   const inventory = useStore((s) => s.inventory)
   const services  = useStore((s) => s.services)
+  const deviceTypesList = deviceTypesDb.length > 0 ? deviceTypesDb : DEVICE_TYPES
   // null = buscando / sin selección | { id, ... } = cliente seleccionado de la DB
   // Al editar una orden existente con datos de cliente, pre-poblamos el chip
   const [selectedClient, setSelectedClient] = useState(() => {
@@ -1062,7 +1065,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
         <div className="grid grid-cols-2 gap-4">
           <Field label="Tipo de dispositivo" required>
             <select className={selectClass} value={form.deviceType} onChange={(e) => set('deviceType', e.target.value)} required>
-              {DEVICE_TYPES.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+              {deviceTypesList.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
             </select>
           </Field>
 
@@ -1147,6 +1150,22 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             </div>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.technicianNotes} onChange={(e) => set('technicianNotes', e.target.value)} placeholder="Notas internas del técnico (no visible para el cliente)..." />
           </div>
+        </div>
+      </Section>
+
+      {/* ── Fotos ── */}
+      <Section title="Fotos del dispositivo" icon={Camera} defaultOpen={false}>
+        <div className="grid sm:grid-cols-2 gap-6">
+          <ImageUploader
+            label="Fotos de ingreso"
+            images={form.photosEntry}
+            onChange={(imgs) => set('photosEntry', imgs)}
+          />
+          <ImageUploader
+            label="Fotos de salida"
+            images={form.photosExit}
+            onChange={(imgs) => set('photosExit', imgs)}
+          />
         </div>
       </Section>
 
@@ -1246,22 +1265,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             <BoolState label="FRP / Bloqueo de activación activo" value={form.frpActive} onChange={(v) => set('frpActive', v)} />
           </CheckSection>
 
-        </div>
-      </Section>
-
-      {/* ── Fotos ── */}
-      <Section title="Fotos del dispositivo" icon={Camera} defaultOpen={false}>
-        <div className="grid sm:grid-cols-2 gap-6">
-          <ImageUploader
-            label="Fotos de ingreso"
-            images={form.photosEntry}
-            onChange={(imgs) => set('photosEntry', imgs)}
-          />
-          <ImageUploader
-            label="Fotos de salida"
-            images={form.photosExit}
-            onChange={(imgs) => set('photosExit', imgs)}
-          />
         </div>
       </Section>
 

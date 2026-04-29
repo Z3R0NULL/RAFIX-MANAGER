@@ -355,6 +355,10 @@ export async function fetchAllFromTurso({ username } = {}) {
       'SELECT id, category, brand, model, created_by, created_at, updated_at FROM device_catalog ORDER BY category, brand, model'
     )
 
+    const deviceTypesRes = await turso.execute(
+      'SELECT id, value, label, sort_order FROM device_types ORDER BY sort_order ASC, label ASC'
+    )
+
     const servicesRes = await turso.execute({
       sql: 'SELECT data FROM services WHERE created_by = ? ORDER BY updated_at DESC',
       args: [username],
@@ -376,8 +380,12 @@ export async function fetchAllFromTurso({ username } = {}) {
       createdBy: r.created_by, createdAt: r.created_at, updatedAt: r.updated_at,
     }))
 
+    const deviceTypes = deviceTypesRes.rows.map((r) => ({
+      id: r.id, value: r.value, label: r.label, sortOrder: r.sort_order,
+    }))
+
     // Datos cargados correctamente desde Turso
-    return { orders, clients, inventory, suppliers, deviceCatalog, services, sales }
+    return { orders, clients, inventory, suppliers, deviceCatalog, services, sales, deviceTypes }
   } catch (e) {
     console.warn('[Turso] fetchAll failed:', e)
     return null
@@ -448,6 +456,7 @@ export const useStore = create(
       services: [],
       sales: [],
       deviceCatalog: [],
+      deviceTypes: [],
       appUsers: [],
       loginLogs: [],
       darkMode: true,
@@ -498,7 +507,7 @@ export const useStore = create(
                   fetchAllFromTurso({ username }),
                   fetchSettingsFromTurso(username),
                 ])
-                if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
+                if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [], deviceTypes: result.deviceTypes || [] })
                 if (remoteSettings) set((s) => ({ settings: { ...DEFAULT_SETTINGS, ...remoteSettings } }))
               } finally {
                 set({ dataLoading: false })
@@ -514,7 +523,7 @@ export const useStore = create(
         return false
       },
 
-      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [], services: [], sales: [], deviceCatalog: [] }),
+      logout: () => set({ auth: { isLoggedIn: false }, orders: [], clients: [], inventory: [], suppliers: [], services: [], sales: [], deviceCatalog: [], deviceTypes: [] }),
 
       loadFromTurso: async () => {
         const { auth } = get()
@@ -532,7 +541,7 @@ export const useStore = create(
             fetchAllFromTurso({ username: auth?.username }),
             fetchSettingsFromTurso(auth?.username),
           ])
-          if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [] })
+          if (result) set({ orders: result.orders, clients: result.clients, inventory: result.inventory || [], suppliers: result.suppliers || [], services: result.services || [], sales: result.sales || [], deviceCatalog: result.deviceCatalog || [], deviceTypes: result.deviceTypes || [] })
           if (remoteSettings) set((s) => ({ settings: { ...DEFAULT_SETTINGS, ...remoteSettings } }))
         } catch (e) {
           console.warn('[store] loadFromTurso failed:', e)
@@ -695,6 +704,49 @@ export const useStore = create(
       deleteCatalogItem: (id) => {
         set((s) => ({ deviceCatalog: s.deviceCatalog.filter((item) => item.id !== id) }))
         deleteCatalogItemFromTurso(id)
+      },
+
+      // ── Device Types ───────────────────────────────────────────────
+      addDeviceType: async ({ value, label }) => {
+        const v = value.trim().toLowerCase().replace(/\s+/g, '_')
+        const l = label.trim()
+        if (!v || !l) return { error: 'Valor y etiqueta requeridos' }
+        const { deviceTypes } = get()
+        if (deviceTypes.find((d) => d.value === v)) return { error: 'Ya existe un tipo con ese valor' }
+        const now = new Date().toISOString()
+        const item = { id: `DT-${Date.now()}`, value: v, label: l, sortOrder: deviceTypes.length }
+        set((s) => ({ deviceTypes: [...s.deviceTypes, item].sort((a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label)) }))
+        if (isTursoConfigured) {
+          try {
+            await turso.execute({
+              sql: `INSERT INTO device_types (id, value, label, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`,
+              args: [item.id, item.value, item.label, item.sortOrder, now, now],
+            })
+          } catch (e) { return { error: e.message || 'Insert failed' } }
+        }
+        return { error: null }
+      },
+
+      updateDeviceType: async (id, { label }) => {
+        const l = (label || '').trim()
+        if (!l) return { error: 'La etiqueta es requerida' }
+        const now = new Date().toISOString()
+        set((s) => ({ deviceTypes: s.deviceTypes.map((d) => d.id === id ? { ...d, label: l } : d) }))
+        if (isTursoConfigured) {
+          try {
+            await turso.execute({ sql: `UPDATE device_types SET label = ?, updated_at = ? WHERE id = ?`, args: [l, now, id] })
+          } catch (e) { return { error: e.message || 'Update failed' } }
+        }
+        return { error: null }
+      },
+
+      deleteDeviceType: async (id) => {
+        set((s) => ({ deviceTypes: s.deviceTypes.filter((d) => d.id !== id) }))
+        if (isTursoConfigured) {
+          try {
+            await turso.execute({ sql: 'DELETE FROM device_types WHERE id = ?', args: [id] })
+          } catch (e) { console.warn('[Turso] device_type delete failed:', e) }
+        }
       },
 
       // ── App Users (superadmin only) ────────────────────────────────

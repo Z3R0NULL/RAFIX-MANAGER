@@ -14,11 +14,13 @@
 /* Tailwind v4: activate dark: variant via .dark class (not prefers-color-scheme) */
 @variant dark (&:where(.dark, .dark *));
 
+/* Aplica Inter por defecto a todos los elementos de la interfaz. */
 * {
   font-family: 'Inter', sans-serif;
 }
 
 @layer base {
+  /* Define el esquema global oscuro para controles nativos del navegador. */
   :root {
     color-scheme: dark;
   }
@@ -26,7 +28,9 @@
   /* iOS Safari: force dark background on the document root so the
      overscroll "rubber-band" area never shows white. */
   html, body {
+    /* Fondo base oscuro para evitar "flash" blanco al cargar. */
     background-color: #020617;
+    /* Evita encadenar overscroll al viewport en gestos de rebote. */
     overscroll-behavior: none;
   }
 
@@ -36,6 +40,7 @@
   textarea,
   select,
   button {
+    /* Quita estilos nativos (especialmente en WebKit/iOS). */
     -webkit-appearance: none;
     appearance: none;
   }
@@ -47,6 +52,7 @@
     input,
     textarea,
     select {
+      /* Evita auto-zoom en iOS cuando el texto es menor a 16px. */
       font-size: 16px !important;
     }
   }
@@ -59,18 +65,22 @@
   input[type="week"],
   input[type="number"],
   input[type="search"] {
+    /* Mantiene estilo oscuro en inputs especiales del sistema. */
     color-scheme: dark;
   }
 }
 
 /* ── Scrollbar ────────────────────────────────────────────────────────────── */
 .scrollbar-thin::-webkit-scrollbar {
+  /* Scrollbar más delgado para paneles laterales/listados. */
   width: 4px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
+  /* Track transparente para integrarse con el fondo. */
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
+  /* "Thumb" visible pero discreto en tono slate. */
   background: #334155;
   border-radius: 2px;
 }
@@ -78,56 +88,68 @@
 /* ── Design Tokens ────────────────────────────────────────────────────────── */
 /* Card estándar */
 .card {
+  /* Superficie estándar para contenedores principales. */
   @apply bg-slate-900 rounded-xl border border-slate-700/60;
 }
 
 /* Cabecera de card/sección */
 .card-header {
+  /* Encabezado de card con separación horizontal uniforme. */
   @apply flex items-center justify-between px-5 py-4 border-b border-slate-700/60;
 }
 
 /* Cabecera de tabla — estándar para TODAS las tablas */
 .th-std {
+  /* Header de tabla alineado a la izquierda. */
   @apply px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wide;
 }
 .th-std-right {
+  /* Header de tabla alineado a la derecha. */
   @apply px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wide;
 }
 .th-std-center {
+  /* Header de tabla alineado al centro. */
   @apply px-4 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wide;
 }
 
 /* Fila de tabla con cabecera */
 .thead-row {
+  /* Fila de encabezado con fondo y divisor estándar. */
   @apply bg-slate-800/50 border-b border-slate-700/60;
 }
 
 /* Botón de cierre de modal — UN ÚNICO estilo */
 .btn-modal-close {
+  /* Botón icon-only para cerrar modales/diálogos. */
   @apply p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors;
 }
 
 /* Botón primario */
 .btn-primary {
+  /* CTA principal con color indigo y feedback activo. */
   @apply flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-medium rounded-lg transition-all;
 }
 
 /* Botón secundario / outline */
 .btn-secondary {
+  /* Acción secundaria con estilo outline y hover suave. */
   @apply flex items-center gap-2 px-4 py-2 border border-slate-700 text-slate-400 text-sm font-medium rounded-lg hover:bg-slate-800 hover:text-slate-100 active:scale-95 transition-all;
 }
 
 /* Input estándar */
 .input-std {
+  /* Input base con foco visible y paleta dark consistente. */
   @apply w-full px-3.5 py-2.5 rounded-lg border border-slate-700 bg-slate-800 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors;
 }
 
 /* Badge de advertencia — color ámbar (el único para warnings) */
 .badge-warning {
+  /* Badge semántico para advertencias (warning). */
   @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-900/30 text-amber-300;
 }
 
 /* Color de advertencia: solo amber, nunca yellow ni orange para warnings */
+/* Utilidades warning unificadas en escala amber. */
 .text-warning { @apply text-amber-400; }
-.bg-warning    { @apply bg-amber-900/20; }
+.bg-warning { @apply bg-amber-900/20; }
 .border-warning { @apply border-amber-800/50; }
