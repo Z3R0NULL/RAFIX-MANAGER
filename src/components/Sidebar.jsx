@@ -1,3 +1,12 @@
+/**
+ * Sidebar.jsx — Navegación lateral principal de la aplicación.
+ *
+ * Incluye:
+ * - Sección de navegación general.
+ * - Sección administrativa para superadmin.
+ * - Tarjeta de usuario actual y accesos rápidos.
+ * - Acción de cierre de sesión.
+ */
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
@@ -17,6 +26,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
+// Ítems visibles para cualquier usuario autenticado.
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/orders', label: 'Reparaciones', icon: Wrench, end: true },
@@ -32,6 +42,7 @@ const NAV_ITEMS = [
 export default function Sidebar({ onClose, onOpenSettings }) {
   const { logout, auth, settings } = useStore()
   const navigate = useNavigate()
+  // Solo superadmin puede ver el bloque de administración global.
   const isSuperAdmin = auth?.role === 'superadmin'
 
   const handleLogout = () => {

@@ -1,3 +1,10 @@
+/**
+ * pages/NewSale.jsx — Alta de ventas directas.
+ *
+ * Ruta: /sales/new
+ * Permite seleccionar/editar cliente, agregar productos del inventario,
+ * calcular totales (incluyendo ajuste por método de pago) y registrar la venta.
+ */
 import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {

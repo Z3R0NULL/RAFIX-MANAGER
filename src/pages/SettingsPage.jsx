@@ -1,3 +1,13 @@
+/**
+ * SettingsPage.jsx — Configuración general del negocio.
+ *
+ * Secciones principales:
+ * - Datos de negocio (nombre, dirección, logo).
+ * - Preferencias regionales (moneda, idioma, zona horaria).
+ * - Ajustes de pago (descuentos/recargos por método).
+ * - Política de garantía y cláusulas para PDF.
+ * - Enlaces de redes sociales.
+ */
 import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -22,6 +32,7 @@ import {
 } from 'lucide-react'
 import { useStore, CURRENCY_OPTIONS, LANGUAGE_OPTIONS, DEFAULT_SETTINGS } from '../store/useStore'
 
+// Catálogo agrupado para selección de zona horaria.
 const TIMEZONE_OPTIONS = [
   { group: 'América del Sur', zones: [
     'America/Argentina/Buenos_Aires',
@@ -72,6 +83,7 @@ const YoutubeIcon = ({ size = 16, className = '' }) => (
 export default function SettingsPage() {
   const navigate = useNavigate()
   const { settings, updateSettings } = useStore()
+  // Copia local editable; se guarda en store al confirmar.
   const [local, setLocal] = useState({ ...DEFAULT_SETTINGS, ...settings })
   const [saved, setSaved] = useState(false)
   const logoRef = useRef()
@@ -80,6 +92,7 @@ export default function SettingsPage() {
     setLocal({ ...DEFAULT_SETTINGS, ...settings })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Helper para actualizar una propiedad puntual del estado local.
   const patch = (key, value) => setLocal((prev) => ({ ...prev, [key]: value }))
 
   const handleLogoUpload = (e) => {

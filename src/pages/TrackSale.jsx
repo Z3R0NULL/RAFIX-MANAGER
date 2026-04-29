@@ -1,3 +1,10 @@
+/**
+ * pages/TrackSale.jsx — Seguimiento público de ventas/comprobantes.
+ *
+ * Ruta: /sale-track y /sale-track/:saleNumber
+ * Busca la venta por número (Turso con fallback local) y muestra resumen
+ * de estado, productos, total y datos mínimos del cliente.
+ */
 import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {

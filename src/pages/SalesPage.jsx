@@ -1,3 +1,10 @@
+/**
+ * pages/SalesPage.jsx — Listado y exploración de ventas.
+ *
+ * Ruta: /sales
+ * Incluye búsqueda, filtros por estado, ordenamiento y vista grilla/lista
+ * para acceder al detalle de cada comprobante.
+ */
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {

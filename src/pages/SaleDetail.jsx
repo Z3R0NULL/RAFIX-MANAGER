@@ -1,3 +1,13 @@
+/**
+ * SaleDetail.jsx — Vista detallada de una venta.
+ *
+ * Permite:
+ * - Consultar datos completos de la venta.
+ * - Editar estado/notas/forma de pago y entrega.
+ * - Compartir enlace o QR de seguimiento.
+ * - Exportar comprobante PDF.
+ * - Eliminar la venta con confirmación.
+ */
 import React, { useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -32,6 +42,7 @@ import { formatDate } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 import { generateSalePDF } from '../utils/pdfGenerator'
 
+// Configuración visual de estados para badges y selector de edición.
 const SALE_STATUS_CONFIG = {
   paid:      { label: 'Pagado',    color: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',  dot: 'bg-green-500' },
   pending:   { label: 'Pendiente', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300', dot: 'bg-amber-500' },
@@ -49,6 +60,7 @@ function SaleBadge({ status }) {
 }
 
 function EditSaleModal({ sale, onSave, onClose, settings }) {
+  // Formulario local del modal de edición para cambios no persistidos aún.
   const fmt = useCurrency()
   const [status,         setStatus]         = useState(sale.status || 'pending')
   const [notes,          setNotes]          = useState(sale.notes || '')
@@ -252,6 +264,7 @@ export default function SaleDetail() {
   const contactRef = useRef(null)
   const shareRef = useRef(null)
 
+  // Busca la venta objetivo desde el store usando el id de la URL.
   const sale = sales.find((s) => s.id === id)
 
   if (!sale) {

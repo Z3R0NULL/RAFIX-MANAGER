@@ -1,3 +1,15 @@
+/**
+ * utils/pdfGenerator.js — Generación de comprobantes PDF.
+ *
+ * Exporta dos funciones asíncronas:
+ *  - generateInvoicePDF(order, settings): crea y descarga la orden de servicio.
+ *  - generateSalePDF(sale, settings): crea y descarga el comprobante de venta.
+ *
+ * Incluye helpers internos para:
+ *  - Formateo monetario según configuración de moneda/localidad.
+ *  - Construcción de secciones visuales reutilizables (encabezados, filas, columnas).
+ *  - Inserción opcional de QR de seguimiento en la orden de servicio.
+ */
 import jsPDF from 'jspdf'
 import QRCode from 'qrcode'
 import { STATUS_CONFIG, formatDate, formatDateShort } from './constants'

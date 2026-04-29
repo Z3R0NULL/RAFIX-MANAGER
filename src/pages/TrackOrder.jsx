@@ -1,3 +1,10 @@
+/**
+ * pages/TrackOrder.jsx — Seguimiento público de órdenes de servicio.
+ *
+ * Ruta: /track y /track/:orderNumber
+ * Busca una orden por número (Turso con fallback local), muestra su estado
+ * y permite aprobar/rechazar presupuesto cuando corresponde.
+ */
 import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {

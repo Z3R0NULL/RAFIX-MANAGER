@@ -1,17 +1,31 @@
+/**
+ * Login.jsx — Pantalla de autenticación.
+ *
+ * Maneja:
+ * - Estado local del formulario (usuario/contraseña).
+ * - Toggle de visibilidad de contraseña.
+ * - Feedback de error y estado de carga.
+ * - Redirección al dashboard al autenticar correctamente.
+ */
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Wrench, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { useStore } from '../store/useStore'
 
 export default function Login() {
+  // Datos del formulario de acceso.
   const [form, setForm] = useState({ username: '', password: '' })
+  // Control visual para mostrar/ocultar contraseña.
   const [showPass, setShowPass] = useState(false)
+  // Mensaje de error de autenticación.
   const [error, setError] = useState('')
+  // Indicador de proceso de inicio de sesión.
   const [loading, setLoading] = useState(false)
   const login = useStore((s) => s.login)
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
+    // Evita recarga del formulario para manejar login SPA.
     e.preventDefault()
     setError('')
     setLoading(true)

@@ -1,10 +1,21 @@
+/**
+ * Layout.jsx — Estructura visual base de páginas privadas.
+ *
+ * Responsabilidades:
+ * - Renderizar el sidebar fijo en escritorio.
+ * - Mostrar sidebar como overlay en móvil.
+ * - Incluir topbar móvil con botón de menú.
+ * - Montar el contenido de cada página en el área principal.
+ */
 import React, { useState } from 'react'
 import { Menu } from 'lucide-react'
 import Sidebar from './Sidebar'
 import { useStore } from '../store/useStore'
 
 export default function Layout({ children }) {
+  // Controla la apertura del panel lateral en dispositivos móviles.
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  // Lee el nombre del negocio para mostrarlo en la cabecera móvil.
   const businessName = useStore((s) => s.settings?.businessName || 'RAFIX')
 
   return (
