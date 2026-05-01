@@ -16,7 +16,7 @@ import {
   ArrowLeft, Edit3, Printer, ExternalLink, CheckCircle2, XCircle, MinusCircle,
   Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2, CheckSquare,
   RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2, Mail, ChevronDown, ChevronUp,
-  Package, Wrench,
+  Package, Wrench, Banknote, ArrowRightLeft, CreditCard,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useStore } from '../store/useStore'
@@ -745,6 +745,47 @@ export default function OrderDetail() {
                       {fmt(profit)}
                     </span>
                   </div>
+                )
+              })()}
+
+              {/* Método de pago */}
+              {order.paymentMethod && (() => {
+                const methodMap = { cash: { label: 'Efectivo', Icon: Banknote }, transfer: { label: 'Transferencia', Icon: ArrowRightLeft }, card: { label: 'Tarjeta', Icon: CreditCard } }
+                const method = methodMap[order.paymentMethod]
+                if (!method) return null
+                const paymentAdj = settings?.paymentAdjustments?.[order.paymentMethod]
+                const adjActive = paymentAdj?.enabled && paymentAdj?.value > 0
+                const basePrice = Number(order.finalPrice || order.estimatedPrice || 0)
+                const adjAmount = adjActive ? (paymentAdj.type === 'discount' ? -1 : 1) * (basePrice * paymentAdj.value) / 100 : 0
+                const totalAdjusted = basePrice + adjAmount
+                const { Icon } = method
+                return (
+                  <>
+                    <div className="border-t border-slate-100 dark:border-slate-800" />
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-slate-500">Método de pago</span>
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <Icon size={13} className="text-indigo-400" />
+                        {method.label}
+                      </span>
+                    </div>
+                    {adjActive && basePrice > 0 && (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                            {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'} {method.label.toLowerCase()} ({paymentAdj.value}%)
+                          </span>
+                          <span className={`text-sm font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                            {paymentAdj.type === 'discount' ? '-' : '+'} {fmt(Math.abs(adjAmount))}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Total con ajuste</span>
+                          <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">{fmt(totalAdjusted)}</span>
+                        </div>
+                      </>
+                    )}
+                  </>
                 )
               })()}
 

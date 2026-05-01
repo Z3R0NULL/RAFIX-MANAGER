@@ -33,7 +33,8 @@ import { createPortal } from 'react-dom'
 import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
   Search, UserCheck, Camera, Pencil, X,
-  Trash2, Package, Wrench, ChevronDown, ChevronUp
+  Trash2, Package, Wrench, ChevronDown, ChevronUp,
+  Banknote, ArrowRightLeft, CreditCard
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 // DEVICE_TYPES kept as fallback when deviceTypes store is empty
@@ -787,6 +788,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
   const deviceTypesDb = useStore((s) => s.deviceTypes)
   const inventory = useStore((s) => s.inventory)
   const services  = useStore((s) => s.services)
+  const settings  = useStore((s) => s.settings)
   const deviceTypesList = deviceTypesDb.length > 0 ? deviceTypesDb : DEVICE_TYPES
   // null = buscando / sin selección | { id, ... } = cliente seleccionado de la DB
   // Al editar una orden existente con datos de cliente, pre-poblamos el chip
@@ -868,6 +870,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     budgetItems: [],
     isWarranty: false,
     workDone: '',
+    paymentMethod: '',
     status: 'pending',
     statusNote: '',
     estimatedDelivery: '',
@@ -1271,6 +1274,40 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
       {/* ── Presupuesto ── */}
       <Section title="Presupuesto" icon={DollarSign} defaultOpen={false}>
         <div className="grid grid-cols-2 gap-4">
+
+          {/* 1 — Buscador de ítems/servicios (arriba de todo) */}
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+              Ítems / Servicios
+            </label>
+            <BudgetItemsEditor
+              items={form.budgetItems}
+              onChange={(items) => {
+                set('budgetItems', items)
+                // Auto-calculate totals from items (repuesto + modificador)
+                const newTotal = items.reduce((acc, it) => {
+                  const base = (Number(it.qty) || 0) * (Number(it.unitPrice) || 0)
+                  let modAmt = 0
+                  if (it.modifier && !it.isPercent) {
+                    if (it.modifier.priceType === 'percent') modAmt = Math.round((Number(it.modifier.price) || 0) / 100 * base)
+                    else modAmt = Number(it.modifier.price) || 0
+                  }
+                  return acc + base + modAmt
+                }, 0)
+                set('estimatedPrice', newTotal > 0 ? String(newTotal) : '')
+                // Costo = solo repuestos/servicios sin modificadores
+                const costTotal = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0)
+                set('repairCost', costTotal > 0 ? String(costTotal) : '')
+              }}
+              inventory={inventory}
+              services={services}
+            />
+          </div>
+
+          {/* Divisor */}
+          <div className="col-span-2 border-t border-slate-100 dark:border-slate-800" />
+
+          {/* 2 — Precios y costos */}
           <Field label="Precio estimado">
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
@@ -1352,38 +1389,73 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             </button>
           </div>
 
-          <div className="col-span-2">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
-              Items / Servicios
-            </label>
-            <BudgetItemsEditor
-              items={form.budgetItems}
-              onChange={(items) => {
-                set('budgetItems', items)
-                // Auto-calculate totals from items (repuesto + modificador)
-                const newTotal = items.reduce((acc, it) => {
-                  const base = (Number(it.qty) || 0) * (Number(it.unitPrice) || 0)
-                  let modAmt = 0
-                  if (it.modifier && !it.isPercent) {
-                    if (it.modifier.priceType === 'percent') modAmt = Math.round((Number(it.modifier.price) || 0) / 100 * base)
-                    else modAmt = Number(it.modifier.price) || 0
-                  }
-                  return acc + base + modAmt
-                }, 0)
-                set('estimatedPrice', newTotal > 0 ? String(newTotal) : '')
-                // Costo = solo repuestos/servicios sin modificadores
-                const costTotal = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0)
-                set('repairCost', costTotal > 0 ? String(costTotal) : '')
-              }}
-              inventory={inventory}
-              services={services}
-            />
-          </div>
-
+          {/* 3 — Trabajos realizados */}
           <div className="col-span-2">
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Trabajos / Servicios realizados</label>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.workDone} onChange={(e) => set('workDone', e.target.value)} placeholder="Describir qué se hizo, piezas reemplazadas, etc." />
           </div>
+
+          {/* Método de pago */}
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Método de pago</label>
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { value: 'cash',     label: 'Efectivo',      Icon: Banknote },
+                { value: 'transfer', label: 'Transferencia', Icon: ArrowRightLeft },
+                { value: 'card',     label: 'Tarjeta',       Icon: CreditCard },
+              ].map(({ value, label, Icon }) => {
+                const adj = settings?.paymentAdjustments?.[value]
+                const adjActive = adj?.enabled && adj?.value > 0
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => set('paymentMethod', form.paymentMethod === value ? '' : value)}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all
+                      ${form.paymentMethod === value
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50 dark:bg-slate-800'
+                      }`}
+                  >
+                    <Icon size={15} />
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Desglose del total con ajuste */}
+            {(() => {
+              const paymentAdj = form.paymentMethod ? settings?.paymentAdjustments?.[form.paymentMethod] : null
+              const adjActive = paymentAdj?.enabled && paymentAdj?.value > 0
+              const basePrice = Number(form.finalPrice || form.estimatedPrice || 0)
+              if (!adjActive || basePrice === 0) return null
+              const adjAmount = (paymentAdj.type === 'discount' ? -1 : 1) * (basePrice * paymentAdj.value) / 100
+              const totalAdjusted = basePrice + adjAmount
+              const methodLabel = form.paymentMethod === 'cash' ? 'efectivo' : form.paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'
+              return (
+                <div className="mt-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Precio base</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">${basePrice.toLocaleString('es-AR')}</span>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+                    <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'} {methodLabel} ({paymentAdj.value}%)
+                    </span>
+                    <span className={`text-sm font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      {paymentAdj.type === 'discount' ? '-' : '+'} ${Math.abs(adjAmount).toLocaleString('es-AR')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2.5">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Total con ajuste</span>
+                    <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">${totalAdjusted.toLocaleString('es-AR')}</span>
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+
         </div>
       </Section>
 
