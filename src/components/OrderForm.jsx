@@ -1273,10 +1273,10 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
       {/* ── Presupuesto ── */}
       <Section title="Presupuesto" icon={DollarSign} defaultOpen={false}>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-4">
 
-          {/* 1 — Buscador de ítems/servicios (arriba de todo) */}
-          <div className="col-span-2">
+          {/* 1 — Buscador de ítems/servicios */}
+          <div>
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
               Ítems / Servicios
             </label>
@@ -1304,157 +1304,158 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             />
           </div>
 
-          {/* Divisor */}
-          <div className="col-span-2 border-t border-slate-100 dark:border-slate-800" />
-
-          {/* 2 — Precios y costos */}
-          <Field label="Precio estimado">
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
-              <input
-                className={`${inputClass} pl-7`}
-                type="text"
-                inputMode="numeric"
-                value={form.estimatedPrice === '' ? '' : Number(form.estimatedPrice).toLocaleString('es-AR')}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
-                  set('estimatedPrice', raw === '' ? '' : raw)
-                }}
-                placeholder="0"
-              />
-            </div>
-          </Field>
-          <Field label="Precio final">
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
-              <input
-                className={`${inputClass} pl-7`}
-                type="text"
-                inputMode="numeric"
-                value={form.finalPrice === '' ? '' : Number(form.finalPrice).toLocaleString('es-AR')}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
-                  set('finalPrice', raw === '' ? '' : raw)
-                }}
-                placeholder="0"
-              />
-            </div>
-          </Field>
-          <Field label="Costo de reparación">
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
-              <input
-                className={`${inputClass} pl-7`}
-                type="text"
-                inputMode="numeric"
-                value={form.repairCost === '' ? '' : Number(form.repairCost).toLocaleString('es-AR')}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
-                  set('repairCost', raw === '' ? '' : raw)
-                }}
-                placeholder="0"
-              />
-            </div>
-          </Field>
-          <div className="col-span-2 sm:col-span-1">
-            <button
-              type="button"
-              onClick={() => set('isWarranty', !form.isWarranty)}
-              className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg border-2 transition-all ${
-                form.isWarranty
-                  ? 'border-amber-500 bg-amber-500/10 text-amber-400'
-                  : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-600 hover:text-slate-300'
-              }`}
-            >
-              <div className={`w-5 h-5 rounded flex items-center justify-center border-2 flex-shrink-0 transition-all ${
-                form.isWarranty
-                  ? 'border-amber-500 bg-amber-500'
-                  : 'border-slate-600 bg-transparent'
-              }`}>
-                {form.isWarranty && (
-                  <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </div>
-              <div className="text-left">
-                <span className="text-sm font-semibold">Garantía</span>
-                <p className="text-xs opacity-70 mt-0.5">Marcar si esta orden es un trabajo bajo garantía</p>
-              </div>
-              {form.isWarranty && (
-                <span className="ml-auto text-xs font-bold px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                  GARANTÍA
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* 3 — Trabajos realizados */}
-          <div className="col-span-2">
+          {/* 2 — Trabajos realizados */}
+          <div>
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Trabajos / Servicios realizados</label>
             <textarea className={`${inputClass} resize-none`} rows={3} value={form.workDone} onChange={(e) => set('workDone', e.target.value)} placeholder="Describir qué se hizo, piezas reemplazadas, etc." />
           </div>
 
-          {/* Método de pago */}
-          <div className="col-span-2">
+          {/* 3 — Método de pago */}
+          <div>
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Método de pago</label>
             <div className="flex gap-2 flex-wrap">
               {[
                 { value: 'cash',     label: 'Efectivo',      Icon: Banknote },
                 { value: 'transfer', label: 'Transferencia', Icon: ArrowRightLeft },
                 { value: 'card',     label: 'Tarjeta',       Icon: CreditCard },
-              ].map(({ value, label, Icon }) => {
-                const adj = settings?.paymentAdjustments?.[value]
-                const adjActive = adj?.enabled && adj?.value > 0
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => set('paymentMethod', form.paymentMethod === value ? '' : value)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all
-                      ${form.paymentMethod === value
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50 dark:bg-slate-800'
-                      }`}
-                  >
-                    <Icon size={15} />
-                    {label}
-                  </button>
-                )
-              })}
+              ].map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => set('paymentMethod', form.paymentMethod === value ? '' : value)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all
+                    ${form.paymentMethod === value
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50 dark:bg-slate-800'
+                    }`}
+                >
+                  <Icon size={15} />
+                  {label}
+                </button>
+              ))}
             </div>
-
-            {/* Desglose del total con ajuste */}
-            {(() => {
-              const paymentAdj = form.paymentMethod ? settings?.paymentAdjustments?.[form.paymentMethod] : null
-              const adjActive = paymentAdj?.enabled && paymentAdj?.value > 0
-              const basePrice = Number(form.finalPrice || form.estimatedPrice || 0)
-              if (!adjActive || basePrice === 0) return null
-              const adjAmount = (paymentAdj.type === 'discount' ? -1 : 1) * (basePrice * paymentAdj.value) / 100
-              const totalAdjusted = basePrice + adjAmount
-              const methodLabel = form.paymentMethod === 'cash' ? 'efectivo' : form.paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'
-              return (
-                <div className="mt-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 overflow-hidden">
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Precio base</span>
-                    <span className="text-sm text-slate-600 dark:text-slate-300">${basePrice.toLocaleString('es-AR')}</span>
-                  </div>
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
-                    <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                      {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'} {methodLabel} ({paymentAdj.value}%)
-                    </span>
-                    <span className={`text-sm font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                      {paymentAdj.type === 'discount' ? '-' : '+'} ${Math.abs(adjAmount).toLocaleString('es-AR')}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between px-3 py-2.5">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Total con ajuste</span>
-                    <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">${totalAdjusted.toLocaleString('es-AR')}</span>
-                  </div>
-                </div>
-              )
-            })()}
           </div>
+
+          {/* 4 — Garantía */}
+          <button
+            type="button"
+            onClick={() => set('isWarranty', !form.isWarranty)}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg border-2 transition-all ${
+              form.isWarranty
+                ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-300'
+            }`}
+          >
+            <div className={`w-5 h-5 rounded flex items-center justify-center border-2 flex-shrink-0 transition-all ${
+              form.isWarranty
+                ? 'border-amber-500 bg-amber-500'
+                : 'border-slate-400 dark:border-slate-600 bg-transparent'
+            }`}>
+              {form.isWarranty && (
+                <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+            <div className="text-left">
+              <span className="text-sm font-semibold">Garantía</span>
+              <p className="text-xs opacity-70 mt-0.5">Marcar si esta orden es un trabajo bajo garantía</p>
+            </div>
+            {form.isWarranty && (
+              <span className="ml-auto text-xs font-bold px-2 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                GARANTÍA
+              </span>
+            )}
+          </button>
+
+          {/* 5 — Desglose de precios */}
+          {(() => {
+            const paymentAdj = form.paymentMethod ? settings?.paymentAdjustments?.[form.paymentMethod] : null
+            const adjActive = paymentAdj?.enabled && paymentAdj?.value > 0
+            const basePrice = Number(form.estimatedPrice || 0)
+            const adjAmount = adjActive ? (paymentAdj.type === 'discount' ? -1 : 1) * Math.round((basePrice * paymentAdj.value) / 100) : 0
+            const finalWithAdj = basePrice + adjAmount
+            const methodLabel = form.paymentMethod === 'cash' ? 'efectivo' : form.paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'
+
+            return (
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  {/* Costo de reparación */}
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Wrench size={13} className="text-slate-400" />
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Costo de reparación</span>
+                    </div>
+                    <div className="relative w-36">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                      <input
+                        className="w-full pl-5 pr-2 py-1 text-sm text-right font-medium bg-transparent border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-700 dark:text-slate-200"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.repairCost === '' ? '' : Number(form.repairCost).toLocaleString('es-AR')}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                          set('repairCost', raw === '' ? '' : raw)
+                        }}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Total estimado */}
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <DollarSign size={13} className="text-slate-400" />
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total estimado</span>
+                    </div>
+                    <div className="relative w-36">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                      <input
+                        className="w-full pl-5 pr-2 py-1 text-sm text-right font-medium bg-transparent border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-700 dark:text-slate-200"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.estimatedPrice === '' ? '' : Number(form.estimatedPrice).toLocaleString('es-AR')}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                          set('estimatedPrice', raw === '' ? '' : raw)
+                        }}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Ajuste por método de pago (solo si aplica) */}
+                  {adjActive && basePrice > 0 && (
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+                      <div className="flex items-center gap-2">
+                        {paymentAdj.type === 'discount'
+                          ? <ArrowRightLeft size={13} className="text-emerald-500 dark:text-emerald-400" />
+                          : <CreditCard size={13} className="text-amber-500 dark:text-amber-400" />
+                        }
+                        <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                          {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'} {methodLabel} ({paymentAdj.value}%)
+                        </span>
+                      </div>
+                      <span className={`text-sm font-semibold ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {paymentAdj.type === 'discount' ? '-' : '+'} ${Math.abs(adjAmount).toLocaleString('es-AR')}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Precio final con ajuste */}
+                  {form.paymentMethod && finalWithAdj > 0 && (
+                    <div className="flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/10">
+                      <div className="flex items-center gap-2">
+                        <Banknote size={15} className="text-indigo-500 dark:text-indigo-400" />
+                        <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">Precio Final</span>
+                      </div>
+                      <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">
+                        ${finalWithAdj.toLocaleString('es-AR')}
+                      </span>
+                    </div>
+                  )}
+              </div>
+            )
+          })()}
 
         </div>
       </Section>
