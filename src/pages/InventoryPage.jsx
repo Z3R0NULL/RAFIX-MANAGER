@@ -11,10 +11,11 @@
  * Los datos se persisten en Turso a través del store (addInventoryItem, etc.).
  */
 import React, { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Package, Plus, Search, Pencil, Trash2, X, Check,
   ChevronUp, ChevronDown, AlertTriangle, Tag, Boxes,
-  Wrench, Smartphone, LayoutGrid, List, ArrowUpDown,
+  Wrench, Smartphone, LayoutGrid, List, ArrowUpDown, Store, ExternalLink,
 } from 'lucide-react'
 
 const SORT_OPTIONS = [
@@ -28,6 +29,7 @@ const SORT_OPTIONS = [
 import { useStore } from '../store/useStore'
 import { useCurrency } from '../utils/useCurrency'
 import { PageLoader } from '../components/PageLoader'
+import ImageUploader from '../components/ImageUploader'
 
 // ── Category config ───────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -62,6 +64,8 @@ const BLANK = {
   costPrice: '',
   location: '',
   notes: '',
+  showInStore: false,
+  images: [],
 }
 
 
@@ -227,6 +231,38 @@ function ItemModal({ item, onClose, onSave }) {
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 transition-colors resize-none"
             />
           </div>
+
+          {/* Images */}
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 space-y-2 bg-slate-50 dark:bg-slate-800/40">
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Fotos del producto <span className="text-slate-400 font-normal">(opcional)</span></p>
+            <ImageUploader
+              images={form.images || []}
+              onChange={(imgs) => set('images', imgs)}
+              maxImages={5}
+            />
+          </div>
+
+          {/* Show in store */}
+          <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors select-none">
+            <div className="relative flex-shrink-0">
+              <input
+                type="checkbox"
+                checked={!!form.showInStore}
+                onChange={(e) => set('showInStore', e.target.checked)}
+                className="sr-only"
+              />
+              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${form.showInStore ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}`}>
+                {form.showInStore && <Check size={12} className="text-white" strokeWidth={3} />}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <Store size={13} className="text-indigo-500" />
+                Mostrar en la tienda
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">Este producto será visible en la tienda pública para clientes</p>
+            </div>
+          </label>
         </div>
 
         {/* Footer */}
@@ -284,11 +320,12 @@ function StockAdjuster({ item }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function InventoryPage() {
   const fmt = useCurrency()
-  const inventory          = useStore((s) => s.inventory)
-  const addInventoryItem   = useStore((s) => s.addInventoryItem)
+  const navigate = useNavigate()
+  const inventory           = useStore((s) => s.inventory)
+  const addInventoryItem    = useStore((s) => s.addInventoryItem)
   const updateInventoryItem = useStore((s) => s.updateInventoryItem)
   const deleteInventoryItem = useStore((s) => s.deleteInventoryItem)
-  const dataLoading        = useStore((s) => s.dataLoading)
+  const dataLoading         = useStore((s) => s.dataLoading)
 
   const [search, setSearch]       = useState('')
   const [filterCat, setFilterCat] = useState('all')
@@ -370,13 +407,23 @@ export default function InventoryPage() {
             Módulos, herramientas, celulares y más
           </p>
         </div>
-        <button
-          onClick={() => setModal('new')}
-          className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus size={16} />
-          Agregar ítem
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={() => navigate('/store')}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors"
+          >
+            <Store size={15} className="text-indigo-500" />
+            Ver tienda
+            <ExternalLink size={12} className="text-slate-400" />
+          </button>
+          <button
+            onClick={() => setModal('new')}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            Agregar ítem
+          </button>
+        </div>
       </div>
 
       {/* ── KPI cards ── */}
@@ -497,6 +544,7 @@ export default function InventoryPage() {
                   <th className="th-std-right">Precio venta</th>
                   <th className="th-std-right">Costo</th>
                   <th className="th-std">Ubicación</th>
+                  <th className="th-std-center">Tienda</th>
                   <th className="th-std-right">Acciones</th>
                 </tr>
               </thead>
@@ -509,10 +557,21 @@ export default function InventoryPage() {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">{item.name}</p>
-                        {item.notes && (
-                          <p className="text-xs text-slate-400 truncate max-w-[200px]">{item.notes}</p>
-                        )}
+                        <div className="flex items-center gap-2.5">
+                          {item.images?.length > 0 ? (
+                            <img src={item.images[0]} alt={item.name} className="w-9 h-9 rounded-lg object-cover flex-shrink-0 border border-slate-200 dark:border-slate-700" />
+                          ) : (
+                            <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+                              <Package size={14} className="text-slate-300 dark:text-slate-600" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[180px]">{item.name}</p>
+                            {item.notes && (
+                              <p className="text-xs text-slate-400 truncate max-w-[180px]">{item.notes}</p>
+                            )}
+                          </div>
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${colors.badge}`}>
@@ -541,6 +600,17 @@ export default function InventoryPage() {
                       </td>
                       <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
                         {item.location || '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => updateInventoryItem(item.id, { ...item, showInStore: !item.showInStore })}
+                            title={item.showInStore ? 'Quitar de la tienda' : 'Publicar en tienda'}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${item.showInStore ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'text-slate-300 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-500'}`}
+                          >
+                            <Store size={14} />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
@@ -579,7 +649,19 @@ export default function InventoryPage() {
             const isLow  = item.minStock > 0 && item.stock <= item.minStock && item.stock > 0
             const isOut  = item.stock === 0
             return (
-              <div key={item.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+              <div key={item.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 flex flex-col hover:shadow-md transition-shadow overflow-hidden">
+                {/* Product image */}
+                {item.images?.length > 0 ? (
+                  <div className="relative aspect-video w-full bg-slate-100 dark:bg-slate-800">
+                    <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
+                    {item.images.length > 1 && (
+                      <span className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                        +{item.images.length - 1}
+                      </span>
+                    )}
+                  </div>
+                ) : null}
+                <div className="p-4 flex flex-col gap-3 flex-1">
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -623,6 +705,14 @@ export default function InventoryPage() {
                 {/* Actions */}
                 <div className="flex gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                   <button
+                    onClick={() => updateInventoryItem(item.id, { ...item, showInStore: !item.showInStore })}
+                    title={item.showInStore ? 'Quitar de la tienda' : 'Mostrar en la tienda'}
+                    className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${item.showInStore ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-600'}`}
+                  >
+                    <Store size={12} />
+                    {item.showInStore ? 'En tienda' : 'Tienda'}
+                  </button>
+                  <button
                     onClick={() => setModal(item)}
                     className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
                   >
@@ -635,6 +725,7 @@ export default function InventoryPage() {
                     <Trash2 size={12} /> Eliminar
                   </button>
                 </div>
+                </div>{/* end p-4 */}
               </div>
             )
           })}
