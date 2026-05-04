@@ -30,6 +30,7 @@ import { useStore } from '../store/useStore'
 import { useCurrency } from '../utils/useCurrency'
 import { PageLoader } from '../components/PageLoader'
 import ImageUploader from '../components/ImageUploader'
+import { Copy, Check as CheckIcon } from 'lucide-react'
 
 // ── Category config ───────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -326,6 +327,16 @@ export default function InventoryPage() {
   const updateInventoryItem = useStore((s) => s.updateInventoryItem)
   const deleteInventoryItem = useStore((s) => s.deleteInventoryItem)
   const dataLoading         = useStore((s) => s.dataLoading)
+  const username            = useStore((s) => s.auth?.username)
+
+  const [copied, setCopied] = useState(false)
+  const storeUrl = `${window.location.origin}/store/${username}`
+  const handleCopyStoreLink = () => {
+    navigator.clipboard.writeText(storeUrl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   const [search, setSearch]       = useState('')
   const [filterCat, setFilterCat] = useState('all')
@@ -409,7 +420,19 @@ export default function InventoryPage() {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => navigate('/store')}
+            onClick={handleCopyStoreLink}
+            title={`Copiar enlace público: ${storeUrl}`}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-all ${
+              copied
+                ? 'bg-emerald-600 border-emerald-600 text-white'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+            }`}
+          >
+            {copied ? <CheckIcon size={14} /> : <Copy size={14} className="text-indigo-500" />}
+            {copied ? 'Enlace copiado' : 'Copiar enlace tienda'}
+          </button>
+          <button
+            onClick={() => window.open(storeUrl, '_blank')}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors"
           >
             <Store size={15} className="text-indigo-500" />

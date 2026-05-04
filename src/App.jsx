@@ -38,6 +38,7 @@ import SaleDetail from './pages/SaleDetail'
 import TrackSale from './pages/TrackSale'
 import SettingsPage from './pages/SettingsPage'
 import StorePage from './pages/StorePage'
+import PublicStorePage from './pages/PublicStorePage'
 
 // Loader de pantalla completa usado mientras el estado persistido se hidrata.
 function AppLoader() {
@@ -127,6 +128,7 @@ export default function App() {
           <Route path="/sale-track" element={<TrackSale />} />
           <Route path="/sale-track/:saleNumber" element={<TrackSale />} />
           <Route path="/store" element={<StorePage />} />
+          <Route path="/store/:username" element={<PublicStorePage />} />
 
           {/* Rutas protegidas: requieren usuario autenticado */}
           <Route
