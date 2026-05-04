@@ -967,7 +967,15 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit(form)
+    // Compute finalPrice from estimatedPrice + active payment adjustment
+    const basePrice = Number(form.estimatedPrice || 0)
+    const paymentAdj = form.paymentMethod ? settings?.paymentAdjustments?.[form.paymentMethod] : null
+    const adjActive = paymentAdj?.enabled && paymentAdj?.value > 0
+    const adjAmount = adjActive
+      ? (paymentAdj.type === 'discount' ? -1 : 1) * Math.round((basePrice * paymentAdj.value) / 100)
+      : 0
+    const computedFinalPrice = basePrice > 0 ? String(basePrice + adjAmount) : form.finalPrice
+    onSubmit({ ...form, finalPrice: computedFinalPrice })
   }
 
   return (
@@ -1486,12 +1494,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
               min={(initialData?.entryDate || new Date().toISOString()).slice(0, 10)}
             />
           </div>
-          {!statusTransitionError.ok && (
-            <div className="col-span-2 flex items-start gap-2.5 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-sm text-amber-700 dark:text-amber-400">
-              <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="currentColor"/><path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
-              {statusTransitionError.reason}
-            </div>
-          )}
         </div>
       </div>
 

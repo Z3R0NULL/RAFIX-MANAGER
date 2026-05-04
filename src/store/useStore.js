@@ -1060,6 +1060,10 @@ export const useStore = create(
               if (data.status === 'delivered' || data.status === 'cancelled') {
                 updated.deliveryDate = new Date().toISOString()
               }
+              // Al volver a "esperando aprobación", resetear budgetStatus para que el cliente pueda aprobar de nuevo
+              if (data.status === 'waiting_approval') {
+                updated.budgetStatus = 'pending'
+              }
             }
             syncOrderToTurso(updated)
             return updated

@@ -206,7 +206,7 @@ export default function TrackOrder() {
     const updatedOrder = {
       ...order,
       budgetStatus: decision,
-      // Si acepta, avanzar automáticamente a in_repair (solo si estaba en waiting_approval)
+      // Si acepta → in_repair; si rechaza → cancelled
       ...(decision === 'approved' && order.status === 'waiting_approval' ? {
         status: 'in_repair',
         statusHistory: [
@@ -215,6 +215,17 @@ export default function TrackOrder() {
             status: 'in_repair',
             timestamp: new Date().toISOString(),
             note: 'Presupuesto aprobado por el cliente',
+          },
+        ],
+      } : {}),
+      ...(decision === 'rejected' ? {
+        status: 'cancelled',
+        statusHistory: [
+          ...(order.statusHistory || []),
+          {
+            status: 'cancelled',
+            timestamp: new Date().toISOString(),
+            note: 'Presupuesto rechazado por el cliente',
           },
         ],
       } : {}),

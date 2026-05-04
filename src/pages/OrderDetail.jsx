@@ -203,6 +203,37 @@ export default function OrderDetail() {
   }, [id, localOrder, isSuperAdmin])
 
   const order = localOrder || remoteOrder
+
+  // Polling: cuando la orden está esperando aprobación del cliente,
+  // consultar Turso cada 5 segundos para reflejar cambios sin recargar
+  useEffect(() => {
+    if (!isTursoConfigured) return
+    if (!order) return
+    if (order.status !== 'waiting_approval') return
+
+    const poll = async () => {
+      try {
+        const res = await turso.execute({
+          sql: 'SELECT data FROM orders WHERE id = ? LIMIT 1',
+          args: [id],
+        })
+        const row = res.rows[0]
+        if (!row) return
+        const remote = JSON.parse(row.data)
+        // Si cambió el estado o el budgetStatus, sincronizar al store local
+        if (remote.status !== order.status || remote.budgetStatus !== order.budgetStatus) {
+          updateOrder(id, {
+            status: remote.status,
+            budgetStatus: remote.budgetStatus,
+            statusHistory: remote.statusHistory,
+          })
+        }
+      } catch {}
+    }
+
+    const interval = setInterval(poll, 5000)
+    return () => clearInterval(interval)
+  }, [id, order?.status, order?.budgetStatus])
   // El superadmin puede ver órdenes ajenas pero no editarlas (son de otro usuario)
   // isOwner: la orden fue encontrada localmente (no es de otro usuario via Turso)
   const isOwner = !remoteOrder || localOrder !== null
@@ -710,41 +741,39 @@ export default function OrderDetail() {
               <BudgetBadge status={order.budgetStatus} />
             </div>
             <div className="space-y-3">
-              {/* Precio final — protagonista */}
-              <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-sm font-semibold text-slate-900 dark:text-white">Precio final</span>
-                <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice)}</span>
-              </div>
-
               {/* Precio estimado */}
               <div className="flex justify-between items-center">
                 <span className="text-xs text-slate-500">Precio estimado</span>
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.estimatedPrice)}</span>
               </div>
 
-              {/* Divisor */}
-              <div className="border-t border-slate-100 dark:border-slate-800" />
-
               {/* Costo de reparación */}
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Costo</span>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.repairCost)}</span>
-              </div>
-
-              {/* Divisor */}
-              <div className="border-t border-slate-100 dark:border-slate-800" />
+              {order.repairCost > 0 && (
+                <>
+                  <div className="border-t border-slate-100 dark:border-slate-800" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500">Costo</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.repairCost)}</span>
+                  </div>
+                </>
+              )}
 
               {/* Ganancia */}
               {(() => {
-                const profit = Number(order.finalPrice || 0) - Number(order.repairCost || 0)
-                const isPositive = profit >= 0
+                const base = Number(order.finalPrice || order.estimatedPrice || 0)
+                const cost = Number(order.repairCost || 0)
+                if (!base || !cost) return null
+                const profit = base - cost
                 return (
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-500">Ganancia</span>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {fmt(profit)}
-                    </span>
-                  </div>
+                  <>
+                    <div className="border-t border-slate-100 dark:border-slate-800" />
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-slate-500">Ganancia</span>
+                      <span className={`text-sm font-medium ${profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                        {fmt(profit)}
+                      </span>
+                    </div>
+                  </>
                 )
               })()}
 
@@ -753,11 +782,6 @@ export default function OrderDetail() {
                 const methodMap = { cash: { label: 'Efectivo', Icon: Banknote }, transfer: { label: 'Transferencia', Icon: ArrowRightLeft }, card: { label: 'Tarjeta', Icon: CreditCard } }
                 const method = methodMap[order.paymentMethod]
                 if (!method) return null
-                const paymentAdj = settings?.paymentAdjustments?.[order.paymentMethod]
-                const adjActive = paymentAdj?.enabled && paymentAdj?.value > 0
-                const basePrice = Number(order.finalPrice || order.estimatedPrice || 0)
-                const adjAmount = adjActive ? (paymentAdj.type === 'discount' ? -1 : 1) * (basePrice * paymentAdj.value) / 100 : 0
-                const totalAdjusted = basePrice + adjAmount
                 const { Icon } = method
                 return (
                   <>
@@ -769,25 +793,17 @@ export default function OrderDetail() {
                         {method.label}
                       </span>
                     </div>
-                    {adjActive && basePrice > 0 && (
-                      <>
-                        <div className="flex justify-between items-center">
-                          <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                            {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'} {method.label.toLowerCase()} ({paymentAdj.value}%)
-                          </span>
-                          <span className={`text-sm font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                            {paymentAdj.type === 'discount' ? '-' : '+'} {fmt(Math.abs(adjAmount))}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center pt-1">
-                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Total con ajuste</span>
-                          <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">{fmt(totalAdjusted)}</span>
-                        </div>
-                      </>
-                    )}
                   </>
                 )
               })()}
+
+              {/* Precio final — conclusión del flujo */}
+              <div className="border-t-2 border-slate-200 dark:border-slate-700 pt-3 mt-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">Precio final</span>
+                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice || order.estimatedPrice)}</span>
+                </div>
+              </div>
 
             </div>
           </div>
