@@ -458,7 +458,7 @@ export default function FinancePage() {
         deliveryDate: s.createdAt, entryDate: s.createdAt,
         orderNumber: s.saleNumber, customerName: s.customerName || '' }
       if (s.status === 'paid') billed.push(row)
-      else if (s.status !== 'cancelled') pending.push(row)
+      else pending.push(row)
     }
     return { billedSales: billed, pendingSales: pending }
   }, [sales])

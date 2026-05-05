@@ -1057,12 +1057,19 @@ export const useStore = create(
                 data.status,
                 data.statusNote || ''
               )
-              if (data.status === 'delivered' || data.status === 'cancelled') {
+              if (data.status === 'delivered') {
                 updated.deliveryDate = new Date().toISOString()
               }
               // Al volver a "esperando aprobación", resetear budgetStatus para que el cliente pueda aprobar de nuevo
               if (data.status === 'waiting_approval') {
                 updated.budgetStatus = 'pending'
+              }
+              // En reparación → presupuesto aprobado; Sin reparación → presupuesto rechazado
+              if (data.status === 'in_repair') {
+                updated.budgetStatus = 'approved'
+              }
+              if (data.status === 'irreparable') {
+                updated.budgetStatus = 'rejected'
               }
             }
             syncOrderToTurso(updated)

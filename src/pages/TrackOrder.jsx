@@ -8,11 +8,11 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  Wrench, Search, Clock, DollarSign, MessageCircle, Loader2,
+  Wrench, Clock, DollarSign, MessageCircle, Loader2,
   AlertCircle, RefreshCw, Smartphone, CheckCircle2,
   XCircle, Info, Calendar, Tag, ShieldCheck, ThumbsUp, ThumbsDown,
   Camera, ZoomIn, X, ChevronLeft, ChevronRight, Package, ClipboardList,
-  Droplets,
+  Droplets, Bell,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { turso, isTursoConfigured } from '../lib/turso'
@@ -206,7 +206,7 @@ export default function TrackOrder() {
     const updatedOrder = {
       ...order,
       budgetStatus: decision,
-      // Si acepta → in_repair; si rechaza → cancelled
+      // Si acepta → in_repair; si rechaza → irreparable
       ...(decision === 'approved' && order.status === 'waiting_approval' ? {
         status: 'in_repair',
         statusHistory: [
@@ -219,11 +219,11 @@ export default function TrackOrder() {
         ],
       } : {}),
       ...(decision === 'rejected' ? {
-        status: 'cancelled',
+        status: 'irreparable',
         statusHistory: [
           ...(order.statusHistory || []),
           {
-            status: 'cancelled',
+            status: 'irreparable',
             timestamp: new Date().toISOString(),
             note: 'Presupuesto rechazado por el cliente',
           },
@@ -292,30 +292,15 @@ export default function TrackOrder() {
 
       <div className="max-w-3xl mx-auto px-4 py-10">
 
-        {/* Search form */}
+        {/* Enlace sin número de orden */}
         {isSearchMode && (
-          <>
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-white mb-2">Rastrear tu Reparación</h1>
-              <p className="text-slate-400 text-sm">Ingresá tu número de orden para ver el estado actual</p>
-            </div>
-            <form onSubmit={handleSearch} className="flex gap-2 mb-8">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value.toUpperCase())}
-                placeholder="ORD-XXXXXXXX"
-                className="flex-1 px-4 py-3 rounded-lg border border-slate-700 bg-slate-900 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition font-mono"
-              />
-              <button
-                type="submit"
-                className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
-              >
-                <Search size={15} />
-                Buscar
-              </button>
-            </form>
-          </>
+          <div className="bg-slate-900 rounded-xl border border-slate-700/60 p-8 text-center">
+            <AlertCircle size={24} className="text-slate-600 mx-auto mb-3" />
+            <p className="text-slate-300 font-medium">Enlace inválido</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Este enlace no es válido. Pedile al técnico que te reenvíe el enlace de seguimiento.
+            </p>
+          </div>
         )}
 
         {/* Loading */}
@@ -332,14 +317,8 @@ export default function TrackOrder() {
             <AlertCircle size={24} className="text-slate-600 mx-auto mb-3" />
             <p className="text-slate-300 font-medium">Orden no encontrada</p>
             <p className="text-sm text-slate-500 mt-1">
-              Verificá el número de orden o pedile al técnico que te reenvíe el enlace.
+              No pudimos encontrar tu orden. Pedile al técnico que te reenvíe el enlace.
             </p>
-            <button
-              onClick={() => navigate('/track')}
-              className="mt-4 text-sm text-indigo-400 hover:underline"
-            >
-              Buscar otra orden
-            </button>
           </div>
         )}
 
@@ -434,6 +413,25 @@ export default function TrackOrder() {
                     {order.budgetStatus === 'approved'
                       ? 'Te avisaremos cuando esté listo.'
                       : 'Podés pasar a retirar tu equipo.'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Listo para retirar */}
+            {(order.status === 'completed' || order.status === 'irreparable') && (
+              <div className="bg-green-900/25 rounded-xl border-2 border-green-500/50 px-5 py-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <Bell size={20} className="text-green-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-green-300 text-sm">
+                    {order.status === 'completed' ? '¡Tu equipo está listo!' : 'Equipo disponible para retirar'}
+                  </p>
+                  <p className="text-xs text-green-400/80 mt-0.5">
+                    {order.status === 'completed'
+                      ? 'La reparación fue completada. Podés pasar a retirar tu equipo cuando quieras.'
+                      : 'El equipo no pudo ser reparado. Podés pasar a retirarlo cuando quieras.'}
                   </p>
                 </div>
               </div>
@@ -773,15 +771,6 @@ export default function TrackOrder() {
               </div>
             </div>
 
-            {/* Search another order */}
-            <div className="text-center">
-              <button
-                onClick={() => navigate('/track')}
-                className="text-sm text-slate-500 hover:text-indigo-400 transition-colors"
-              >
-                Buscar otra orden →
-              </button>
-            </div>
           </div>
         )}
       </div>

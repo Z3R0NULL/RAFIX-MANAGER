@@ -18,9 +18,8 @@ import { formatDate } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
 
 const SALE_STATUS = {
-  paid:      { label: 'Pagado',    color: 'bg-green-100 text-green-700',  dot: 'bg-green-500',  dotDark: 'bg-green-400' },
-  pending:   { label: 'Pendiente', color: 'bg-amber-100 text-amber-700',  dot: 'bg-amber-500',  dotDark: 'bg-amber-400' },
-  cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-700',      dot: 'bg-red-500',    dotDark: 'bg-red-400' },
+  paid:    { label: 'Pagado',    color: 'bg-green-100 text-green-700', dot: 'bg-green-500', dotDark: 'bg-green-400' },
+  pending: { label: 'Pendiente', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500', dotDark: 'bg-amber-400' },
 }
 
 function SaleBadge({ status }) {

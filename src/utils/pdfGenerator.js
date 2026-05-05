@@ -528,8 +528,8 @@ export async function generateSalePDF(sale, settings = {}) {
   y = 50
 
   // ── Status ────────────────────────────────────────────────────────────────
-  const statusColors = { paid: [16, 185, 129], pending: [245, 158, 11], cancelled: [239, 68, 68] }
-  const statusLabels = { paid: 'Pagado', pending: 'Pendiente', cancelled: 'Cancelado' }
+  const statusColors = { paid: [16, 185, 129], pending: [245, 158, 11] }
+  const statusLabels = { paid: 'Pagado', pending: 'Pendiente' }
   const sc = statusColors[sale.status] || statusColors.pending
   doc.setFillColor(sc[0] + 180 > 255 ? 235 : sc[0] + 180, sc[1] + 180 > 255 ? 235 : sc[1] + 180, sc[2] + 180 > 255 ? 235 : sc[2] + 180)
   doc.roundedRect(ML, y - 4, 48, 9, 2, 2, 'F')

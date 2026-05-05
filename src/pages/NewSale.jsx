@@ -31,9 +31,8 @@ import { useStore } from '../store/useStore'
 import { useCurrency } from '../utils/useCurrency'
 
 const SALE_STATUSES = [
-  { value: 'paid',      label: 'Pagado' },
-  { value: 'pending',   label: 'Pendiente' },
-  { value: 'cancelled', label: 'Cancelado' },
+  { value: 'paid',    label: 'Pagado' },
+  { value: 'pending', label: 'Pendiente' },
 ]
 
 export default function NewSale() {
