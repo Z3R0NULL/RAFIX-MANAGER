@@ -741,11 +741,21 @@ export default function OrderDetail() {
               <BudgetBadge status={order.budgetStatus} />
             </div>
             <div className="space-y-3">
-              {/* Precio estimado */}
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Precio estimado</span>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.estimatedPrice)}</span>
-              </div>
+              {/* Ganancia */}
+              {(() => {
+                const base = Number(order.finalPrice || order.estimatedPrice || 0)
+                const cost = Number(order.repairCost || 0)
+                if (!base || !cost) return null
+                const profit = base - cost
+                return (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500">Ganancia</span>
+                    <span className={`text-sm font-medium ${profit >= 0 ? 'text-slate-700 dark:text-slate-300' : 'text-red-500 dark:text-red-400'}`}>
+                      {fmt(profit)}
+                    </span>
+                  </div>
+                )
+              })()}
 
               {/* Costo de reparación */}
               {order.repairCost > 0 && (
@@ -758,24 +768,12 @@ export default function OrderDetail() {
                 </>
               )}
 
-              {/* Ganancia */}
-              {(() => {
-                const base = Number(order.finalPrice || order.estimatedPrice || 0)
-                const cost = Number(order.repairCost || 0)
-                if (!base || !cost) return null
-                const profit = base - cost
-                return (
-                  <>
-                    <div className="border-t border-slate-100 dark:border-slate-800" />
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-slate-500">Ganancia</span>
-                      <span className={`text-sm font-medium ${profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
-                        {fmt(profit)}
-                      </span>
-                    </div>
-                  </>
-                )
-              })()}
+              {/* Precio estimado */}
+              <div className="border-t border-slate-100 dark:border-slate-800" />
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Precio estimado</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.estimatedPrice)}</span>
+              </div>
 
               {/* Método de pago */}
               {order.paymentMethod && (() => {

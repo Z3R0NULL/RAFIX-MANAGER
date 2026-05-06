@@ -34,7 +34,7 @@ import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
   Search, UserCheck, Camera, Pencil, X,
   Trash2, Package, Wrench, ChevronDown, ChevronUp,
-  Banknote, ArrowRightLeft, CreditCard
+  Banknote, ArrowRightLeft, CreditCard, Puzzle
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 // DEVICE_TYPES kept as fallback when deviceTypes store is empty
@@ -487,17 +487,17 @@ function ModifierSelector({ itemId, modifier, itemUnitPrice, itemQty, services, 
   return (
     <div className="relative inline-block">
       {modifier ? (
-        <div className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-indigo-900/30 border border-indigo-700/50 text-xs">
-          <Wrench size={11} className="text-indigo-400 flex-shrink-0" />
-          <span className="text-indigo-200 truncate max-w-[90px]">{modifier.name}</span>
-          <span className="text-indigo-400 font-semibold flex-shrink-0">
+        <div className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-violet-900/30 border border-violet-600/50 text-xs">
+          <Puzzle size={11} className="text-violet-400 flex-shrink-0" />
+          <span className="text-violet-200 truncate max-w-[90px]">{modifier.name}</span>
+          <span className="text-violet-400 font-semibold flex-shrink-0">
             {modifier.priceType === 'percent' ? `${modifier.price}%` : ''}
             {' +$'}{modPrice.toLocaleString('es-AR')}
           </span>
           <button
             type="button"
             onMouseDown={(e) => { e.preventDefault(); onRemove() }}
-            className="p-0.5 rounded text-indigo-400 hover:text-red-400 transition-colors flex-shrink-0"
+            className="p-0.5 rounded text-violet-400 hover:text-red-400 transition-colors flex-shrink-0"
             title="Quitar modificador"
           >
             <X size={11} />
@@ -508,11 +508,11 @@ function ModifierSelector({ itemId, modifier, itemUnitPrice, itemQty, services, 
           ref={triggerRef}
           type="button"
           onMouseDown={(e) => { e.preventDefault(); setOpen((v) => !v) }}
-          className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-slate-600 text-slate-500 hover:border-indigo-500 hover:text-indigo-400 text-xs transition-colors"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-slate-600 text-slate-500 hover:border-violet-500 hover:text-violet-400 text-xs transition-colors"
           title="Agregar modificador de servicio"
         >
-          <Wrench size={11} />
-          <span>+ Servicio</span>
+          <Puzzle size={11} />
+          <span>+ Mod.</span>
         </button>
       )}
       {dropdown}
@@ -668,102 +668,101 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
 
       {/* Lista de ítems */}
       {items.length > 0 && (
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {items.map((it) => (
-              <div key={it.id} className="px-3 py-2.5 bg-white dark:bg-slate-900/60 space-y-2">
-                {/* Fila principal */}
-                <div className="flex items-center gap-2">
-                  <span className="flex-shrink-0">
-                    {it.type === 'service'   && <Wrench  size={12} className="text-indigo-400" />}
-                    {it.type === 'inventory' && <Package size={12} className="text-emerald-400" />}
-                    {it.type === 'custom'    && <DollarSign size={12} className="text-amber-400" />}
+        <div className="grid grid-cols-1 gap-2">
+          {items.map((it) => (
+            <div key={it.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 px-3 py-2.5 space-y-2">
+              {/* Fila principal */}
+              <div className="flex items-center gap-2">
+                <span className="flex-shrink-0">
+                  {it.type === 'service'   && <Wrench    size={12} className="text-indigo-400" />}
+                  {it.type === 'inventory' && <Package   size={12} className="text-emerald-400" />}
+                  {it.type === 'custom'    && <DollarSign size={12} className="text-amber-400" />}
+                </span>
+                <span className="flex-1 text-sm text-slate-800 dark:text-slate-200 truncate min-w-0">
+                  {it.name}
+                </span>
+                {it.isPercent ? (
+                  <span className="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-semibold flex-shrink-0">
+                    {it.percentValue}% del repuesto
                   </span>
-                  <span className="flex-1 text-sm text-slate-800 dark:text-slate-200 truncate min-w-0">
-                    {it.name}
-                  </span>
-                  {it.isPercent ? (
-                    <span className="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-semibold flex-shrink-0">
-                      {it.percentValue}% del repuesto
-                    </span>
-                  ) : (
-                    <>
-                      {(() => {
-                        const invItem = it.type === 'inventory' ? inventory.find((i) => i.id === it.sourceId) : null
-                        const maxQty = invItem ? Number(invItem.stock ?? 0) : undefined
-                        const overStock = maxQty !== undefined && Number(it.qty) > maxQty
-                        return (
+                ) : (
+                  <>
+                    {(() => {
+                      const invItem = it.type === 'inventory' ? inventory.find((i) => i.id === it.sourceId) : null
+                      const maxQty = invItem ? Number(invItem.stock ?? 0) : undefined
+                      const overStock = maxQty !== undefined && Number(it.qty) > maxQty
+                      const qty = Number(it.qty) || 1
+                      const setQty = (v) => updateItem(it.id, 'qty', maxQty !== undefined ? Math.min(Math.max(1, v), maxQty) : Math.max(1, v))
+                      return (
+                        <div className={`flex items-center rounded-md border overflow-hidden flex-shrink-0 ${overStock ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-700'}`}>
+                          <button type="button" onMouseDown={(e) => { e.preventDefault(); setQty(qty - 1) }}
+                            className="px-1.5 py-1 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-colors text-xs leading-none">−</button>
                           <input
-                            type="number" min="1" step="1"
-                            max={maxQty}
+                            type="number" min="1" step="1" max={maxQty}
                             value={it.qty}
-                            onChange={(e) => {
-                              const val = Number(e.target.value) || 1
-                              updateItem(it.id, 'qty', maxQty !== undefined ? Math.min(val, maxQty) : val)
-                            }}
-                            className={`w-14 text-center text-xs px-1.5 py-1.5 rounded-md border bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400 ${overStock ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-700'}`}
+                            onChange={(e) => setQty(Number(e.target.value) || 1)}
+                            className="w-8 text-center text-xs py-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                           />
-                        )
-                      })()}
-                      <span className="text-xs text-slate-400">×</span>
-                      {it.type === 'inventory' || it.type === 'service' ? (
-                        <span className="w-24 text-right text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
-                          ${Number(it.unitPrice).toLocaleString('es-AR')}
-                        </span>
-                      ) : (
-                        <div className="relative w-24 flex-shrink-0">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-                          <input
-                            type="number" min="0" step="1"
-                            value={it.unitPrice}
-                            onChange={(e) => updateItem(it.id, 'unitPrice', Number(e.target.value) || 0)}
-                            className="w-full pl-5 pr-1 py-1.5 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
-                          />
+                          <button type="button" onMouseDown={(e) => { e.preventDefault(); setQty(qty + 1) }}
+                            className="px-1.5 py-1 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-colors text-xs leading-none">+</button>
                         </div>
-                      )}
-                      <span className="w-20 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 flex-shrink-0">
-                        ${itemTotal(it).toLocaleString('es-AR')}
+                      )
+                    })()}
+                    {it.type === 'inventory' || it.type === 'service' ? (
+                      <span className="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
+                        ${Number(it.unitPrice).toLocaleString('es-AR')}
                       </span>
-                    </>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeItem(it.id)}
-                    className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-
-                {/* Fila modificador — solo para ítems de inventario */}
-                {it.type === 'inventory' && !it.isPercent && (
-                  <div className="flex items-center gap-2 pl-5">
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wide flex-shrink-0">Modificador:</span>
-                    <ModifierSelector
-                      itemId={it.id}
-                      modifier={it.modifier || null}
-                      itemUnitPrice={it.unitPrice}
-                      itemQty={it.qty}
-                      services={services}
-                      onSelect={(svc) => setModifier(it.id, svc)}
-                      onRemove={() => setModifier(it.id, null)}
-                    />
-                    {it.modifier && (
-                      <span className="text-[10px] text-slate-500 ml-auto">
-                        Subtotal repuesto: <span className="text-slate-300">${((Number(it.qty)||1)*(Number(it.unitPrice)||0)).toLocaleString('es-AR')}</span>
-                        {' + servicio: '}
-                        <span className="text-indigo-300">${calcModifierAmount(it).toLocaleString('es-AR')}</span>
-                      </span>
+                    ) : (
+                      <div className="relative w-24 flex-shrink-0">
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                        <input
+                          type="number" min="0" step="1"
+                          value={it.unitPrice}
+                          onChange={(e) => updateItem(it.id, 'unitPrice', Number(e.target.value) || 0)}
+                          className="w-full pl-5 pr-1 py-1.5 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                        />
+                      </div>
                     )}
-                  </div>
+                  </>
                 )}
+                <button
+                  type="button"
+                  onClick={() => removeItem(it.id)}
+                  className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+
+              {/* Modificador — solo para ítems de inventario */}
+              {it.type === 'inventory' && !it.isPercent && (
+                <div className="flex items-center gap-2 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                  <ModifierSelector
+                    itemId={it.id}
+                    modifier={it.modifier || null}
+                    itemUnitPrice={it.unitPrice}
+                    itemQty={it.qty}
+                    services={services}
+                    onSelect={(svc) => setModifier(it.id, svc)}
+                    onRemove={() => setModifier(it.id, null)}
+                  />
+                  {it.modifier && (
+                    <span className="text-[10px] text-slate-500 ml-auto flex items-center gap-1">
+                      <span className="text-slate-400">${((Number(it.qty)||1)*(Number(it.unitPrice)||0)).toLocaleString('es-AR')}</span>
+                      <span>+</span>
+                      <span className="text-violet-400">${calcModifierAmount(it).toLocaleString('es-AR')}</span>
+                      <span>=</span>
+                      <span className="text-slate-200 font-semibold">${itemTotal(it).toLocaleString('es-AR')}</span>
+                    </span>
+                  )}
+                </div>
+              )}
               </div>
             ))}
-          </div>
           {/* Total */}
-          <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-              Total ítems ({items.length})
+              Total ({items.length} ítem{items.length !== 1 ? 's' : ''})
             </span>
             <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">
               ${total.toLocaleString('es-AR')}
@@ -1473,7 +1472,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
         <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Estado de la Orden</h3>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Estado actual">
-            <select className={selectClass} value={form.status} onChange={(e) => set('status', e.target.value)}>
+            <select className={selectClass} value={form.status} onChange={(e) => { set('status', e.target.value); set('statusNote', ''); }}>
               {Object.entries(STATUS_CONFIG).map(([k, v]) => (
                 <option key={k} value={k}>{v.label}</option>
               ))}
