@@ -904,13 +904,13 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     budgetItems: [],
     isWarranty: false,
     workDone: '',
-    paymentMethod: '',
     status: 'pending',
     statusNote: '',
     estimatedDelivery: '',
     photosEntry: [],
     photosExit: [],
     ...initialData,
+    paymentMethod: 'cash',
     // Normalize ISO date to date input value (yyyy-mm-dd)
     estimatedDelivery: initialData?.estimatedDelivery
       ? initialData.estimatedDelivery.slice(0, 10)
@@ -1365,7 +1365,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                 <button
                   key={value}
                   type="button"
-                  onClick={() => set('paymentMethod', form.paymentMethod === value ? '' : value)}
+                  onClick={() => { if (form.paymentMethod !== value) set('paymentMethod', value) }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all
                     ${form.paymentMethod === value
                       ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
@@ -1419,6 +1419,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             const adjAmount = adjActive ? (paymentAdj.type === 'discount' ? -1 : 1) * Math.round((basePrice * paymentAdj.value) / 100) : 0
             const finalWithAdj = basePrice + adjAmount
             const methodLabel = form.paymentMethod === 'cash' ? 'efectivo' : form.paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'
+            const MethodIcon = form.paymentMethod === 'cash' ? Banknote : form.paymentMethod === 'transfer' ? ArrowRightLeft : CreditCard
 
             return (
               <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -1470,12 +1471,11 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                   {adjActive && basePrice > 0 && (
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
                       <div className="flex items-center gap-2">
-                        {paymentAdj.type === 'discount'
-                          ? <ArrowRightLeft size={13} className="text-emerald-500 dark:text-emerald-400" />
-                          : <CreditCard size={13} className="text-amber-500 dark:text-amber-400" />
-                        }
-                        <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                          {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'} {methodLabel} ({paymentAdj.value}%)
+                        <MethodIcon size={13} className={paymentAdj.type === 'discount' ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'} />
+                        <span className={`text-xs font-medium flex items-center gap-1 ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                          {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'}
+                          <MethodIcon size={11} className="inline align-middle" />
+                          {methodLabel} ({paymentAdj.value}%)
                         </span>
                       </div>
                       <span className={`text-sm font-semibold ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>

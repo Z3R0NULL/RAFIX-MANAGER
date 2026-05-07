@@ -519,7 +519,9 @@ export default function NewSale() {
                     </div>
                     <div className="flex items-center justify-between px-3 py-2 border-b border-emerald-100 dark:border-emerald-800/40">
                       <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                        {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'}{` ${paymentMethod === 'cash' ? 'efectivo' : paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'} (${paymentAdj.value}%)`}
+                        {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'}{' '}
+                        {paymentMethod === 'cash' ? <Banknote size={11} className="inline mx-0.5 align-middle" /> : paymentMethod === 'transfer' ? <ArrowRightLeft size={11} className="inline mx-0.5 align-middle" /> : <CreditCard size={11} className="inline mx-0.5 align-middle" />}
+                        {paymentMethod === 'cash' ? 'efectivo' : paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'}{` (${paymentAdj.value}%)`}
                       </span>
                       <span className={`text-sm font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                         {paymentAdj.type === 'discount' ? '-' : '+'}{fmt(Math.abs(adjAmount))}

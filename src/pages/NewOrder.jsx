@@ -33,11 +33,11 @@ export default function NewOrder() {
           <ArrowLeft size={18} />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">New Service Order</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Fill in the customer and device details</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Nueva Orden</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Rellenar datos</p>
         </div>
       </div>
-      <OrderForm initialData={prefill} onSubmit={handleSubmit} submitLabel="Crear Orden" />
+      <OrderForm initialData={prefill} onSubmit={handleSubmit} onCancel={() => navigate(-1)} submitLabel="Crear Orden" />
     </div>
   )
 }

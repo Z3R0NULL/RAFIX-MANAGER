@@ -207,7 +207,9 @@ function EditSaleModal({ sale, onSave, onClose, settings }) {
               </div>
               <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
                 <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                  {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'}{` ${paymentMethod === 'cash' ? 'efectivo' : paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'} (${paymentAdj.value}%)`}
+                  {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'}{' '}
+                  {paymentMethod === 'cash' ? <Banknote size={11} className="inline mx-0.5 align-middle" /> : paymentMethod === 'transfer' ? <ArrowRightLeft size={11} className="inline mx-0.5 align-middle" /> : <CreditCard size={11} className="inline mx-0.5 align-middle" />}
+                  {paymentMethod === 'cash' ? 'efectivo' : paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'}{` (${paymentAdj.value}%)`}
                 </span>
                 <span className={`text-sm font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                   {paymentAdj.type === 'discount' ? '-' : '+'}{fmt(Math.abs(adjAmount))}
@@ -557,17 +559,26 @@ export default function SaleDetail() {
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">Pago y Entrega</span>
           </div>
           <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5">
-            {sale.paymentMethod && (
-              <div className="flex items-center gap-3">
-                {sale.paymentMethod === 'cash' ? <Banknote size={16} className="text-emerald-500 shrink-0" /> : sale.paymentMethod === 'card' ? <CreditCard size={16} className="text-violet-500 shrink-0" /> : <ArrowRightLeft size={16} className="text-blue-500 shrink-0" />}
-                <div>
-                  <p className="text-xs text-slate-400">Método de pago</p>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                    {sale.paymentMethod === 'cash' ? 'Efectivo' : sale.paymentMethod === 'card' ? 'Tarjeta' : 'Transferencia'}
-                  </p>
+            {sale.paymentMethod && (() => {
+              const pmMap = {
+                cash:     { label: 'Efectivo',      Icon: Banknote,       color: 'text-emerald-500' },
+                card:     { label: 'Tarjeta',       Icon: CreditCard,     color: 'text-violet-500'  },
+                transfer: { label: 'Transferencia', Icon: ArrowRightLeft, color: 'text-blue-500'    },
+              }
+              const pm = pmMap[sale.paymentMethod] || { label: sale.paymentMethod, Icon: Banknote, color: 'text-slate-500' }
+              return (
+                <div className="flex items-center gap-3">
+                  <pm.Icon size={16} className={`${pm.color} shrink-0`} />
+                  <div>
+                    <p className="text-xs text-slate-400">Método de pago</p>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <pm.Icon size={13} className={pm.color} />
+                      {pm.label}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
             {sale.deliveryMethod && (
               <div className="flex items-center gap-3">
                 {sale.deliveryMethod === 'in_person' ? <HandCoins size={16} className="text-emerald-500 shrink-0" /> : <Truck size={16} className="text-indigo-500 shrink-0" />}

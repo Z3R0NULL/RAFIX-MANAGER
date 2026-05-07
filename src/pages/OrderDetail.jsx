@@ -209,15 +209,15 @@ function BudgetSummary({ order, fmt }) {
   const profit = finalPrice - workshopCost
 
   const BudgetRow = ({ icon: Icon, iconColor, iconBg, label, sublabel, value, valueColor, valueLarge }) => (
-    <div className="flex items-center gap-3 py-2.5 border-b border-slate-100 dark:border-slate-800/60 last:border-0">
+    <div className={`flex items-center gap-3 border-b border-slate-100 dark:border-slate-800/60 last:border-0 ${valueLarge ? 'py-3' : 'py-2.5'}`}>
       <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${iconBg}`}>
         <Icon size={15} className={iconColor} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-100 leading-none">{label}</p>
+        <p className={`font-semibold text-slate-800 dark:text-slate-100 leading-none ${valueLarge ? 'text-sm' : 'text-[13px]'}`}>{label}</p>
         {sublabel && <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 leading-none truncate">{sublabel}</p>}
       </div>
-      <span className={`tabular-nums font-semibold flex-shrink-0 ${valueLarge ? 'text-lg font-bold' : 'text-[13px]'} ${valueColor || 'text-slate-700 dark:text-slate-200'}`}>
+      <span className={`tabular-nums flex-shrink-0 ${valueLarge ? 'text-base font-bold' : 'text-[13px] font-semibold'} ${valueColor || 'text-slate-700 dark:text-slate-200'}`}>
         {value}
       </span>
     </div>
@@ -227,17 +227,17 @@ function BudgetSummary({ order, fmt }) {
     <div className="-mx-1">
       {workshopCost > 0 && (
         <BudgetRow icon={Package} iconBg="bg-orange-50 dark:bg-orange-900/20" iconColor="text-orange-500 dark:text-orange-400"
-          label="Costo Repuesto" sublabel="Lo que costó la reparación"
+          label="Costo Taller" sublabel="Gasto del taller"
           value={fmt(workshopCost)} valueColor="text-orange-500 dark:text-orange-400" />
       )}
       {clientPartsCost > 0 && (
         <BudgetRow icon={Tag} iconBg="bg-blue-50 dark:bg-blue-900/20" iconColor="text-blue-500 dark:text-blue-400"
-          label="Valor Repuesto Cliente" sublabel="Lo que se le cobró al cliente"
+          label="Costo Cliente" sublabel="Gasto del cliente"
           value={fmt(clientPartsCost)} />
       )}
       {laborCost > 0 && (
         <BudgetRow icon={Wrench} iconBg="bg-violet-50 dark:bg-violet-900/20" iconColor="text-violet-500 dark:text-violet-400"
-          label="Mano de Obra" sublabel="Servicio técnico y reparación"
+          label="Mano de Obra" sublabel="Servicio y reparación"
           value={fmt(laborCost)} />
       )}
       {estimatedPrice > 0 && (
@@ -247,12 +247,17 @@ function BudgetSummary({ order, fmt }) {
       )}
       {payMethod && (
         <BudgetRow icon={payMethod.Icon} iconBg="bg-indigo-50 dark:bg-indigo-900/20" iconColor="text-indigo-500 dark:text-indigo-400"
-          label="Método de Pago" sublabel="Forma en que pagó el cliente"
-          value={payMethod.label} />
+          label="Método de Pago" sublabel="Medio utilizado"
+          value={
+            <span className="flex items-center gap-1.5">
+              <payMethod.Icon size={13} className="text-indigo-500 dark:text-indigo-400" />
+              {payMethod.label}
+            </span>
+          } />
       )}
       {surcharge !== 0 && (
         <BudgetRow icon={Percent} iconBg="bg-amber-50 dark:bg-amber-900/20" iconColor="text-amber-500 dark:text-amber-400"
-          label="Recargo Método de Pago" sublabel={`Recargo por pago con ${payMethod?.label?.toLowerCase() || 'este método'}`}
+          label="Recargo" sublabel={`Recargo de ${payMethod?.label?.toLowerCase() || 'este método'}`}
           value={fmt(surcharge)} valueColor="text-amber-500 dark:text-amber-400" />
       )}
       <BudgetRow icon={BadgeDollarSign} iconBg="bg-indigo-50 dark:bg-indigo-900/20" iconColor="text-indigo-500 dark:text-indigo-400"
@@ -264,11 +269,8 @@ function BudgetSummary({ order, fmt }) {
             icon={TrendingUp}
             iconBg={profit >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}
             iconColor={profit >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}
-            label="Ganancia Total" sublabel="Lo que ganás en esta reparación"
-            value={fmt(profit)} valueColor={profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'} valueLarge />
-          <p className="text-[10px] text-slate-400 dark:text-slate-600 pt-2 pb-0.5 leading-relaxed">
-            Ganancia = (Valor Repuesto Cliente + Mano de Obra + Recargo) − Costo Repuesto
-          </p>
+            label="Ganancia Total" sublabel="Ganancia neta"
+            value={fmt(profit)} valueColor={profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'} />
         </>
       )}
     </div>
@@ -462,7 +464,7 @@ export default function OrderDetail() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{order.orderNumber}</p>
           </div>
         </div>
-        <OrderForm initialData={order} onSubmit={handleUpdate} onCancel={() => setEditing(false)} submitLabel="Save Changes" />
+        <OrderForm initialData={order} onSubmit={handleUpdate} onCancel={() => setEditing(false)} submitLabel="Guardar Cambios" />
       </div>
     )
   }
