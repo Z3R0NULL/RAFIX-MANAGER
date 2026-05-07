@@ -17,6 +17,7 @@ import {
   Clock, User, Smartphone, Shield, FileText, DollarSign, Activity, Copy, Check, Trash2, CheckSquare,
   RefreshCw, Camera, ZoomIn, X, ChevronLeft, ChevronRight, MessageCircle, Share2, QrCode, Link2, Mail, ChevronDown, ChevronUp,
   Package, Wrench, Banknote, ArrowRightLeft, CreditCard,
+  TrendingUp, Tag, Percent, BadgeDollarSign, Calculator,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useStore } from '../store/useStore'
@@ -159,11 +160,126 @@ function CheckGroup({ title, children, defaultOpen = false }) {
   )
 }
 
+function BudgetSummary({ order, fmt }) {
+  const budgetItems = order.budgetItems || []
+
+  const workshopCost = budgetItems.reduce((acc, it) => {
+    if (it.type !== 'inventory' || !it.sourceId) return acc
+    return acc + Number(it.costPrice ?? 0) * (Number(it.qty) || 1)
+  }, 0)
+
+  const clientPartsCost = budgetItems.reduce((acc, it) => {
+    if (it.type !== 'inventory') return acc
+    return acc + (Number(it.unitPrice) || 0) * (Number(it.qty) || 1)
+  }, 0)
+
+  const calcModifierAmount = (it) => {
+    if (!it.modifier) return 0
+    const base = (Number(it.qty) || 1) * (Number(it.unitPrice) || 0)
+    if (it.modifier.priceType === 'percent') return Math.round((Number(it.modifier.price) || 0) / 100 * base)
+    return Number(it.modifier.price) || 0
+  }
+
+  const laborCost = budgetItems.reduce((acc, it) => {
+    // Standalone service items
+    if (it.type === 'service') {
+      if (it.isPercent) return acc + Math.round((Number(it.percentValue) || 0) / 100 * clientPartsCost)
+      return acc + (Number(it.unitPrice) || 0) * (Number(it.qty) || 1)
+    }
+    // Modifiers attached to inventory items (service adjuncts)
+    if (it.type === 'inventory' && it.modifier) {
+      return acc + calcModifierAmount(it)
+    }
+    return acc
+  }, 0)
+
+  const estimatedPrice = Number(order.estimatedPrice || 0)
+  const finalPrice = Number(order.finalPrice || order.estimatedPrice || 0)
+
+  const methodMap = {
+    cash:     { label: 'Efectivo',        Icon: Banknote,       surchargeKey: 'cashSurcharge' },
+    transfer: { label: 'Transferencia',   Icon: ArrowRightLeft, surchargeKey: 'transferSurcharge' },
+    card:     { label: 'Tarjeta',         Icon: CreditCard,     surchargeKey: 'cardSurcharge' },
+  }
+  const payMethod = order.paymentMethod ? methodMap[order.paymentMethod] : null
+
+  // Recargo por método de pago: diferencia entre precio final y estimado
+  const surcharge = finalPrice - estimatedPrice
+
+  const profit = finalPrice - workshopCost
+
+  const BudgetRow = ({ icon: Icon, iconColor, iconBg, label, sublabel, value, valueColor, valueLarge }) => (
+    <div className="flex items-center gap-3 py-2.5 border-b border-slate-100 dark:border-slate-800/60 last:border-0">
+      <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${iconBg}`}>
+        <Icon size={15} className={iconColor} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-100 leading-none">{label}</p>
+        {sublabel && <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 leading-none truncate">{sublabel}</p>}
+      </div>
+      <span className={`tabular-nums font-semibold flex-shrink-0 ${valueLarge ? 'text-lg font-bold' : 'text-[13px]'} ${valueColor || 'text-slate-700 dark:text-slate-200'}`}>
+        {value}
+      </span>
+    </div>
+  )
+
+  return (
+    <div className="-mx-1">
+      {workshopCost > 0 && (
+        <BudgetRow icon={Package} iconBg="bg-orange-50 dark:bg-orange-900/20" iconColor="text-orange-500 dark:text-orange-400"
+          label="Costo Repuesto" sublabel="Lo que costó la reparación"
+          value={fmt(workshopCost)} valueColor="text-orange-500 dark:text-orange-400" />
+      )}
+      {clientPartsCost > 0 && (
+        <BudgetRow icon={Tag} iconBg="bg-blue-50 dark:bg-blue-900/20" iconColor="text-blue-500 dark:text-blue-400"
+          label="Valor Repuesto Cliente" sublabel="Lo que se le cobró al cliente"
+          value={fmt(clientPartsCost)} />
+      )}
+      {laborCost > 0 && (
+        <BudgetRow icon={Wrench} iconBg="bg-violet-50 dark:bg-violet-900/20" iconColor="text-violet-500 dark:text-violet-400"
+          label="Mano de Obra" sublabel="Servicio técnico y reparación"
+          value={fmt(laborCost)} />
+      )}
+      {estimatedPrice > 0 && (
+        <BudgetRow icon={Calculator} iconBg="bg-slate-100 dark:bg-slate-800" iconColor="text-slate-500 dark:text-slate-400"
+          label="Precio Estimado" sublabel="Subtotal sin recargos"
+          value={fmt(estimatedPrice)} />
+      )}
+      {payMethod && (
+        <BudgetRow icon={payMethod.Icon} iconBg="bg-indigo-50 dark:bg-indigo-900/20" iconColor="text-indigo-500 dark:text-indigo-400"
+          label="Método de Pago" sublabel="Forma en que pagó el cliente"
+          value={payMethod.label} />
+      )}
+      {surcharge !== 0 && (
+        <BudgetRow icon={Percent} iconBg="bg-amber-50 dark:bg-amber-900/20" iconColor="text-amber-500 dark:text-amber-400"
+          label="Recargo Método de Pago" sublabel={`Recargo por pago con ${payMethod?.label?.toLowerCase() || 'este método'}`}
+          value={fmt(surcharge)} valueColor="text-amber-500 dark:text-amber-400" />
+      )}
+      <BudgetRow icon={BadgeDollarSign} iconBg="bg-indigo-50 dark:bg-indigo-900/20" iconColor="text-indigo-500 dark:text-indigo-400"
+        label="Precio Final" sublabel="Total a cobrar al cliente"
+        value={fmt(finalPrice)} valueColor="text-indigo-600 dark:text-indigo-400" valueLarge />
+      {finalPrice > 0 && workshopCost > 0 && (
+        <>
+          <BudgetRow
+            icon={TrendingUp}
+            iconBg={profit >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}
+            iconColor={profit >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}
+            label="Ganancia Total" sublabel="Lo que ganás en esta reparación"
+            value={fmt(profit)} valueColor={profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'} valueLarge />
+          <p className="text-[10px] text-slate-400 dark:text-slate-600 pt-2 pb-0.5 leading-relaxed">
+            Ganancia = (Valor Repuesto Cliente + Mano de Obra + Recargo) − Costo Repuesto
+          </p>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function OrderDetail() {
   const fmt = useCurrency()
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getOrder, updateOrder, deleteOrder, auth, settings } = useStore()
+  const { getOrder, updateOrder, deleteOrder, auth, settings, inventory } = useStore()
   const [editing, setEditing] = useState(false)
   const [copied, setCopied] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -567,18 +683,6 @@ export default function OrderDetail() {
             <InfoRow label="Marca" value={order.deviceBrand} />
             <InfoRow label="Modelo" value={order.deviceModel} />
             <InfoRow label="ID" value={order.deviceSerial} />
-            <div className="py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-              <span className="text-xs text-slate-400 dark:text-slate-500 block mb-1.5">Accesorios</span>
-              {order.accessories?.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {order.accessories.map((a) => (
-                    <span key={a} className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300">{a}</span>
-                  ))}
-                </div>
-              ) : (
-                <span className="text-sm text-slate-700 dark:text-slate-300">—</span>
-              )}
-            </div>
           </div>
 
           {/* Security */}
@@ -740,70 +844,7 @@ export default function OrderDetail() {
               </div>
               <BudgetBadge status={order.budgetStatus} />
             </div>
-            <div className="space-y-3">
-              {/* Ganancia */}
-              {(() => {
-                const base = Number(order.finalPrice || order.estimatedPrice || 0)
-                const cost = Number(order.repairCost || 0)
-                if (!base || !cost) return null
-                const profit = base - cost
-                return (
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-500">Ganancia</span>
-                    <span className={`text-sm font-medium ${profit >= 0 ? 'text-slate-700 dark:text-slate-300' : 'text-red-500 dark:text-red-400'}`}>
-                      {fmt(profit)}
-                    </span>
-                  </div>
-                )
-              })()}
-
-              {/* Costo de reparación */}
-              {order.repairCost > 0 && (
-                <>
-                  <div className="border-t border-slate-100 dark:border-slate-800" />
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-500">Costo</span>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.repairCost)}</span>
-                  </div>
-                </>
-              )}
-
-              {/* Precio estimado */}
-              <div className="border-t border-slate-100 dark:border-slate-800" />
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Precio estimado</span>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{fmt(order.estimatedPrice)}</span>
-              </div>
-
-              {/* Método de pago */}
-              {order.paymentMethod && (() => {
-                const methodMap = { cash: { label: 'Efectivo', Icon: Banknote }, transfer: { label: 'Transferencia', Icon: ArrowRightLeft }, card: { label: 'Tarjeta', Icon: CreditCard } }
-                const method = methodMap[order.paymentMethod]
-                if (!method) return null
-                const { Icon } = method
-                return (
-                  <>
-                    <div className="border-t border-slate-100 dark:border-slate-800" />
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-slate-500">Método de pago</span>
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
-                        <Icon size={13} className="text-indigo-400" />
-                        {method.label}
-                      </span>
-                    </div>
-                  </>
-                )
-              })()}
-
-              {/* Precio final — conclusión del flujo */}
-              <div className="border-t-2 border-slate-200 dark:border-slate-700 pt-3 mt-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">Precio final</span>
-                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{fmt(order.finalPrice || order.estimatedPrice)}</span>
-                </div>
-              </div>
-
-            </div>
+            <BudgetSummary order={order} fmt={fmt} />
           </div>
 
           {/* Dates */}

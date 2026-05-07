@@ -520,16 +520,35 @@ function ModifierSelector({ itemId, modifier, itemUnitPrice, itemQty, services, 
   )
 }
 
-function BudgetItemsEditor({ items = [], onChange, inventory = [], services = [] }) {
+function BudgetItemsEditor({ items = [], onChange, inventory = [], services = [], initialItems = [] }) {
   const [search, setSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const searchRef = useRef(null)
+
+  // One-time migration: if existing budgetItems are missing costPrice, stamp the
+  // current inventory value so the cost is frozen from this point forward.
+  const migratedRef = useRef(false)
+  useEffect(() => {
+    if (migratedRef.current) return
+    const needsMigration = items.some(
+      (it) => it.type === 'inventory' && it.sourceId && it.costPrice == null
+    )
+    if (!needsMigration) { migratedRef.current = true; return }
+    const migrated = items.map((it) => {
+      if (it.type !== 'inventory' || it.sourceId == null || it.costPrice != null) return it
+      const invItem = inventory.find((i) => i.id === it.sourceId)
+      return { ...it, costPrice: Number(invItem?.costPrice ?? 0) }
+    })
+    migratedRef.current = true
+    onChange(migrated)
+  }, [items, inventory, onChange])
 
   // Only inventory items appear in the main search (services are added as modifiers)
   const inventorySuggestions = inventory.map((i) => ({
     id: i.id,
     label: i.name,
     price: Number(i.salePrice || i.price || 0),
+    costPrice: Number(i.costPrice || 0),
     priceDisplay: `$${Number(i.salePrice || i.price || 0).toLocaleString('es-AR')}`,
     isPercent: false,
     percentValue: null,
@@ -567,7 +586,11 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
   const addItem = (suggestion) => {
     if (suggestion.type === 'inventory') {
       const used = getUsedQty(suggestion.id)
-      if (used >= (suggestion.stock ?? 0)) return
+      const origQty = initialItems
+        .filter((o) => o.sourceId === suggestion.id && o.type === 'inventory')
+        .reduce((acc, o) => acc + (Number(o.qty) || 1), 0)
+      const effectiveStock = (suggestion.stock ?? 0) + origQty
+      if (used >= effectiveStock) return
     }
     const newItem = {
       id: `BI-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
@@ -576,6 +599,7 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
       name: suggestion.label,
       qty: 1,
       unitPrice: Number(suggestion.price) || 0,
+      costPrice: suggestion.type === 'inventory' ? (Number(suggestion.costPrice) || 0) : undefined,
       isPercent: suggestion.isPercent || false,
       percentValue: suggestion.isPercent ? suggestion.percentValue : null,
       modifier: null, // { id, name, priceType, price }
@@ -632,7 +656,12 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
               <li key={s.id}>
                 {(() => {
                   const usedQty = s.type === 'inventory' ? getUsedQty(s.id) : 0
-                  const available = s.type === 'inventory' ? (s.stock ?? 0) - usedQty : Infinity
+                  // originalQty: qty already saved in the order (stock was decremented for these)
+                  const origQty = s.type === 'inventory'
+                    ? initialItems.filter((o) => o.sourceId === s.id && o.type === 'inventory')
+                        .reduce((acc, o) => acc + (Number(o.qty) || 1), 0)
+                    : 0
+                  const available = s.type === 'inventory' ? (s.stock ?? 0) + origQty - usedQty : Infinity
                   const disabled = s.type === 'inventory' && available <= 0
                   return (
                     <button
@@ -689,7 +718,13 @@ function BudgetItemsEditor({ items = [], onChange, inventory = [], services = []
                   <>
                     {(() => {
                       const invItem = it.type === 'inventory' ? inventory.find((i) => i.id === it.sourceId) : null
-                      const maxQty = invItem ? Number(invItem.stock ?? 0) : undefined
+                      // When editing an existing order, the stock was already decremented for
+                      // the quantities saved previously. Add back those original quantities so
+                      // the user can still edit up to (currentStock + originalQty).
+                      const originalQty = initialItems
+                        .filter((orig) => orig.sourceId === it.sourceId && orig.type === 'inventory')
+                        .reduce((acc, orig) => acc + (Number(orig.qty) || 1), 0)
+                      const maxQty = invItem ? Number(invItem.stock ?? 0) + originalQty : undefined
                       const overStock = maxQty !== undefined && Number(it.qty) > maxQty
                       const qty = Number(it.qty) || 1
                       const setQty = (v) => updateItem(it.id, 'qty', maxQty !== undefined ? Math.min(Math.max(1, v), maxQty) : Math.max(1, v))
@@ -1289,6 +1324,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             </label>
             <BudgetItemsEditor
               items={form.budgetItems}
+              initialItems={initialData?.budgetItems || []}
               onChange={(items) => {
                 set('budgetItems', items)
                 // Auto-calculate totals from items (repuesto + modificador)
