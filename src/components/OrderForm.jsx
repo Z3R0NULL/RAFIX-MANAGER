@@ -34,7 +34,7 @@ import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
   Search, UserCheck, Camera, Pencil, X,
   Trash2, Package, Wrench, ChevronDown, ChevronUp,
-  Banknote, ArrowRightLeft, CreditCard, Puzzle
+  Banknote, ArrowRightLeft, CreditCard, Puzzle, Activity
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 // DEVICE_TYPES kept as fallback when deviceTypes store is empty
@@ -1485,7 +1485,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                   )}
 
                   {/* Precio final con ajuste */}
-                  {form.paymentMethod && finalWithAdj > 0 && (
+                  {form.paymentMethod && (
                     <div className="flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/10">
                       <div className="flex items-center gap-2">
                         <Banknote size={15} className="text-indigo-500 dark:text-indigo-400" />
@@ -1505,7 +1505,10 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
       {/* ── Estado ── */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
-        <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Estado de la Orden</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <Activity size={15} className="text-indigo-500" />
+          <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Estado de la Orden</h3>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Estado actual">
             <select className={selectClass} value={form.status} onChange={(e) => { set('status', e.target.value); set('statusNote', ''); }}>

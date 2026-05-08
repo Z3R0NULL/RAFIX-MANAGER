@@ -35,11 +35,22 @@ function PhotoGallery({ photos, label, dark = false }) {
   const prev = () => setLightbox((i) => (i - 1 + photos.length) % photos.length)
   const next = () => setLightbox((i) => (i + 1) % photos.length)
 
-  if (!photos?.length) return null
-
   const borderClass = dark
     ? 'border-slate-700/60 bg-slate-900'
     : 'border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-900'
+
+  if (!photos?.length) return (
+    <div className={`rounded-xl border p-5 ${borderClass}`}>
+      <div className="flex items-center gap-2 mb-3">
+        <Camera size={14} className="text-indigo-500" />
+        <h2 className={`font-semibold text-sm ${dark ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{label}</h2>
+      </div>
+      <div className="flex flex-col items-center justify-center py-6 gap-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+        <Camera size={22} className="text-slate-400 dark:text-slate-600" />
+        <p className="text-xs text-slate-400 dark:text-slate-500">Foto no cargada</p>
+      </div>
+    </div>
+  )
 
   return (
     <>
@@ -163,10 +174,12 @@ function CheckGroup({ title, children, defaultOpen = false }) {
 function BudgetSummary({ order, fmt }) {
   const budgetItems = order.budgetItems || []
 
+  const manualRepairCost = Number(order.repairCost || 0)
+
   const workshopCost = budgetItems.reduce((acc, it) => {
     if (it.type !== 'inventory' || !it.sourceId) return acc
     return acc + Number(it.costPrice ?? 0) * (Number(it.qty) || 1)
-  }, 0)
+  }, 0) + (budgetItems.length === 0 ? manualRepairCost : 0)
 
   const clientPartsCost = budgetItems.reduce((acc, it) => {
     if (it.type !== 'inventory') return acc
@@ -225,7 +238,12 @@ function BudgetSummary({ order, fmt }) {
 
   return (
     <div className="-mx-1">
-      {workshopCost > 0 && (
+      {budgetItems.length === 0 && manualRepairCost > 0 && (
+        <BudgetRow icon={Wrench} iconBg="bg-orange-50 dark:bg-orange-900/20" iconColor="text-orange-500 dark:text-orange-400"
+          label="Costo de reparación" sublabel="Costo manual ingresado"
+          value={fmt(manualRepairCost)} valueColor="text-orange-500 dark:text-orange-400" />
+      )}
+      {budgetItems.length > 0 && workshopCost > 0 && (
         <BudgetRow icon={Package} iconBg="bg-orange-50 dark:bg-orange-900/20" iconColor="text-orange-500 dark:text-orange-400"
           label="Costo Taller" sublabel="Gasto del taller"
           value={fmt(workshopCost)} valueColor="text-orange-500 dark:text-orange-400" />
@@ -730,8 +748,10 @@ export default function OrderDetail() {
           </div>
 
           {/* Photos */}
-          <PhotoGallery photos={order.photosEntry} label="Fotos de ingreso" />
-          <PhotoGallery photos={order.photosExit} label="Fotos de salida" />
+          <div className="grid grid-cols-2 gap-4">
+            <PhotoGallery photos={order.photosEntry} label="Fotos de ingreso" />
+            <PhotoGallery photos={order.photosExit} label="Fotos de salida" />
+          </div>
 
           {/* Technical Checklist */}
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
@@ -926,7 +946,10 @@ export default function OrderDetail() {
 
           {/* Status Timeline */}
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/60 p-5">
-            <h2 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Historial de estado</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <Activity size={14} className="text-indigo-500" />
+              <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Historial de estado</h2>
+            </div>
             <div className="relative">
               <div className="absolute left-3.5 top-0 bottom-0 w-px bg-slate-200 dark:bg-slate-700" />
               <div className="space-y-4">

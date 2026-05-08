@@ -12,9 +12,10 @@ import {
   AlertCircle, RefreshCw, Smartphone, CheckCircle2,
   XCircle, Info, Calendar, Tag, ShieldCheck, ThumbsUp, ThumbsDown,
   Camera, ZoomIn, X, ChevronLeft, ChevronRight, Package, ClipboardList,
-  Droplets, Bell,
+  Droplets, Bell, Download,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { generateInvoicePDF } from '../utils/pdfGenerator'
 import { turso, isTursoConfigured } from '../lib/turso'
 import { StatusBadge } from '../components/StatusBadge'
 import {
@@ -133,7 +134,7 @@ function CheckItem({ label, value }) {
 
 export default function TrackOrder() {
   const { orderNumber: paramOrderNumber } = useParams()
-  const { getOrderByNumber } = useStore()
+  const { getOrderByNumber, settings } = useStore()
   const fmt = useCurrency()
   const navigate = useNavigate()
 
@@ -143,6 +144,7 @@ export default function TrackOrder() {
   const [notFound, setNotFound] = useState(false)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [budgetAction, setBudgetAction] = useState(null) // 'approving' | 'rejecting' | 'done' | 'error'
+  const [downloading, setDownloading] = useState(false)
 
   const fetchOrder = useCallback(async (num) => {
     if (!num) return
@@ -243,6 +245,16 @@ export default function TrackOrder() {
       setBudgetAction('done')
     } catch {
       setBudgetAction('error')
+    }
+  }
+
+  const handleDownload = async () => {
+    if (!order) return
+    setDownloading(true)
+    try {
+      await generateInvoicePDF(order, settings || {})
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -549,6 +561,18 @@ export default function TrackOrder() {
                   Consultar por WhatsApp
                 </button>
               )}
+
+              {/* Download receipt button */}
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="mt-2 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors w-full justify-center active:scale-95 disabled:opacity-60"
+              >
+                {downloading
+                  ? <Loader2 size={15} className="animate-spin" />
+                  : <Download size={15} />}
+                {downloading ? 'Generando PDF...' : 'Descargar comprobante'}
+              </button>
             </div>
 
             {/* Device details */}

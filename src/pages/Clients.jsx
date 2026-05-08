@@ -31,6 +31,7 @@ import {
   Wrench,
   ShoppingCart,
   Wallet,
+  History,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { PageLoader } from '../components/PageLoader'
@@ -627,9 +628,10 @@ export default function Clients() {
                   {orderCount > 0 && (
                     <Link
                       to={`/orders?${client.phone ? `phone=${encodeURIComponent(client.phone)}` : client.dni ? `dni=${encodeURIComponent(client.dni)}` : `email=${encodeURIComponent(client.email || '')}`}`}
-                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700/50 text-xs font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
                     >
-                      View orders
+                      <History size={11} />
+                      Historial
                     </Link>
                   )}
                 </div>

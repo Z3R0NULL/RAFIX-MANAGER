@@ -10,9 +10,10 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
   ShoppingCart, Search, Loader2, AlertCircle, RefreshCw,
   MessageCircle, Package, User, FileText, Check, X, Calendar,
-  DollarSign, ChevronLeft, ChevronRight,
+  DollarSign, ChevronLeft, ChevronRight, Download,
 } from 'lucide-react'
 import { useStore } from '../store/useStore'
+import { generateSalePDF } from '../utils/pdfGenerator'
 import { turso, isTursoConfigured } from '../lib/turso'
 import { formatDate } from '../utils/constants'
 import { useCurrency } from '../utils/useCurrency'
@@ -55,6 +56,7 @@ export default function TrackSale() {
   const [loading, setLoading] = useState(false)
   const [notFound, setNotFound] = useState(false)
   const [lastUpdated, setLastUpdated] = useState(null)
+  const [downloading, setDownloading] = useState(false)
 
   const fetchSale = useCallback(async (num) => {
     if (!num) return
@@ -107,6 +109,16 @@ export default function TrackSale() {
 
   const handleRefresh = () => {
     if (paramSaleNumber) fetchSale(paramSaleNumber)
+  }
+
+  const handleDownload = async () => {
+    if (!sale) return
+    setDownloading(true)
+    try {
+      await generateSalePDF(sale, settings || {})
+    } finally {
+      setDownloading(false)
+    }
   }
 
   const openWhatsApp = () => {
@@ -267,6 +279,18 @@ export default function TrackSale() {
                   Consultar por WhatsApp
                 </button>
               )}
+
+              {/* Download receipt button */}
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="mt-2 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors w-full justify-center active:scale-95 disabled:opacity-60"
+              >
+                {downloading
+                  ? <Loader2 size={15} className="animate-spin" />
+                  : <Download size={15} />}
+                {downloading ? 'Generando PDF...' : 'Descargar comprobante'}
+              </button>
             </div>
 
             {/* Products */}
