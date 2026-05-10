@@ -175,16 +175,19 @@ function BudgetSummary({ order, fmt }) {
   const budgetItems = order.budgetItems || []
 
   const manualRepairCost = Number(order.repairCost || 0)
+  const manualClientCost = Number(order.clientCost || 0)
+  const manualLaborCost  = Number(order.manualLaborCost || 0)
 
   const workshopCost = budgetItems.reduce((acc, it) => {
     if (it.type !== 'inventory' || !it.sourceId) return acc
     return acc + Number(it.costPrice ?? 0) * (Number(it.qty) || 1)
-  }, 0) + (budgetItems.length === 0 ? manualRepairCost : 0)
+  }, 0) + manualRepairCost
 
-  const clientPartsCost = budgetItems.reduce((acc, it) => {
+  const clientPartsCostFromItems = budgetItems.reduce((acc, it) => {
     if (it.type !== 'inventory') return acc
     return acc + (Number(it.unitPrice) || 0) * (Number(it.qty) || 1)
   }, 0)
+  const clientPartsCost = clientPartsCostFromItems > 0 ? clientPartsCostFromItems : manualClientCost
 
   const calcModifierAmount = (it) => {
     if (!it.modifier) return 0
@@ -193,7 +196,7 @@ function BudgetSummary({ order, fmt }) {
     return Number(it.modifier.price) || 0
   }
 
-  const laborCost = budgetItems.reduce((acc, it) => {
+  const laborCostFromItems = budgetItems.reduce((acc, it) => {
     // Standalone service items
     if (it.type === 'service') {
       if (it.isPercent) return acc + Math.round((Number(it.percentValue) || 0) / 100 * clientPartsCost)
@@ -205,6 +208,7 @@ function BudgetSummary({ order, fmt }) {
     }
     return acc
   }, 0)
+  const laborCost = laborCostFromItems > 0 ? laborCostFromItems : manualLaborCost
 
   const estimatedPrice = Number(order.estimatedPrice || 0)
   const finalPrice = Number(order.finalPrice || order.estimatedPrice || 0)
@@ -238,12 +242,7 @@ function BudgetSummary({ order, fmt }) {
 
   return (
     <div className="-mx-1">
-      {budgetItems.length === 0 && manualRepairCost > 0 && (
-        <BudgetRow icon={Wrench} iconBg="bg-orange-50 dark:bg-orange-900/20" iconColor="text-orange-500 dark:text-orange-400"
-          label="Costo de reparación" sublabel="Costo manual ingresado"
-          value={fmt(manualRepairCost)} valueColor="text-orange-500 dark:text-orange-400" />
-      )}
-      {budgetItems.length > 0 && workshopCost > 0 && (
+      {workshopCost > 0 && (
         <BudgetRow icon={Package} iconBg="bg-orange-50 dark:bg-orange-900/20" iconColor="text-orange-500 dark:text-orange-400"
           label="Costo Taller" sublabel="Gasto del taller"
           value={fmt(workshopCost)} valueColor="text-orange-500 dark:text-orange-400" />
@@ -253,6 +252,17 @@ function BudgetSummary({ order, fmt }) {
           label="Costo Cliente" sublabel="Gasto del cliente"
           value={fmt(clientPartsCost)} />
       )}
+      {clientPartsCost > 0 && workshopCost > 0 && (() => {
+        const partProfit = clientPartsCost - workshopCost
+        return (
+          <BudgetRow
+            icon={TrendingUp}
+            iconBg="bg-slate-100 dark:bg-slate-800"
+            iconColor="text-slate-500 dark:text-slate-400"
+            label="Margen" sublabel="Cliente − Taller"
+            value={fmt(partProfit)} />
+        )
+      })()}
       {laborCost > 0 && (
         <BudgetRow icon={Wrench} iconBg="bg-violet-50 dark:bg-violet-900/20" iconColor="text-violet-500 dark:text-violet-400"
           label="Mano de Obra" sublabel="Servicio y reparación"

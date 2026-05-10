@@ -34,7 +34,7 @@ import {
   User, Smartphone, Shield, Stethoscope, CheckSquare, DollarSign,
   Search, UserCheck, Camera, Pencil, X,
   Trash2, Package, Wrench, ChevronDown, ChevronUp,
-  Banknote, ArrowRightLeft, CreditCard, Puzzle, Activity
+  Banknote, ArrowRightLeft, CreditCard, Puzzle, Activity, Tag
 } from 'lucide-react'
 import { DEVICE_TYPES, ACCESSORIES_OPTIONS, STATUS_CONFIG, canTransitionTo } from '../utils/constants'
 // DEVICE_TYPES kept as fallback when deviceTypes store is empty
@@ -900,6 +900,8 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     estimatedPrice: '',
     finalPrice: '',
     repairCost: '',
+    clientCost: '',
+    manualLaborCost: '',
     budgetStatus: 'pending',
     budgetItems: [],
     isWarranty: false,
@@ -1423,11 +1425,11 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
 
             return (
               <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                  {/* Costo de reparación */}
+                  {/* Costo Taller */}
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                      <Wrench size={13} className="text-slate-400" />
-                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Costo de reparación</span>
+                      <Wrench size={13} className="text-orange-400" />
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Costo Taller</span>
                     </div>
                     <div className="relative w-36">
                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
@@ -1445,11 +1447,59 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                     </div>
                   </div>
 
-                  {/* Total estimado */}
+                  {/* Costo Cliente */}
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Tag size={13} className="text-blue-400" />
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Costo Cliente</span>
+                    </div>
+                    <div className="relative w-36">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                      <input
+                        className="w-full pl-5 pr-2 py-1 text-sm text-right font-medium bg-transparent border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-700 dark:text-slate-200"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.clientCost === '' ? '' : Number(form.clientCost).toLocaleString('es-AR')}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                          set('clientCost', raw === '' ? '' : raw)
+                        }}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mano de Obra — editable, se recalcula al cambiar Precio Estimado o Costo Cliente */}
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Wrench size={13} className="text-violet-400" />
+                      <div>
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Mano de Obra</span>
+                      </div>
+                    </div>
+                    <div className="relative w-36">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                      <input
+                        className="w-full pl-5 pr-2 py-1 text-sm text-right font-medium bg-transparent border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-700 dark:text-slate-200"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.manualLaborCost === '' ? '' : Number(form.manualLaborCost).toLocaleString('es-AR')}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
+                          const newLabor = raw === '' ? 0 : Number(raw)
+                          const newEstimated = Number(form.clientCost || 0) + newLabor
+                          setForm((f) => ({ ...f, manualLaborCost: raw === '' ? '' : raw, estimatedPrice: newEstimated > 0 ? String(newEstimated) : '' }))
+                        }}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Precio Estimado */}
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
                       <DollarSign size={13} className="text-slate-400" />
-                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total estimado</span>
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Precio Estimado</span>
                     </div>
                     <div className="relative w-36">
                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
@@ -1460,7 +1510,9 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                         value={form.estimatedPrice === '' ? '' : Number(form.estimatedPrice).toLocaleString('es-AR')}
                         onChange={(e) => {
                           const raw = e.target.value.replace(/\./g, '').replace(/,/g, '').replace(/[^\d]/g, '')
-                          set('estimatedPrice', raw === '' ? '' : raw)
+                          const newEstimated = raw === '' ? 0 : Number(raw)
+                          const labor = Math.max(0, newEstimated - Number(form.clientCost || 0))
+                          setForm((f) => ({ ...f, estimatedPrice: raw === '' ? '' : raw, manualLaborCost: String(labor) }))
                         }}
                         placeholder="0"
                       />
