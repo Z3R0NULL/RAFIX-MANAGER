@@ -178,37 +178,18 @@ function BudgetSummary({ order, fmt }) {
   const manualClientCost = Number(order.clientCost || 0)
   const manualLaborCost  = Number(order.manualLaborCost || 0)
 
-  const workshopCost = budgetItems.reduce((acc, it) => {
+  const workshopCostFromItems = budgetItems.reduce((acc, it) => {
     if (it.type !== 'inventory' || !it.sourceId) return acc
     return acc + Number(it.costPrice ?? 0) * (Number(it.qty) || 1)
-  }, 0) + manualRepairCost
-
-  const clientPartsCostFromItems = budgetItems.reduce((acc, it) => {
-    if (it.type !== 'inventory') return acc
-    return acc + (Number(it.unitPrice) || 0) * (Number(it.qty) || 1)
   }, 0)
-  const clientPartsCost = clientPartsCostFromItems > 0 ? clientPartsCostFromItems : manualClientCost
+  // El valor guardado en la orden (repairCost) tiene prioridad sobre el calculado desde ítems,
+  // así el usuario puede sobreescribirlo manualmente desde el formulario
+  const workshopCost = manualRepairCost > 0 ? manualRepairCost : workshopCostFromItems
 
-  const calcModifierAmount = (it) => {
-    if (!it.modifier) return 0
-    const base = (Number(it.qty) || 1) * (Number(it.unitPrice) || 0)
-    if (it.modifier.priceType === 'percent') return Math.round((Number(it.modifier.price) || 0) / 100 * base)
-    return Number(it.modifier.price) || 0
-  }
-
-  const laborCostFromItems = budgetItems.reduce((acc, it) => {
-    // Standalone service items
-    if (it.type === 'service') {
-      if (it.isPercent) return acc + Math.round((Number(it.percentValue) || 0) / 100 * clientPartsCost)
-      return acc + (Number(it.unitPrice) || 0) * (Number(it.qty) || 1)
-    }
-    // Modifiers attached to inventory items (service adjuncts)
-    if (it.type === 'inventory' && it.modifier) {
-      return acc + calcModifierAmount(it)
-    }
-    return acc
-  }, 0)
-  const laborCost = laborCostFromItems > 0 ? laborCostFromItems : manualLaborCost
+  // Usar siempre el valor guardado en la orden — el form lo calcula al agregar ítems.
+  // Si el usuario lo dejó en 0, significa que no quiere cobrarle al cliente.
+  const clientPartsCost = manualClientCost
+  const laborCost = manualLaborCost
 
   const estimatedPrice = Number(order.estimatedPrice || 0)
   const finalPrice = Number(order.finalPrice || order.estimatedPrice || 0)
@@ -240,67 +221,69 @@ function BudgetSummary({ order, fmt }) {
     </div>
   )
 
+  const partProfit = clientPartsCost - workshopCost
+  const surchargeLabel = surcharge < 0 ? 'Descuento' : 'Recargo'
+  const surchargeColor = surcharge < 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'
+  const surchargeIconBg = surcharge < 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-amber-50 dark:bg-amber-900/20'
+
   return (
     <div className="-mx-1">
-      {workshopCost > 0 && (
-        <BudgetRow icon={Package} iconBg="bg-orange-50 dark:bg-orange-900/20" iconColor="text-orange-500 dark:text-orange-400"
-          label="Costo Taller" sublabel="Gasto del taller"
-          value={fmt(workshopCost)} valueColor="text-orange-500 dark:text-orange-400" />
-      )}
-      {clientPartsCost > 0 && (
-        <BudgetRow icon={Tag} iconBg="bg-blue-50 dark:bg-blue-900/20" iconColor="text-blue-500 dark:text-blue-400"
-          label="Costo Cliente" sublabel="Gasto del cliente"
-          value={fmt(clientPartsCost)} />
-      )}
-      {clientPartsCost > 0 && workshopCost > 0 && (() => {
-        const partProfit = clientPartsCost - workshopCost
-        return (
-          <BudgetRow
-            icon={TrendingUp}
-            iconBg="bg-slate-100 dark:bg-slate-800"
-            iconColor="text-slate-500 dark:text-slate-400"
-            label="Margen" sublabel="Cliente − Taller"
-            value={fmt(partProfit)} />
-        )
-      })()}
-      {laborCost > 0 && (
-        <BudgetRow icon={Wrench} iconBg="bg-violet-50 dark:bg-violet-900/20" iconColor="text-violet-500 dark:text-violet-400"
-          label="Mano de Obra" sublabel="Servicio y reparación"
-          value={fmt(laborCost)} />
-      )}
-      {estimatedPrice > 0 && (
-        <BudgetRow icon={Calculator} iconBg="bg-slate-100 dark:bg-slate-800" iconColor="text-slate-500 dark:text-slate-400"
-          label="Precio Estimado" sublabel="Subtotal sin recargos"
-          value={fmt(estimatedPrice)} />
-      )}
-      {payMethod && (
-        <BudgetRow icon={payMethod.Icon} iconBg="bg-indigo-50 dark:bg-indigo-900/20" iconColor="text-indigo-500 dark:text-indigo-400"
-          label="Método de Pago" sublabel="Medio utilizado"
-          value={
-            <span className="flex items-center gap-1.5">
-              <payMethod.Icon size={13} className="text-indigo-500 dark:text-indigo-400" />
-              {payMethod.label}
-            </span>
-          } />
-      )}
-      {surcharge !== 0 && (
-        <BudgetRow icon={Percent} iconBg="bg-amber-50 dark:bg-amber-900/20" iconColor="text-amber-500 dark:text-amber-400"
-          label="Recargo" sublabel={`Recargo de ${payMethod?.label?.toLowerCase() || 'este método'}`}
-          value={fmt(surcharge)} valueColor="text-amber-500 dark:text-amber-400" />
-      )}
+      <BudgetRow icon={Package} iconBg="bg-orange-50 dark:bg-orange-900/20" iconColor="text-orange-500 dark:text-orange-400"
+        label="Costo Taller" sublabel="Gasto del taller"
+        value={fmt(workshopCost)} valueColor="text-orange-500 dark:text-orange-400" />
+
+      <BudgetRow icon={Tag} iconBg="bg-blue-50 dark:bg-blue-900/20" iconColor="text-blue-500 dark:text-blue-400"
+        label="Costo Cliente" sublabel="Precio de venta al cliente"
+        value={fmt(clientPartsCost)} />
+
+      <BudgetRow
+        icon={TrendingUp}
+        iconBg="bg-slate-100 dark:bg-slate-800"
+        iconColor="text-slate-500 dark:text-slate-400"
+        label="Margen" sublabel="Cliente − Taller"
+        value={fmt(partProfit)} />
+
+      <BudgetRow icon={Wrench} iconBg="bg-violet-50 dark:bg-violet-900/20" iconColor="text-violet-500 dark:text-violet-400"
+        label="Mano de Obra" sublabel="Servicio y reparación"
+        value={fmt(laborCost)} />
+
+      <BudgetRow icon={Calculator} iconBg="bg-slate-100 dark:bg-slate-800" iconColor="text-slate-500 dark:text-slate-400"
+        label="Precio Estimado" sublabel="Subtotal sin recargos"
+        value={fmt(estimatedPrice)} />
+
+      <BudgetRow
+        icon={payMethod?.Icon ?? Banknote}
+        iconBg="bg-indigo-50 dark:bg-indigo-900/20"
+        iconColor="text-indigo-500 dark:text-indigo-400"
+        label="Método de Pago" sublabel="Medio utilizado"
+        value={
+          payMethod
+            ? <span className="flex items-center gap-1.5">
+                <payMethod.Icon size={13} className="text-indigo-500 dark:text-indigo-400" />
+                {payMethod.label}
+              </span>
+            : '—'
+        } />
+
+      <BudgetRow
+        icon={Percent}
+        iconBg={surchargeIconBg}
+        iconColor={surchargeColor}
+        label={surchargeLabel}
+        sublabel={payMethod ? `${surchargeLabel} de ${payMethod.label.toLowerCase()}` : 'Ajuste de pago'}
+        value={fmt(surcharge)}
+        valueColor={surchargeColor} />
+
       <BudgetRow icon={BadgeDollarSign} iconBg="bg-indigo-50 dark:bg-indigo-900/20" iconColor="text-indigo-500 dark:text-indigo-400"
         label="Precio Final" sublabel="Total a cobrar al cliente"
         value={fmt(finalPrice)} valueColor="text-indigo-600 dark:text-indigo-400" valueLarge />
-      {finalPrice > 0 && workshopCost > 0 && (
-        <>
-          <BudgetRow
-            icon={TrendingUp}
-            iconBg={profit >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}
-            iconColor={profit >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}
-            label="Ganancia Total" sublabel="Ganancia neta"
-            value={fmt(profit)} valueColor={profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'} />
-        </>
-      )}
+
+      <BudgetRow
+        icon={TrendingUp}
+        iconBg={profit >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}
+        iconColor={profit >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}
+        label="Ganancia Total" sublabel="Ganancia neta"
+        value={fmt(profit)} valueColor={profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'} />
     </div>
   )
 }

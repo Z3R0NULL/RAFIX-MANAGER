@@ -912,7 +912,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     photosEntry: [],
     photosExit: [],
     ...initialData,
-    paymentMethod: 'cash',
+    paymentMethod: initialData?.paymentMethod || 'cash',
     // Normalize ISO date to date input value (yyyy-mm-dd)
     estimatedDelivery: initialData?.estimatedDelivery
       ? initialData.estimatedDelivery.slice(0, 10)
@@ -1010,7 +1010,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
     const adjAmount = adjActive
       ? (paymentAdj.type === 'discount' ? -1 : 1) * Math.round((basePrice * paymentAdj.value) / 100)
       : 0
-    const computedFinalPrice = basePrice > 0 ? String(basePrice + adjAmount) : form.finalPrice
+    const computedFinalPrice = basePrice > 0 ? String(basePrice + adjAmount) : ''
     onSubmit({ ...form, finalPrice: computedFinalPrice })
   }
 
@@ -1328,7 +1328,6 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
               items={form.budgetItems}
               initialItems={initialData?.budgetItems || []}
               onChange={(items) => {
-                set('budgetItems', items)
                 // Auto-calculate totals from items (repuesto + modificador)
                 const newTotal = items.reduce((acc, it) => {
                   const base = (Number(it.qty) || 0) * (Number(it.unitPrice) || 0)
@@ -1339,10 +1338,19 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                   }
                   return acc + base + modAmt
                 }, 0)
-                set('estimatedPrice', newTotal > 0 ? String(newTotal) : '')
-                // Costo = solo repuestos/servicios sin modificadores
-                const costTotal = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0)
-                set('repairCost', costTotal > 0 ? String(costTotal) : '')
+                // Costo Taller = precio de costo del ítem (costPrice), no precio de venta
+                const costTotal = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.costPrice ?? it.unitPrice) || 0), 0)
+                // Costo Cliente = suma de qty × unitPrice (precio de venta al cliente)
+                const clientCostTotal = items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.unitPrice) || 0), 0)
+                const newLabor = Math.max(0, newTotal - clientCostTotal)
+                setForm((f) => ({
+                  ...f,
+                  budgetItems: items,
+                  estimatedPrice: newTotal > 0 ? String(newTotal) : '',
+                  repairCost: costTotal > 0 ? String(costTotal) : '',
+                  clientCost: clientCostTotal > 0 ? String(clientCostTotal) : '',
+                  manualLaborCost: newLabor > 0 ? String(newLabor) : '',
+                }))
               }}
               inventory={inventory}
               services={services}
@@ -1420,7 +1428,7 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
             const basePrice = Number(form.estimatedPrice || 0)
             const adjAmount = adjActive ? (paymentAdj.type === 'discount' ? -1 : 1) * Math.round((basePrice * paymentAdj.value) / 100) : 0
             const finalWithAdj = basePrice + adjAmount
-            const methodLabel = form.paymentMethod === 'cash' ? 'efectivo' : form.paymentMethod === 'transfer' ? 'transferencia' : 'tarjeta'
+            const methodLabel = form.paymentMethod === 'cash' ? 'Efectivo' : form.paymentMethod === 'transfer' ? 'Transferencia' : 'Tarjeta'
             const MethodIcon = form.paymentMethod === 'cash' ? Banknote : form.paymentMethod === 'transfer' ? ArrowRightLeft : CreditCard
 
             return (
@@ -1524,10 +1532,8 @@ export default function OrderForm({ initialData, onSubmit, onCancel, submitLabel
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
                       <div className="flex items-center gap-2">
                         <MethodIcon size={13} className={paymentAdj.type === 'discount' ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'} />
-                        <span className={`text-xs font-medium flex items-center gap-1 ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                          {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'}
-                          <MethodIcon size={11} className="inline align-middle" />
-                          {methodLabel} ({paymentAdj.value}%)
+                        <span className={`text-xs font-medium ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                          {paymentAdj.type === 'discount' ? 'Descuento' : 'Recargo'} {methodLabel} ({paymentAdj.value}%)
                         </span>
                       </div>
                       <span className={`text-sm font-semibold ${paymentAdj.type === 'discount' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
