@@ -265,14 +265,16 @@ function BudgetSummary({ order, fmt }) {
             : '—'
         } />
 
-      <BudgetRow
-        icon={Percent}
-        iconBg={surchargeIconBg}
-        iconColor={surchargeColor}
-        label={surchargeLabel}
-        sublabel={payMethod ? `${surchargeLabel} de ${payMethod.label.toLowerCase()}` : 'Ajuste de pago'}
-        value={fmt(surcharge)}
-        valueColor={surchargeColor} />
+      {surcharge !== 0 && (
+        <BudgetRow
+          icon={Percent}
+          iconBg={surchargeIconBg}
+          iconColor={surchargeColor}
+          label={surchargeLabel}
+          sublabel={payMethod ? `${surchargeLabel} de ${payMethod.label.toLowerCase()}` : 'Ajuste de pago'}
+          value={fmt(surcharge)}
+          valueColor={surchargeColor} />
+      )}
 
       <BudgetRow icon={BadgeDollarSign} iconBg="bg-indigo-50 dark:bg-indigo-900/20" iconColor="text-indigo-500 dark:text-indigo-400"
         label="Precio Final" sublabel="Total a cobrar al cliente"
